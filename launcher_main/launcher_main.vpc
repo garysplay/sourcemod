@@ -30,7 +30,7 @@ $Configuration
 		$ForceIncludes				" "
 	}
 
-	$Linker [$WIN32]
+	$Linker [$WINDOWS]
 	{
 		$EnableLargeAddresses		"Support Addresses Larger Than 2 Gigabytes (/LARGEADDRESSAWARE)" 
 		$FixedBaseAddress			"Generate a relocation section (/FIXED:NO)" 
@@ -42,12 +42,16 @@ $Configuration
 		$AdditionalSections			"4541080F=$SRCDIR\common\hl2orange.spa"
 	}
 
-	$PreBuildEvent [$WIN32]
+	$PreBuildEvent [$WINDOWS]
 	{
 		$CommandLine		"if EXIST $OUTBINDIR\hl2.exe for /f $QUOTEdelims=$QUOTE %%A in ('attrib $QUOTE$OUTBINDIR\hl2.exe$QUOTE') do set valveTmpIsReadOnly=$QUOTE%%A$QUOTE" "\n" \
 							"set valveTmpIsReadOnlyLetter=%valveTmpIsReadOnly:~6,1%" "\n" \
 							"if $QUOTE%valveTmpIsReadOnlyLetter%$QUOTE==$QUOTER$QUOTE del /q $QUOTE$(TargetDir)$QUOTE$(TargetFileName)" "\n" \
-							"$CRCCHECK"
+							"$CRCCHECK" "\n"
+							
+							//"set valveTmpIsReadOnlyLetter=%valveTmpIsReadOnly:~6,1%" "\n" \
+							//"if $QUOTE%valveTmpIsReadOnlyLetter%$QUOTE==$QUOTER$QUOTE del /q $QUOTE$(TargetDir)$QUOTE$(TargetFileName)" "\n" \
+							//"$CRCCHECK"
 	}
 
 	$PostBuildEvent	[$X360]
@@ -65,17 +69,17 @@ $Configuration
 		$CommandLine				"call $SRCDIR\vpc_scripts\valve_p4_edit.cmd $OUTBINDIR\hl2.exe $SRCDIR" "\n" \
 									"call $SRCDIR\vpc_scripts\valve_p4_edit.cmd $OUTBINDIR\default.pdb $SRCDIR" "\n" \
 									"copy $(TargetPath) $OUTBINDIR\hl2.exe" "\n"					\
-									"if ERRORLEVEL 1 goto BuildEventFailed" "\n" \
+									//"if ERRORLEVEL 1 goto BuildEventFailed" "\n" \
 									"copy $(TargetDir)\default.pdb $OUTBINDIR\default.pdb" "\n"					\
-									"if ERRORLEVEL 1 goto BuildEventFailed" "\n" \
+									//"if ERRORLEVEL 1 goto BuildEventFailed" "\n" \
 									"if exist $(TargetDir)$(TargetName).map copy $(TargetDir)$(TargetName).map $OUTBINDIR\hl2.map" "\n" \
 									"call $SRCDIR\vpc_scripts\valve_p4_edit.cmd $OUTBINDIR\hl2.dat $SRCDIR" "\n"								\
 									"$OUTBINDIR\bin\newdat $OUTBINDIR\hl2.exe" "\n"					\
 									"goto BuildEventOK" "\n" \
-									":BuildEventFailed" "\n" \
-									"echo *** ERROR! PostBuildStep FAILED for $(ProjectName)! EXE or DLL is probably running. ***" "\n" \
-									"del /q $(TargetPath)" "\n" \
-									"exit 1" "\n" \
+									//":BuildEventFailed" "\n" \
+									//"echo *** ERROR! PostBuildStep FAILED for $(ProjectName)! EXE or DLL is probably running. ***" "\n" \
+									//"del /q $(TargetPath)" "\n" \
+									//"exit 1" "\n" \
 									":BuildEventOK" "\n"
 	}
 }

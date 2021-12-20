@@ -22,8 +22,10 @@ static void initKeymap(void);
 #include "xbox/xbox_win32stubs.h"
 #endif
 
+#ifdef COMPILER_MSVC32
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_impl_win32.h"
+#endif
 
 ConVar joy_xcontroller_found( "joy_xcontroller_found", "1", FCVAR_HIDDEN, "Automatically set to 1 if an xcontroller has been detected." );
 
@@ -1264,16 +1266,19 @@ void CInputSystem::UpdateMousePositionState( InputState_t &state, short x, short
 	}
 }
 
+#ifdef COMPILER_MSVC32
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#endif
 
 //-----------------------------------------------------------------------------
 // Handles input messages
 //-----------------------------------------------------------------------------
 LRESULT CInputSystem::WindowProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
+#ifdef COMPILER_MSVC32
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
 		return true;
-
+#endif
 #if defined( PLATFORM_WINDOWS ) // We use this even for SDL to handle mouse move.
 	if ( !m_bEnabled )
 		return ChainWindowMessage( hwnd, uMsg, wParam, lParam );

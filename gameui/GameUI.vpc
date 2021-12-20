@@ -21,7 +21,7 @@ $Configuration
 
 	$Linker
 	{
-		$AdditionalDependencies			"$BASE Ws2_32.lib odbc32.lib odbccp32.lib Shlwapi.lib d3d9.lib legacy_stdio_definitions.lib" [$WIN32]
+		$AdditionalDependencies			"$BASE Ws2_32.lib odbc32.lib odbccp32.lib Shlwapi.lib d3d9.lib legacy_stdio_definitions.lib" [$WINDOWS]
 		$IgnoreSpecificDefaultLibraries "$BASE msvcrt.lib"
 		$SystemLibraries				"iconv;z" [$OSXALL]	
 		$SystemLibraries				"rt" [$LINUXALL && !$DEDICATED]
@@ -224,8 +224,8 @@ $Project "GameUI"
 		$File	"OptionsSubDifficulty.h"
 		$File	"OptionsSubGame.cpp"
 		$File	"OptionsSubGame.h"
-		$File	"OptionsSubHaptics.cpp"	[$WIN32]
-		$File	"OptionsSubHaptics.h"	[$WIN32]
+		$File	"OptionsSubHaptics.cpp"	[$WINDOWS]
+		$File	"OptionsSubHaptics.h"	[$WINDOWS]
 		$File	"OptionsSubKeyboard.cpp"
 		$File	"OptionsSubKeyboard.h"
 		$File	"OptionsSubMouse.cpp"
@@ -245,7 +245,7 @@ $Project "GameUI"
 		$Lib	bitmap
 		$Lib	mathlib
 		$Lib	matsys_controls
-		$Lib  	imgui
+		$Lib  	imgui       [$WIN32]
 		$Lib	tier2
 		$Lib	tier3
 		$Lib	vgui_controls

@@ -480,7 +480,7 @@ $Project "engine"
 		$File "audio\private\snd_dev_openal.h"		[$OSXALL]
 		$File "audio\private\snd_dev_mac_audioqueue.cpp"	[$OSXALL]
 		$File "audio\private\snd_dev_mac_audioqueue.h"		[$OSXALL]
-		$File "audio\private\voice_mixer_controls_openal.cpp"	[$OSXALL||($LINUXALL&&!$DEDICATED)]
+		$File "audio\private\voice_mixer_controls.cpp"	
 		$File "audio\private\voice_record_openal.cpp"	[$OSXALL||($LINUXALL&&!$DEDICATED)]
 		$File "audio\private\voice_record_mac_audioqueue.cpp"	[$OSXALL]
 
@@ -1097,11 +1097,14 @@ $Project "engine"
 	$Folder	"Link libraries"
 	{
 		$Lib	socketlib [$WIN32]
+		$Lib	"$LIBCOMMON/socketlib64" [$WIN64]
 
 		$Lib	appframework
 		$Lib	bitmap
 		$Lib	"$LIBCOMMON/bzip2"
 		$Lib  	"$LIBCOMMON/libjpeg"			[!$DEDICATED]
+		
+		$Lib  	imgui
 
 		$Lib	dmxloader
 		$Lib	mathlib
@@ -1127,5 +1130,7 @@ $Project "engine"
 		$ImpLib	"SDL2" [$SDL]
 		$File	"$SRCDIR\DX9SDK\lib\dsound.lib" [$WIN32]
 		$File	"$SRCDIR\DX9SDK\lib\dxguid.lib" [$WIN32]
+		$File	"$SRCDIR\DX9SDK\lib\x64\dsound.lib" [$WIN64]
+		$File	"$SRCDIR\DX9SDK\lib\x64\dxguid.lib" [$WIN64]
 	}	
 }

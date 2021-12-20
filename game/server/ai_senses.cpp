@@ -49,6 +49,7 @@ struct AISightIterVal_t
 	char  array;
 	short iNext;
 	char  SeenArray;
+	uint32  deez;
 };
 
 #pragma pack(pop)

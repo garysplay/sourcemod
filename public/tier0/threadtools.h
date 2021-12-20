@@ -252,6 +252,14 @@ PLATFORM_INTERFACE int64 ThreadInterlockedCompareExchange64( int64 volatile *, i
 PLATFORM_INTERFACE int64 ThreadInterlockedExchange64( int64 volatile *, int64 value ) NOINLINE;
 PLATFORM_INTERFACE int64 ThreadInterlockedExchangeAdd64( int64 volatile *, int64 value ) NOINLINE;
 PLATFORM_INTERFACE bool ThreadInterlockedAssignIf64(volatile int64 *pDest, int64 value, int64 comperand ) NOINLINE;
+#ifdef COMPILER_MSVC64
+// 64 bit windows can use intrinsics for these, 32-bit can't
+#pragma intrinsic( _InterlockedCompareExchange64 )
+#pragma intrinsic( _InterlockedExchange64 )
+#pragma intrinsic( _InterlockedExchangeAdd64 ) 
+inline int64 ThreadInterlockedCompareExchange64(int64 volatile* p, int64 value, int64 comparand) { Assert((size_t)p % 8 == 0); return _InterlockedCompareExchange64((volatile int64*)p, value, comparand); }
+inline int64 ThreadInterlockedExchangeAdd64(int64 volatile* p, int64 value) { Assert((size_t)p % 8 == 0); return _InterlockedExchangeAdd64((volatile int64*)p, value); }
+#endif
 
 inline unsigned ThreadInterlockedExchangeSubtract( unsigned volatile *p, unsigned value )	{ return ThreadInterlockedExchangeAdd( (long volatile *)p, value ); }
 inline unsigned ThreadInterlockedIncrement( unsigned volatile *p )	{ return ThreadInterlockedIncrement( (long volatile *)p ); }
@@ -313,6 +321,15 @@ PLATFORM_INTERFACE void ThreadNotifySyncReleasing(void *p);
 
 #endif // NO_THREAD_LOCALS
 
+#ifdef _WIN64
+// 64 bit windows can use intrinsics for these, 32-bit can't
+#pragma intrinsic( _InterlockedCompareExchange64 )
+#pragma intrinsic( _InterlockedExchange64 )
+#pragma intrinsic( _InterlockedExchangeAdd64 ) 
+inline int64 ThreadInterlockedIncrement64(int64 volatile* p) { Assert((size_t)p % 8 == 0); return _InterlockedIncrement64((volatile int64*)p); }
+inline int64 ThreadInterlockedDecrement64(int64 volatile* p) { Assert((size_t)p % 8 == 0); return _InterlockedDecrement64((volatile int64*)p); }
+#endif
+
 #ifndef __AFXTLS_H__ // not compatible with some Windows headers
 #ifndef NO_THREAD_LOCAL
 
@@ -343,12 +360,13 @@ private:
 	public:
 		CThreadLocal()
 		{
-			COMPILE_TIME_ASSERT( sizeof(T) == sizeof(void *) );
-		}
+			COMPILE_TIME_ASSERT(sizeof(T) <= sizeof(void*));
+	    }
 
 		T Get() const
 		{
-			return reinterpret_cast<T>( CThreadLocalBase::Get() );
+			void* pData = CThreadLocalBase::Get();
+			return *reinterpret_cast<T*>(&pData);
 		}
 
 		void Set(T val)

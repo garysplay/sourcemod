@@ -426,7 +426,7 @@ $Project
 		$File	"ragdoll.cpp"
 		$File	"$SRCDIR\game\shared\ragdoll_shared.cpp"
 		$File	"recvproxy.cpp"
-		$File	"basepresence.cpp"			[$WIN32||$POSIX]
+		$File	"basepresence.cpp"			[$WINDOWS||$POSIX]
 		$File	"basepresence_xbox.cpp"		[$X360]
 		$File	"$SRCDIR\game\shared\rope_helpers.cpp"
 		$File	"$SRCDIR\game\shared\saverestore.cpp"
@@ -502,7 +502,7 @@ $Project
 		$File	"$SRCDIR\game\client\c_vote_controller.cpp"
 		//Haptics
 		$File	"$SRCDIR\public\haptics\haptic_msgs.cpp"	[!$X360]
-		$File	"$SRCDIR\public\haptics\haptic_utils.cpp"	[$WIN32&&!$X360]
+		$File	"$SRCDIR\public\haptics\haptic_utils.cpp"	[$WINDOWS&&!$X360]
 
 		$Folder	"Sixense"
 		{
@@ -658,7 +658,7 @@ $Project
 
 	}
 
-	$Folder	"MP3" [$WIN32||$POSIX]
+	$Folder	"MP3" [$WINDOWS||$POSIX]
 	{
 		$File	"mp3player.cpp"
 		$File	"mp3player.h"
@@ -1099,8 +1099,8 @@ $Project
 		$File	"$SRCDIR\public\worldsize.h"
 		$File	"$SRCDIR\public\zip_uncompressed.h"
 		//Haptics
-		$File   "$SRCDIR\public\haptics\ihaptics.h"	[$WIN32]
-		$File   "$SRCDIR\public\haptics\haptic_utils.h"	[$WIN32]
+		$File   "$SRCDIR\public\haptics\ihaptics.h"	[$WINDOWS]
+		$File   "$SRCDIR\public\haptics\haptic_utils.h"	[$WINDOWS]
 	}
 
 	$Folder	"Game Shared Header Files"

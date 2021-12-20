@@ -1,2 +1,2 @@
-devtools\bin\vpc.exe /hl2mp +everything +coolsource /mksln everything.sln
+devtools\bin\vpc.exe /episodic /win64 +everything +tier0 +tier1 +tier2 +tier3 +physics +shaderlib +appframework +vstdlib +coolsource +hammer_launcher +hammer_dll +shaderapidx10 +physics +shaders +fgdlib +vbsp +vrad_dll +vrad_launcher +vvis_dll +vvis_launcher +togl +dmxloader +matsys_controls +vguimatsurface +vgui_dll +vgui_surfacelib +bitmap +choreoobjects +replay_common +replay /define:RAD_TELEMETRY_DISABLED /2022 /mksln everything.sln
 pause

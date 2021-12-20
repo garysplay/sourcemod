@@ -657,61 +657,61 @@ void CUtlLinkedList<T,S,ML,I,M>::PurgeAndDeleteElements()
 template <class T, class S, bool ML, class I, class M>
 I CUtlLinkedList<T,S,ML,I,M>::AllocInternal( bool multilist )
 {
-	Assert( !multilist || ML );
+	Assert(!multilist || ML);
 #ifdef MULTILIST_PEDANTIC_ASSERTS
-	Assert( multilist == ML );
+	Assert(multilist == ML);
 #endif
 	I elem;
-	if ( m_FirstFree == InvalidIndex() )
+	if (m_FirstFree == InvalidIndex())
 	{
-		Assert( m_Memory.IsValidIterator( m_LastAlloc ) || m_ElementCount == 0 );
+		Assert(m_Memory.IsValidIterator(m_LastAlloc) || m_ElementCount == 0);
 
-		typename M::Iterator_t it = m_Memory.IsValidIterator( m_LastAlloc ) ? m_Memory.Next( m_LastAlloc ) : m_Memory.First();
+		typename M::Iterator_t it = m_Memory.IsValidIterator(m_LastAlloc) ? m_Memory.Next(m_LastAlloc) : m_Memory.First();
 
-		if ( !m_Memory.IsValidIterator( it ) )
+		if (!m_Memory.IsValidIterator(it))
 		{
 			MEM_ALLOC_CREDIT_CLASS();
 			m_Memory.Grow();
 			ResetDbgInfo();
 
-			it = m_Memory.IsValidIterator( m_LastAlloc ) ? m_Memory.Next( m_LastAlloc ) : m_Memory.First();
+			it = m_Memory.IsValidIterator(m_LastAlloc) ? m_Memory.Next(m_LastAlloc) : m_Memory.First();
 
-			Assert( m_Memory.IsValidIterator( it ) );
-			if ( !m_Memory.IsValidIterator( it ) )
+			Assert(m_Memory.IsValidIterator(it));
+			if (!m_Memory.IsValidIterator(it))
 			{
 				// We rarely if ever handle alloc failure. Continuing leads to corruption.
-				Error( "CUtlLinkedList overflow! (exhausted memory allocator)\n" );
+				Msg("CUtlLinkedList overflow! (exhausted memory allocator)\n");
 				return InvalidIndex();
 			}
 		}
 
 		// We can overflow before the utlmemory overflows, since S != I
-		if ( !IndexInRange( m_Memory.GetIndex( it ) ) )
+		if (!IndexInRange(m_Memory.GetIndex(it)))
 		{
 			// We rarely if ever handle alloc failure. Continuing leads to corruption.
-			Error( "CUtlLinkedList overflow! (exhausted index range)\n" );
+			Msg("CUtlLinkedList overflow! (exhausted index range)\n");
 			return InvalidIndex();
 		}
 
 		m_LastAlloc = it;
-		elem = m_Memory.GetIndex( m_LastAlloc );
+		elem = m_Memory.GetIndex(m_LastAlloc);
 		m_NumAlloced++;
-	} 
+	}
 	else
 	{
 		elem = m_FirstFree;
-		m_FirstFree = InternalElement( m_FirstFree ).m_Next;
+		m_FirstFree = InternalElement(m_FirstFree).m_Next;
 	}
 
-	if ( !multilist )
+	if (!multilist)
 	{
-		InternalElement( elem ).m_Next = elem;
-		InternalElement( elem ).m_Previous = elem;
+		InternalElement(elem).m_Next = elem;
+		InternalElement(elem).m_Previous = elem;
 	}
 	else
 	{
-		InternalElement( elem ).m_Next = InvalidIndex();
-		InternalElement( elem ).m_Previous = InvalidIndex();
+		InternalElement(elem).m_Next = InvalidIndex();
+		InternalElement(elem).m_Previous = InvalidIndex();
 	}
 
 	return elem;

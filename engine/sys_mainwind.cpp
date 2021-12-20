@@ -944,7 +944,7 @@ bool CGame::CreateGameWindow( void )
 	memset( &wc, 0, sizeof( wc ) );
 
     wc.style         = CS_OWNDC | CS_DBLCLKS;
-    wc.lpfnWndProc   = CallDefaultWindowProc;
+    wc.lpfnWndProc   = DefWindowProcW;
     wc.hInstance     = m_hInstance;
     wc.lpszClassName = CLASSNAME;
 

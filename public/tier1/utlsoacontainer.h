@@ -142,6 +142,7 @@ protected:
 	size_t m_nRowStrideInBytes[MAX_SOA_FIELDS];			  // stride from one row datum to another per field
 	size_t m_nSliceStrideInBytes[MAX_SOA_FIELDS];         // stride from one slice datum to another per field
 
+	FourVectors* ElementPointer4V(int nAttributeIdx, int nX = 0, int nY = 0, int nZ = 0) const;
 
 
 	uint32 m_nFieldPresentMask;

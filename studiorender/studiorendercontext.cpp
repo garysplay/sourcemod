@@ -883,7 +883,6 @@ void CStudioRenderContext::R_StudioBuildMorph( studiohdr_t *pStudioHdr,
 	morphBuilder.End();
 }
 
-
 //-----------------------------------------------------------------------------
 // Builds the strip data
 //-----------------------------------------------------------------------------
@@ -921,8 +920,7 @@ void CStudioRenderContext::R_StudioBuildMeshStrips( studiomeshgroup_t* pMeshGrou
 		if (boneWeightSize != 0)
 		{
 			unsigned char* pBoneStateChange = (unsigned char*)pMeshGroup->m_pStripData + boneStateChangeOffset;
-			memcpy( pBoneStateChange, pStripGroup->pStrip(i)->pBoneStateChange(0), boneWeightSize);
-
+			memcpy( pBoneStateChange, pStripGroup->pStrip(i)->pBoneStateChange(0), boneWeightSize );
 			boneStateChangeOffset += boneWeightSize;
 		}
 	}

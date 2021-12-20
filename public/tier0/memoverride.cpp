@@ -1206,7 +1206,6 @@ extern "C"
 	//===========================================
 	// NEW!!! 64-bit
 
-#ifndef _DEBUG
 #ifndef PROTECTED_THINGS_DISABLE
 #if _MSC_VER < 1900
 	char* __cdecl _strdup(const char* string)
@@ -1221,7 +1220,6 @@ extern "C"
 		return pCopy;
 	}
 #endif // _MSC_VER < 1900
-#endif
 #endif
 
 #if 0

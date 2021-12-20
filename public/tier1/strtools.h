@@ -575,7 +575,11 @@ bool V_StripLastDir( char *dirName, int maxlen );
 const char * V_UnqualifiedFileName( const char * in );
 // Given a path and a filename, composes "path\filename", inserting the (OS correct) separator if necessary
 void V_ComposeFileName( const char *path, const char *filename, char *dest, int destSize );
-
+// Convert from a string to an array of integers.
+// Returns the actual # of ints converted
+int V_StringToIntArray(OUT_CAP(count) int* pVector, int count, const char* pString);
+// Convert from a string to a 4 byte color value.
+void V_StringToColor32(color32* color, const char* pString);
 // Copy out the path except for the stuff after the final pathseparator
 bool V_ExtractFilePath( const char *path, char *dest, int destSize );
 // Copy out the file extension into dest
