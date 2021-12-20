@@ -110,7 +110,7 @@ enum GameInputEventType_t
 
 
 
-#ifdef WIN32
+#ifndef WIN64
 static 	IUnicodeWindows *unicode = NULL;
 #endif
 
@@ -512,8 +512,13 @@ void VCR_HandlePlaybackMessages(
 //-----------------------------------------------------------------------------
 static LONG WINAPI CallDefaultWindowProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
+#ifndef WIN64
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+		return true;
+		
 	if ( unicode )
 		return unicode->DefWindowProcW( hWnd, uMsg, wParam, lParam );
+#endif
 	return DefWindowProc( hWnd, uMsg, wParam, lParam );
 }
 #endif
@@ -577,6 +582,10 @@ int CGame::WindowProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	LONG			lRet = 0;
 	HDC				hdc;
 	PAINTSTRUCT		ps;
+#ifndef WIN64
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+		return true;
+#endif
 
 	//
 	// NOTE: the way this function works is to handle all messages that just call through to
@@ -906,14 +915,14 @@ bool CGame::CreateGameWindow( void )
 
 	if (!windowName[0])
 	{
-		Q_strncpy( windowName, "HALF-LIFE 2", sizeof(windowName) );
+		Q_strncpy( windowName, "CoolSource", sizeof(windowName) );
 	}
 
 	if ( IsOpenGL() )
 	{
 		V_strcat( windowName, " - OpenGL", sizeof( windowName ) );
 	}
-
+	
 #if PIX_ENABLE || defined( PIX_INSTRUMENTATION )
 	// PIX_ENABLE/PIX_INSTRUMENTATION is a big slowdown (that should never be checked in, but sometimes is by accident), so add this to the Window title too.
 	V_strcat( windowName, " - PIX_ENABLE", sizeof( windowName ) );
@@ -980,12 +989,14 @@ bool CGame::CreateGameWindow( void )
 	modinfo = NULL;
 	// Oops, we didn't clean up the class registration from last cycle which
 	// might mean that the wndproc pointer is bogus
-#ifndef _X360
+#ifndef _WIN64
 	unicode->UnregisterClassW( CLASSNAME, m_hInstance );
 	// Register it again
     unicode->RegisterClassW( &wc );
 #else
-	RegisterClass( &wc );
+	UnregisterClassW(CLASSNAME, m_hInstance);
+	// Register it again
+	RegisterClassW(&wc);
 #endif
 
 	// Note, it's hidden
@@ -1019,8 +1030,8 @@ bool CGame::CreateGameWindow( void )
 	}
 
 #if !defined( _X360 )
-	HWND hwnd = unicode->CreateWindowExW( exFlags, CLASSNAME, uc, style, 
-		0, 0, w, h, NULL, NULL, m_hInstance, NULL );
+	HWND hwnd = CreateWindowExW(exFlags, CLASSNAME, uc, style,
+		0, 0, w, h, NULL, NULL, m_hInstance, NULL);
 	// NOTE: On some cards, CreateWindowExW slams the FPU control word
 	SetupFPUControlWord();
 #else
@@ -1067,6 +1078,7 @@ bool CGame::CreateGameWindow( void )
 #else
 #error
 #endif
+
 }
 
 
@@ -1091,8 +1103,7 @@ void CGame::DestroyGameWindow()
 		}
 
 #if !defined( _X360 )
-		unicode->UnregisterClassW( CLASSNAME, m_hInstance );
-		UnloadUnicode();
+		UnregisterClassW(CLASSNAME, m_hInstance);
 #else
 		UnregisterClass( CLASSNAME, m_hInstance );
 #endif
@@ -1423,7 +1434,6 @@ CGame::CGame()
 
 #if defined( WIN32 )
 #if !defined( USE_SDL )
-	unicode = NULL;
 	m_hUnicodeModule = NULL;
 	m_hInstance = 0;
 	m_ChainedWindowProc = NULL;
@@ -1485,7 +1495,7 @@ bool CGame::Shutdown( void )
 
 bool CGame::LoadUnicode( void )
 {
-#ifdef WIN32
+#ifndef WIN64
 	m_hUnicodeModule = Sys_LoadModule( "unicode" );
 	if ( !m_hUnicodeModule )
 	{
@@ -1513,7 +1523,7 @@ bool CGame::LoadUnicode( void )
 
 void CGame::UnloadUnicode()
 {
-#ifdef WIN32
+#ifndef WIN64
 	unicode = NULL;
 
 	if ( m_hUnicodeModule )
