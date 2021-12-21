@@ -124,9 +124,9 @@ typedef void *HardwareShader_t;
 //-----------------------------------------------------------------------------
 // The vertex and pixel shader type
 //-----------------------------------------------------------------------------
-typedef int VertexShader_t;
-typedef int PixelShader_t;
-typedef int GeometryShader_t;
+typedef long long VertexShader_t;
+typedef long long PixelShader_t;
+typedef long long GeometryShader_t;
 
 //-----------------------------------------------------------------------------
 // Bitpattern for an invalid shader

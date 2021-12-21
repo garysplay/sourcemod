@@ -240,8 +240,15 @@ class CUtlFilenameSymbolTable
 		{
 			path = 0;
 			file = 0;
+#ifdef PLATFORM_64BITS
+			pad = 0;
+#endif
 		}
 
+#ifdef PLATFORM_64BITS
+		// some padding to make sure we are the same size as FileNameHandle_t on 64 bit.
+		unsigned int pad;
+#endif
 		// Part before the final '/' character
 		unsigned short path;
 		// Part after the final '/', including extension

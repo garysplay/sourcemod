@@ -2303,7 +2303,7 @@ bool CTexture::SetRenderTarget( int nRenderTargetID, ITexture *pDepthTexture )
 
 	ShaderAPITextureHandle_t textureHandle = m_pTextureHandles[0];
 
-	ShaderAPITextureHandle_t depthTextureHandle = (unsigned int)SHADER_RENDERTARGET_DEPTHBUFFER;
+	ShaderAPITextureHandle_t depthTextureHandle = (uintp)SHADER_RENDERTARGET_DEPTHBUFFER;
 
 	if ( m_nFlags & TEXTUREFLAGS_DEPTHRENDERTARGET )
 	{
@@ -2313,7 +2313,7 @@ bool CTexture::SetRenderTarget( int nRenderTargetID, ITexture *pDepthTexture )
 	else if ( m_nFlags & TEXTUREFLAGS_NODEPTHBUFFER )
 	{
 		// GR - render target without depth buffer	
-		depthTextureHandle = (unsigned int)SHADER_RENDERTARGET_NONE;
+		depthTextureHandle = (uintp)SHADER_RENDERTARGET_NONE;
 	}
 
 	if ( pDepthTexture)
