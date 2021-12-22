@@ -12,6 +12,9 @@
 #include "xbox/xbox_win32stubs.h"
 #endif
 
+extern ThreadHandle_t* CreateTestThreads(ThreadFunc_t fnThread, int numThreads, int nProcessorsToDistribute);
+extern void JoinTestThreads(ThreadHandle_t* pHandles);
+
 namespace TSListTests
 {
 int NUM_TEST = 10000;
@@ -135,7 +138,7 @@ void ValidateBuckets()
 	}
 }
 
-unsigned PopThreadFunc( void *)
+unsigned long long PopThreadFunc( void *)
 {
 	ThreadSetDebugName( "PopThread" );
 	g_nPopThreads++;
@@ -165,7 +168,7 @@ unsigned PopThreadFunc( void *)
 	return 0;
 }
 
-unsigned PushThreadFunc( void * )
+unsigned long long PushThreadFunc( void * )
 {
 	ThreadSetDebugName( "PushThread" );
 	g_nPushThreads++;
@@ -306,7 +309,7 @@ void PushPopInterleavedTest()
 	TestEnd();
 }
 
-unsigned PushPopInterleavedTestThreadFunc( void * )
+unsigned long long PushPopInterleavedTestThreadFunc( void * )
 {
 	ThreadSetDebugName( "PushPopThread" );
 	g_nThreads++;
@@ -321,22 +324,16 @@ unsigned PushPopInterleavedTestThreadFunc( void * )
 
 void STPushMTPop( bool bDistribute )
 {
-	Msg( "%s test: single thread push, multithread pop, %s", g_pListType, bDistribute ? "distributed..." : "no affinity..." );
+	Msg("%s test: single thread push, multithread pop, %s", g_pListType, bDistribute ? "distributed..." : "no affinity...");
 	TestStart();
-	g_ThreadHandles.push_back( CreateSimpleThread( &PushThreadFunc, NULL ) );
-	for ( int i = 0; i < NUM_THREADS - 1; i++ )
-	{
-		ThreadHandle_t hThread = CreateSimpleThread( &PopThreadFunc, NULL );
-		g_ThreadHandles.push_back( hThread );
-		if ( bDistribute )
-		{
-			int32 mask = 1 << (i % NUM_PROCESSORS);
-			ThreadSetAffinity( hThread, mask );
-		}
-	}
+	ThreadHandle_t hPush = CreateSimpleThread(&PushThreadFunc, NULL);
+	ThreadHandle_t* arrPops = CreateTestThreads(PopThreadFunc, NUM_THREADS - 1, (bDistribute) ? NUM_PROCESSORS : 0);
 
 	TestWait();
 	TestEnd();
+	JoinTestThreads(arrPops);
+	ThreadJoin(hPush);
+	ReleaseThreadHandle(hPush);
 }
 
 void MTPushSTPop( bool bDistribute )

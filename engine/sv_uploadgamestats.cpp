@@ -1099,7 +1099,7 @@ protected:
 	};
 
 public:
-	static unsigned CallbackThreadProc( void *pvParam ) { ((CAsyncUploaderThread*) pvParam)->ThreadProc(); return 0; }
+	static unsigned long long CallbackThreadProc( void *pvParam ) { ((CAsyncUploaderThread*) pvParam)->ThreadProc(); return 0; }
 	void QueueData( char const *szMapName, uint uiBlobVersion, uint uiBlobSize, const void *pvBlob );
 	void TerminateAndSelfDelete();
 };

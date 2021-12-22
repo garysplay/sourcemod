@@ -1095,7 +1095,7 @@ private:
 		m_completedJobs.PushItem( pJob );
 	}
 
-	static unsigned LoaderMain( void* _this )
+	static unsigned long long LoaderMain( void* _this )
 	{
 		ThreadSetDebugName( "Loader" );
 
@@ -1396,7 +1396,7 @@ private:
 			mip_h = Max( 1, mip_h >> 1 );
 		}
 	}
-	static unsigned ReaderMain( void* _this )
+	static unsigned long long ReaderMain( void* _this )
 	{
 		ThreadSetDebugName( "Helper" );
 

@@ -99,41 +99,152 @@ struct ThreadProcInfo_t
 
 //---------------------------------------------------------
 
+// thread creation counter.
+// this is used to provide a unique threadid for each running thread in g_nThreadID ( a thread local variable ).
+
+const int MAX_THREAD_IDS = 128;
+
+static volatile bool s_bThreadIDAllocated[MAX_THREAD_IDS];
+
+static CThreadFastMutex s_ThreadIDMutex;
+
+DLL_CLASS_EXPORT CTHREADLOCALINT g_nThreadID;
+
+PLATFORM_INTERFACE void AllocateThreadID(void)
+{
+	AUTO_LOCK(s_ThreadIDMutex);
+	for (int i = 1; i < MAX_THREAD_IDS; i++)
+	{
+		if (!s_bThreadIDAllocated[i])
+		{
+			g_nThreadID = i;
+			s_bThreadIDAllocated[i] = true;
+			return;
+		}
+	}
+	Error("Out of thread ids. Decrease the number of threads or increase MAX_THREAD_IDS\n");
+}
+
+PLATFORM_INTERFACE void FreeThreadID(void)
+{
+	AUTO_LOCK(s_ThreadIDMutex);
+	int nThread = g_nThreadID;
+	if (nThread)
+		s_bThreadIDAllocated[nThread] = false;
+}
+
+
 #ifdef _WIN32
-static unsigned __stdcall ThreadProcConvert( void *pParam )
+static DWORD WINAPI ThreadProcConvert(void* pParam)
 #elif defined(POSIX)
 static void *ThreadProcConvert( void *pParam )
 #else
 #error
 #endif
 {
-	ThreadProcInfo_t info = *((ThreadProcInfo_t *)pParam);
-	delete ((ThreadProcInfo_t *)pParam);
-#ifdef _WIN32
-	return (*info.pfnThread)(info.pParam);
-#elif defined(POSIX)
-	return (void *)(*info.pfnThread)(info.pParam);
-#else
-#error
-#endif
+	ThreadProcInfo_t info = *((ThreadProcInfo_t*)pParam);
+	AllocateThreadID();
+	delete ((ThreadProcInfo_t*)pParam);
+	unsigned nRet = (*info.pfnThread)(info.pParam);
+	FreeThreadID();
+	return nRet;
+}
+
+class CThreadHandleToIDMap
+{
+public:
+	HANDLE	m_hThread;
+	uint	m_ThreadID;
+	CThreadHandleToIDMap* m_pNext;
+};
+static CThreadHandleToIDMap* g_pThreadHandleToIDMaps = NULL;
+static CThreadMutex g_ThreadHandleToIDMapMutex;
+static volatile int g_nThreadHandleToIDMaps = 0;
+
+static void AddThreadHandleToIDMap(HANDLE hThread, uint threadID)
+{
+	if (!hThread)
+		return;
+
+	// Remember this handle/id combo.
+	CThreadHandleToIDMap* pMap = new CThreadHandleToIDMap;
+	pMap->m_hThread = hThread;
+	pMap->m_ThreadID = threadID;
+
+	// Add it to the global list.
+	g_ThreadHandleToIDMapMutex.Lock();
+	pMap->m_pNext = g_pThreadHandleToIDMaps;
+	g_pThreadHandleToIDMaps = pMap;
+	++g_nThreadHandleToIDMaps;
+
+	g_ThreadHandleToIDMapMutex.Unlock();
+
+	if (g_nThreadHandleToIDMaps > 500)
+		Error("ThreadHandleToIDMap overflow.");
 }
 
 
+ThreadHandle_t* CreateTestThreads(ThreadFunc_t fnThread, int numThreads, int nProcessorsToDistribute)
+{
+	ThreadHandle_t* pHandles = (new ThreadHandle_t[numThreads + 1]) + 1;
+	pHandles[-1] = (ThreadHandle_t)INT_TO_POINTER(numThreads);
+	for (int i = 0; i < numThreads; ++i)
+	{
+		//TestThreads();
+		ThreadHandle_t hThread;
+		const unsigned int nDefaultStackSize = 64 * 1024; // this stack size is used in case stackSize == 0
+		hThread = CreateSimpleThread(fnThread, INT_TO_POINTER(i), nDefaultStackSize);
+
+		if (nProcessorsToDistribute)
+		{
+			int32 mask = 1 << (i % nProcessorsToDistribute);
+			ThreadSetAffinity(hThread, mask);
+		}
+
+		/*
+				ThreadProcInfoUnion_t info;
+				info.val.pfnThread = fnThread;
+				info.val.pParam = (void*)(i);
+				if ( int nError = sys_ppu_thread_create( &hThread, ThreadProcConvertUnion, info.val64, 1001, nDefaultStackSize, SYS_PPU_THREAD_CREATE_JOINABLE, "SimpleThread" ) != CELL_OK )
+				{
+					printf( "PROBLEM!\n" );
+					Error( "Cannot create thread, error %d\n", nError );
+					return 0;
+				}
+		*/
+		//ThreadHandle_t hThread = CreateSimpleThread( fnThread, (void*)i );
+		pHandles[i] = hThread;
+	}
+	//	printf("Finishinged CreateTestThreads(%p,%d)\n", (void*)fnThread,  numThreads );
+	return pHandles;
+}
+
+void JoinTestThreads(ThreadHandle_t* pHandles)
+{
+	int nCount = POINTER_TO_INT((uintp)pHandles[-1]);
+	// 	printf("Joining test threads @%p[%d]:\n", pHandles, nCount );
+	// 	for( int i = 0; i < nCount; ++i )
+	// 	{
+	// 		printf("    %p,\n", (void*)pHandles[i] );
+	// 	}
+	for (int i = 0; i < nCount; ++i)
+	{
+		//		printf( "Joining %p", (void*) pHandles[i] );
+		//		if( !i ) sys_timer_usleep(100000);
+		ThreadJoin(pHandles[i]);
+		ReleaseThreadHandle(pHandles[i]);
+	}
+	delete[](pHandles - 1);
+}
 //---------------------------------------------------------
 
 ThreadHandle_t CreateSimpleThread( ThreadFunc_t pfnThread, void *pParam, ThreadId_t *pID, unsigned stackSize )
 {
 #ifdef _WIN32
-	ThreadId_t idIgnored;
-	if ( !pID )
-		pID = &idIgnored;
-	HANDLE h = VCRHook_CreateThread(NULL, stackSize, (LPTHREAD_START_ROUTINE)ThreadProcConvert, new ThreadProcInfo_t( pfnThread, pParam ), CREATE_SUSPENDED, pID);
-	if ( h != INVALID_HANDLE_VALUE )
-	{
-		Plat_ApplyHardwareDataBreakpointsToNewThread( *pID );
-		ResumeThread( h );
-	}
-	return (ThreadHandle_t)h;
+	DWORD threadID;
+	HANDLE hThread = (HANDLE)CreateThread(NULL, stackSize, ThreadProcConvert, new ThreadProcInfo_t(pfnThread, pParam), stackSize ? STACK_SIZE_PARAM_IS_A_RESERVATION : 0, &threadID);
+	AddThreadHandleToIDMap(hThread, threadID);
+	return (ThreadHandle_t)hThread;
 #elif defined(POSIX)
 	pthread_t tid;
 
@@ -1728,8 +1839,8 @@ bool CThread::Start( unsigned nBytesStack )
 														nBytesStack,
 														(LPTHREAD_START_ROUTINE)GetThreadProc(),
 														new ThreadInit_t(init),
-														CREATE_SUSPENDED,
-														&m_threadId );
+		                                                nBytesStack ? STACK_SIZE_PARAM_IS_A_RESERVATION : 0,
+		                                                (LPDWORD)&m_threadId );
 	if ( !hThread )
 	{
 		AssertMsg1( 0, "Failed to create thread (error 0x%x)", GetLastError() );
