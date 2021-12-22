@@ -5032,41 +5032,65 @@ void CBaseFileSystem::CSearchPathsIterator::CopySearchPaths( const CUtlVector<CS
 //-----------------------------------------------------------------------------
 CSysModule *CBaseFileSystem::LoadModule( const char *pFileName, const char *pPathID, bool bValidatedDllOnly )
 {
-	CHECK_DOUBLE_SLASHES( pFileName );
+	CHECK_DOUBLE_SLASHES(pFileName);
 
-	LogFileAccess( pFileName );
-	if ( !pPathID )
+	bool bPathIsGameBin = false; bPathIsGameBin; // Touch the var for !Win64 build compiler warnings.
+
+	LogFileAccess(pFileName);
+	if (!pPathID)
 	{
 		pPathID = "EXECUTABLE_PATH"; // default to the bin dir
 	}
+	else if (IsPlatformWindowsPC64())
+	{
+		bPathIsGameBin = V_strcmp("EXECUTABLE_PATH", pPathID) == 0;
+	}
 
-	char tempPathID[ MAX_PATH ];
-	ParsePathID( pFileName, pPathID, tempPathID );
-	
-	CUtlSymbol lookup = g_PathIDTable.AddString( pPathID );
+#if defined(PLATFORM_64BITS)
+	bPathIsGameBin = V_strcmp("GAMEBIN", pPathID) == 0;
+#endif
+
+	char tempPathID[MAX_PATH];
+	ParsePathID(pFileName, pPathID, tempPathID);
+
+	CUtlSymbol lookup = g_PathIDTable.AddString(pPathID);
 
 	// a pathID has been specified, find the first match in the path list
 	int c = m_SearchPaths.Count();
-	for ( int i = 0; i < c; i++ )
+	for (int i = 0; i < c; i++)
 	{
 		// pak files don't have modules
-		if ( m_SearchPaths[i].GetPackFile() )
+		if (m_SearchPaths[i].GetPackFile())
 			continue;
 
-		if ( FilterByPathID( &m_SearchPaths[i], lookup ) )
+		if (FilterByPathID(&m_SearchPaths[i], lookup))
 			continue;
 
-		Q_snprintf( tempPathID, sizeof(tempPathID), "%s%s", m_SearchPaths[i].GetPathString(), pFileName ); // append the path to this dir.
-		CSysModule *pModule = Sys_LoadModule( tempPathID );
-		if ( pModule ) 
+		Q_snprintf(tempPathID, sizeof(tempPathID), "%s%s", m_SearchPaths[i].GetPathString(), pFileName); // append the path to this dir.
+		CSysModule* pModule = Sys_LoadModule(tempPathID);
+		if (pModule)
 		{
 			// we found the binary in one of our search paths
 			return pModule;
 		}
+#if defined(PLATFORM_64BITS)
+		else if (bPathIsGameBin)
+		{
+			const char* plat_dir = "x64";
+
+			Q_snprintf(tempPathID, sizeof(tempPathID), "%s%s%s%s", m_SearchPaths[i].GetPathString(), plat_dir, CORRECT_PATH_SEPARATOR_S, pFileName); // append the path to this dir.
+			pModule = Sys_LoadModule(tempPathID);
+			if (pModule)
+			{
+				// we found the binary in a 64-bit location.
+				return pModule;
+			}
+		}
+#endif
 	}
 
 	// couldn't load it from any of the search paths, let LoadLibrary try
-	return Sys_LoadModule( pFileName );
+	return Sys_LoadModule(pFileName);
 }
 
 //-----------------------------------------------------------------------------
