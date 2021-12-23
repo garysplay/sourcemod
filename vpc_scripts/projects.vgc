@@ -365,6 +365,11 @@ $Project "vtf"
 	"vtf/vtf.vpc"
 }
 
+$Project "vmpi"
+{
+	"utils/vmpi/vmpi.vpc"
+}
+
 $Project "engine"
 {
 	"engine/engine.vpc" 

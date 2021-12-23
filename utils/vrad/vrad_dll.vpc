@@ -14,12 +14,12 @@ $Configuration
 	$Compiler
 	{
 		$AdditionalIncludeDirectories		"$BASE,..\common,..\vmpi,..\vmpi\mysql\mysqlpp\include,..\vmpi\mysql\include"
-		$PreprocessorDefinitions			"$BASE;MPI;PROTECTED_THINGS_DISABLE;VRAD"
+		$PreprocessorDefinitions			"$BASE;MPI;PROTECTED_THINGS_DISABLE;VRAD;COMPILE_TOOLS"
 	}
 
 	$Linker
 	{
-		$AdditionalDependencies				"$BASE ws2_32.lib"
+		$AdditionalDependencies				"$BASE ws2_32.lib advapi32.lib"
 	}
 }
 
@@ -30,6 +30,7 @@ $Project "Vrad_dll"
 		$File	"$SRCDIR\public\BSPTreeData.cpp"
 		$File	"$SRCDIR\public\disp_common.cpp"
 		$File	"$SRCDIR\public\disp_powerinfo.cpp"
+		$File	"$SRCDIR\public\filesystem_init.cpp"
 		$File	"disp_vrad.cpp"
 		$File	"imagepacker.cpp"
 		$File	"incremental.cpp"

@@ -14,12 +14,12 @@ $Configuration
 	$Compiler
 	{
 		$AdditionalIncludeDirectories		"$BASE,..\common,..\vmpi,..\vmpi\mysql\include"
-		$PreprocessorDefinitions			"$BASE;MPI;PROTECTED_THINGS_DISABLE"
+		$PreprocessorDefinitions			"$BASE;MPI;PROTECTED_THINGS_DISABLE;COMPILE_TOOLS"
 	}
 
 	$Linker
 	{
-		$AdditionalDependencies				"$BASE odbc32.lib odbccp32.lib ws2_32.lib"
+		$AdditionalDependencies				"$BASE odbc32.lib odbccp32.lib ws2_32.lib advapi32.lib"
 	}
 }
 
@@ -32,6 +32,7 @@ $Project "Vvis_dll"
 		$File	"..\common\bsplib.cpp"
 		$File	"..\common\cmdlib.cpp"
 		$File	"$SRCDIR\public\collisionutils.cpp"
+		$File	"$SRCDIR\public\filesystem_init.cpp"
 		$File	"$SRCDIR\public\filesystem_helpers.cpp"
 		$File	"flow.cpp"
 		$File	"$SRCDIR\public\loadcmdline.cpp"

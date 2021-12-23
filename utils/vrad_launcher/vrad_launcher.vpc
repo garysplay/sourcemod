@@ -18,7 +18,7 @@ $Configuration
 		$PrecompiledHeaderFile				"$(IntDir)/vrad_launcher.pch"
 	}
 
-	$Linker [$WIN32]
+	$Linker [$WINDOWS]
 	{
 		$EnableLargeAddresses				"Support Addresses Larger Than 2 Gigabytes (/LARGEADDRESSAWARE)"
 	}
