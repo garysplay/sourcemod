@@ -26,7 +26,17 @@
 
 #include <string>
 
-#include "launcher.h"
+#include "materialsystem/imaterialproxyfactory.h"
+#include "materialsystem/ITexture.h"
+#include "materialsystem/MaterialSystem_Config.h"
+#include "istudiorender.h"
+#include "tier2/camerautils.h"
+
+#include "../imgui/imgui.h"
+#include "../imgui/imgui_impl_dx9.h"
+#include "../imgui/imgui_impl_win32.h"
+#include <d3d9.h>
+#include <tchar.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -54,7 +64,7 @@ CChangeGameDialog::CChangeGameDialog(vgui::Panel *parent) : Frame(parent, "Chang
 	{
 		m_pModList->SetSingleSelectedItem(m_pModList->GetItemIDFromRow(0));
 	}
-
+  
 }
 
 //-----------------------------------------------------------------------------
@@ -127,20 +137,7 @@ void CChangeGameDialog::LoadModList()
 		FindClose(hResult);
 	}
 }
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CON_COMMAND(_setgamedir, "Shutdown and restart the engine.")
-{
-	if (args.ArgC() == 2)
-	{
-		SetGameDirectory(args[1]);
-	}
-	else
-	{
-		Warning("Set the game directory, use for changing game.\n");
-	}
-}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -156,7 +153,7 @@ void CChangeGameDialog::OnCommand(const char *command)
 				
 				// HACK IMPLEMENTATION
 				// get the current command line and make it "readable"
-				const char* argv;
+				const char* argv = 0;
 				LPTSTR cmd = GetCommandLine();
 
 				int l = V_strlen(cmd);
