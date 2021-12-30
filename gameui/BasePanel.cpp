@@ -624,7 +624,7 @@ public:
 		}
 	}
 
-	MESSAGE_FUNC_INT( OnCursorEnteredMenuItem, "CursorEnteredMenuItem", VPanel);
+	MESSAGE_FUNC_PTR( OnCursorEnteredMenuItem, "CursorEnteredMenuItem", VPanel);
 
 private:
 	CFooterPanel *m_pConsoleFooter;
@@ -635,18 +635,23 @@ private:
 //-----------------------------------------------------------------------------
 // Purpose: Respond to cursor entering a menuItem.
 //-----------------------------------------------------------------------------
-void CGameMenu::OnCursorEnteredMenuItem(int VPanel)
+void CGameMenu::OnCursorEnteredMenuItem(vgui::Panel* VPanel)
 {
 	VPANEL menuItem = (VPANEL)VPanel;
-	MenuItem *item = static_cast<MenuItem *>(ipanel()->GetPanel(menuItem, GetModuleName()));
-	KeyValues *pCommand = item->GetCommand();
-	if ( !pCommand->GetFirstSubKey() )
-		return;
-	const char *pszCmd = pCommand->GetFirstSubKey()->GetString();
-	if ( !pszCmd || !pszCmd[0] )
+	MenuItem* item = static_cast<MenuItem*>(ipanel()->GetPanel(menuItem, GetModuleName()));
+
+	// [jason] Disable the cursor enter if the menu item is invisible and disabled
+	if (item && !item->IsEnabled())
 		return;
 
-	BaseClass::OnCursorEnteredMenuItem( VPanel );
+	KeyValues* pCommand = item->GetCommand();
+	if (!pCommand->GetFirstSubKey())
+		return;
+	const char* pszCmd = pCommand->GetFirstSubKey()->GetString();
+	if (!pszCmd || !pszCmd[0])
+		return;
+
+	BaseClass::OnCursorEnteredMenuItem(VPanel);
 }
 
 static CBackgroundMenuButton* CreateMenuButton( CBasePanel *parent, const char *panelName, const wchar_t *panelText )
@@ -660,7 +665,6 @@ static CBackgroundMenuButton* CreateMenuButton( CBasePanel *parent, const char *
 }
 
 bool g_bIsCreatingNewGameMenuForPreFetching = false;
-//extern IMGUI_API LRESULT ImGui_ImplDX9_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor

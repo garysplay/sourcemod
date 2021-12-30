@@ -548,37 +548,37 @@ int CSystem::GetClipboardText(int offset, wchar_t *buf, int bufLen)
 
 static bool staticSplitRegistryKey(const char *key, char *key0, int key0Len, char *key1, int key1Len)
 {
-	if(key==null)
-	{
-		return false;
-	}
-	
-	int len=strlen(key);
-	if(len<=0)
+	if (key == null)
 	{
 		return false;
 	}
 
-	int Start=-1;
-	for(int i=len-1;i>=0;i--)
+	int len = strlen(key);
+	if (len <= 0)
 	{
-		if(key[i]=='\\')
+		return false;
+	}
+
+	int Start = -1;
+	for (int i = len - 1; i >= 0; i--)
+	{
+		if (key[i] == '\\')
 		{
 			break;
 		}
 		else
 		{
-			Start=i;
+			Start = i;
 		}
 	}
 
-	if(Start==-1)
+	if (Start == -1)
 	{
 		return false;
 	}
-	
-	vgui_strcpy(key0,Start+1,key);
-	vgui_strcpy(key1,(len-Start)+1,key+Start);
+
+	vgui_strcpy(key0, Start + 1, key);
+	vgui_strcpy(key1, (len - Start) + 1, key + Start);
 
 	return true;
 }
@@ -606,18 +606,18 @@ bool CSystem::SetRegistryString(const char *key, const char *value)
 		return false;
 	}
 
-	if(VCRHook_RegCreateKeyEx(hSlot,key0,null,null,REG_OPTION_NON_VOLATILE, value ? KEY_WRITE : KEY_ALL_ACCESS,null,&hKey,null)!=ERROR_SUCCESS)
+	if (RegCreateKeyEx(hSlot, key0, null, null, REG_OPTION_NON_VOLATILE, value ? KEY_WRITE : KEY_ALL_ACCESS, null, &hKey, null) != ERROR_SUCCESS)
 	{
 		return false;
 	}
 
-	if (VCRHook_RegSetValueEx(hKey, key1, NULL, REG_SZ, (uchar*)value, strlen(value) + 1) == ERROR_SUCCESS)
+	if (RegSetValueEx(hKey, key1, NULL, REG_SZ, (uchar*)value, strlen(value) + 1) == ERROR_SUCCESS)
 	{
-		VCRHook_RegCloseKey(hKey);
+		RegCloseKey(hKey);
 		return true;
 	}
 
-	VCRHook_RegCloseKey(hKey);
+	RegCloseKey(hKey);
 #endif
 
 	return false;
@@ -650,19 +650,18 @@ bool CSystem::GetRegistryString(const char *key, char *value, int valueLen)
 		return false;
 	}
 
-	if(VCRHook_RegOpenKeyEx(hSlot,key0,null,KEY_READ,&hKey)!=ERROR_SUCCESS)
+	if (RegCreateKeyEx(hSlot, key0, null, null, REG_OPTION_NON_VOLATILE, KEY_WRITE, null, &hKey, null) != ERROR_SUCCESS)
 	{
 		return false;
 	}
 
-	ulong len=valueLen;
-	if(VCRHook_RegQueryValueEx(hKey,key1,null,null,(uchar*)value,&len)==ERROR_SUCCESS)
-	{		
-		VCRHook_RegCloseKey(hKey);
+	if (RegSetValueEx(hKey, key1, null, REG_DWORD, (uchar*)&value, 4) == ERROR_SUCCESS)
+	{
+		RegCloseKey(hKey);
 		return true;
 	}
 
-	VCRHook_RegCloseKey(hKey);
+	RegCloseKey(hKey);
 #endif
 
 	return false;
@@ -690,18 +689,18 @@ bool CSystem::SetRegistryInteger(const char *key, int value)
 		return false;
 	}
 
-	if(VCRHook_RegCreateKeyEx(hSlot,key0,null,null,REG_OPTION_NON_VOLATILE,KEY_WRITE,null,&hKey,null)!=ERROR_SUCCESS)
+	if (RegCreateKeyEx(hSlot, key0, null, null, REG_OPTION_NON_VOLATILE, KEY_WRITE, null, &hKey, null) != ERROR_SUCCESS)
 	{
 		return false;
 	}
-		
-	if(VCRHook_RegSetValueEx(hKey,key1,null,REG_DWORD,(uchar*)&value,4)==ERROR_SUCCESS)
+
+	if (RegSetValueEx(hKey, key1, null, REG_DWORD, (uchar*)&value, 4) == ERROR_SUCCESS)
 	{
-		VCRHook_RegCloseKey(hKey);
+		RegCloseKey(hKey);
 		return true;
 	}
 
-	VCRHook_RegCloseKey(hKey);
+	RegCloseKey(hKey);
 #endif
 	return false;
 }
@@ -728,19 +727,19 @@ bool CSystem::GetRegistryInteger(const char *key, int &value)
 		return false;
 	}
 
-	if(VCRHook_RegOpenKeyEx(hSlot,key0,null,KEY_READ,&hKey)!=ERROR_SUCCESS)
+	if (RegOpenKeyEx(hSlot, key0, null, KEY_READ, &hKey) != ERROR_SUCCESS)
 	{
 		return false;
 	}
 
-	ulong len=4;
-	if(VCRHook_RegQueryValueEx(hKey,key1,null,null,(uchar*)&value,&len)==ERROR_SUCCESS)
-	{		
-		VCRHook_RegCloseKey(hKey);
+	ulong len = 4;
+	if (RegQueryValueEx(hKey, key1, null, null, (uchar*)&value, &len) == ERROR_SUCCESS)
+	{
+		RegCloseKey(hKey);
 		return true;
 	}
 
-	VCRHook_RegCloseKey(hKey);
+	RegCloseKey(hKey);
 #endif
 	return false;
 }

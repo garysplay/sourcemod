@@ -431,7 +431,7 @@ qboolean VectorsEqual( const float *v1, const float *v2 );
 
 inline vec_t RoundInt (vec_t in)
 {
-	return floor(in + 0.5f);
+	return floorf(in + 0.5f);
 }
 
 int Q_log2(int val);
@@ -1286,7 +1286,7 @@ FORCEINLINE unsigned long RoundFloatToUnsignedLong(float f)
 
 FORCEINLINE bool IsIntegralValue( float flValue, float flTolerance = 0.001f )
 {
-	return fabs( RoundFloatToInt( flValue ) - flValue ) < flTolerance;
+	return fabsf( RoundFloatToInt( flValue ) - flValue ) < flTolerance;
 }
 
 // Fast, accurate ftol:
@@ -2049,7 +2049,7 @@ FORCEINLINE float * UnpackNormal_UBYTE4( const unsigned int *pPackedNormal, floa
 	y = ( y*ySign - ySignBit ) / 63.0f;
 	z = 1.0f - x - y;
 
-	float oolen	 = 1.0f / sqrt( x*x + y*y + z*z );	// Normalize and
+	float oolen	 = 1.0f / sqrtf( x*x + y*y + z*z );	// Normalize and
 	x			*= oolen * xSign;					// Recover signs
 	y			*= oolen * ySign;
 	z			*= oolen * zSign;
@@ -2077,9 +2077,9 @@ FORCEINLINE float * UnpackNormal_UBYTE4( const unsigned int *pPackedNormal, floa
 // bIsTangent is used to specify which WORD of the output to store the data
 // The expected usage is to call once with the normal and once with
 // the tangent and binormal sign flag, bitwise OR'ing the returned DWORDs
-FORCEINLINE unsigned int * PackNormal_UBYTE4( float nx, float ny, float nz, unsigned int *pPackedNormal, bool bIsTangent = false, float binormalSign = +1.0f )
+FORCEINLINE unsigned int * PackNormal_UBYTE4( double nx, float ny, float nz, unsigned int *pPackedNormal, bool bIsTangent = false, float binormalSign = +1.0f )
 {
-	float xSign = nx < 0.0f ? -1.0f : 1.0f;			// -1 or 1 sign
+	double xSign = nx < 0.0f ? -1.0f : 1.0f;			// -1 or 1 sign
 	float ySign = ny < 0.0f ? -1.0f : 1.0f;
 	float zSign = nz < 0.0f ? -1.0f : 1.0f;
 	float tSign = binormalSign;
@@ -2090,7 +2090,7 @@ FORCEINLINE unsigned int * PackNormal_UBYTE4( float nx, float ny, float nz, unsi
 	float zSignBit = 0.5f*( 1 - zSign );
 	float tSignBit = 0.5f*( 1 - binormalSign );		
 
-	float absX = xSign*nx;							// 0..1 range (abs)
+	double absX = xSign*nx;							// 0..1 range (abs)
 	float absY = ySign*ny;
 	float absZ = zSign*nz;
 
@@ -2122,10 +2122,12 @@ FORCEINLINE unsigned int * PackNormal_UBYTE4( float nx, float ny, float nz, unsi
 	return pPackedNormal;
 }
 
+
 FORCEINLINE unsigned int * PackNormal_UBYTE4( const float *pNormal, unsigned int *pPackedNormal, bool bIsTangent = false, float binormalSign = +1.0f )
 {
 	return PackNormal_UBYTE4( pNormal[0], pNormal[1], pNormal[2], pPackedNormal, bIsTangent, binormalSign );
 }
+
 
 
 //-----------------------------------------------------------------------------
@@ -2155,14 +2157,14 @@ float FastPow10( float i );			// 10^i
 
 inline bool CloseEnough( float a, float b, float epsilon = EQUAL_EPSILON )
 {
-	return fabs( a - b ) <= epsilon;
+	return fabsf( a - b ) <= epsilon;
 }
 
 inline bool CloseEnough( const Vector &a, const Vector &b, float epsilon = EQUAL_EPSILON )
 {
-	return fabs( a.x - b.x ) <= epsilon &&
-		fabs( a.y - b.y ) <= epsilon &&
-		fabs( a.z - b.z ) <= epsilon;
+	return fabsf( a.x - b.x ) <= epsilon &&
+		fabsf( a.y - b.y ) <= epsilon &&
+		fabsf( a.z - b.z ) <= epsilon;
 }
 
 // Fast compare

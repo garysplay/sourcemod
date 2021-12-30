@@ -143,10 +143,7 @@ extern "C" {
    /// \param[in] pTexture A pointer to the texture.
    /// \return    The size of the buffer required to hold the texture data.
    ATI_TC_DWORD ATI_TC_API ATI_TC_CalculateBufferSize(const ATI_TC_Texture* pTexture);
-   inline ATI_TC_DWORD ATI_TC_API ATI_TC_CalculateBufferSize(const ATI_TC_Texture* pTexture)
-   {
-       return NULL;
-   }
+
    /// Converts the source texture to the destination texture
    /// This can be compression, decompression or converting between two uncompressed formats.
    /// \param[in] pSourceTexture A pointer to the source texture.
@@ -159,12 +156,6 @@ extern "C" {
    ATI_TC_ERROR ATI_TC_API ATI_TC_ConvertTexture(const ATI_TC_Texture* pSourceTexture, ATI_TC_Texture* pDestTexture,
                                                  const ATI_TC_CompressOptions* pOptions,
                                                  ATI_TC_Feedback_Proc pFeedbackProc, DWORD_PTR pUser1, DWORD_PTR pUser2);
-   inline ATI_TC_ERROR ATI_TC_API ATI_TC_ConvertTexture(const ATI_TC_Texture* pSourceTexture, ATI_TC_Texture* pDestTexture,
-       const ATI_TC_CompressOptions* pOptions,
-       ATI_TC_Feedback_Proc pFeedbackProc, DWORD_PTR pUser1, DWORD_PTR pUser2)
-   {
-       return (ATI_TC_ERROR)NULL;
-   }
 
 #ifdef __cplusplus
 };

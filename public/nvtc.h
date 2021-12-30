@@ -61,14 +61,7 @@ void S3TCencode(DDSURFACEDESC* lpSrc,		// [in]
 	unsigned int dwEncodeType,  // [in]
 	float* weight				// [in]
 );
-inline void S3TCencode(DDSURFACEDESC* lpSrc,		// [in]
-	PALETTEENTRY* lpPal,		// [in], may be NULL
-	DDSURFACEDESC* lpDest,		// [out]
-	void* lpDestBuf,			// [in]
-	unsigned int dwEncodeType,  // [in]
-	float* weight)			// [in]
-{
-}
+
 int S3TCencodeEx(DDSURFACEDESC* lpSrc,		// [in]
 	PALETTEENTRY* lpPal,		// [in], may be NULL
 	DDSURFACEDESC* lpDest,		// [out]
