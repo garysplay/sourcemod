@@ -29,22 +29,22 @@ class CFSIOReadBinary : public IFileReadBinary
 {
 public:
 	// inherited from IFileReadBinary
-	virtual int open( const char *pFileName );
-	virtual int read( void *pOutput, int size, int file );
-	virtual void seek( int file, int pos );
-	virtual unsigned int tell( int file );
-	virtual unsigned int size( int file );
-	virtual void close( int file );
+	virtual FileHandle_t open( const char *pFileName );
+	virtual int read( void *pOutput, int size, FileHandle_t file );
+	virtual void seek(FileHandle_t file, int pos );
+	virtual unsigned int tell(FileHandle_t file );
+	virtual unsigned int size(FileHandle_t file );
+	virtual void close(FileHandle_t file );
 };
 
 class CFSIOWriteBinary : public IFileWriteBinary
 {
 public:
-	virtual int create( const char *pFileName );
-	virtual int write( void *pData, int size, int file );
-	virtual void close( int file );
-	virtual void seek( int file, int pos );
-	virtual unsigned int tell( int file );
+	virtual FileHandle_t create( const char *pFileName );
+	virtual int write( void *pData, int size, FileHandle_t file );
+	virtual void close(FileHandle_t file );
+	virtual void seek(FileHandle_t file, int pos );
+	virtual unsigned int tell(FileHandle_t file );
 };
 
 
@@ -61,79 +61,79 @@ IFileWriteBinary *g_pFSIOWriteBinary = &s_FSIoOut;
 //-----------------------------------------------------------------------------
 // RIFF reader that use the file system
 //-----------------------------------------------------------------------------
-int CFSIOReadBinary::open( const char *pFileName )
+FileHandle_t CFSIOReadBinary::open( const char *pFileName )
 {
-	return (int)g_pFullFileSystem->Open( pFileName, "rb" );
+	return g_pFullFileSystem->Open( pFileName, "rb" );
 }
 
-int CFSIOReadBinary::read( void *pOutput, int size, int file )
+int CFSIOReadBinary::read( void *pOutput, int size, FileHandle_t file )
 {
 	if ( !file )
 		return 0;
 
-	return g_pFullFileSystem->Read( pOutput, size, (FileHandle_t)file );
+	return g_pFullFileSystem->Read( pOutput, size, file );
 }
 
-void CFSIOReadBinary::seek( int file, int pos )
+void CFSIOReadBinary::seek(FileHandle_t file, int pos )
 {
 	if ( !file )
 		return;
 
-	g_pFullFileSystem->Seek( (FileHandle_t)file, pos, FILESYSTEM_SEEK_HEAD );
+	g_pFullFileSystem->Seek( file, pos, FILESYSTEM_SEEK_HEAD );
 }
 
-unsigned int CFSIOReadBinary::tell( int file )
+unsigned int CFSIOReadBinary::tell(FileHandle_t file )
 {
 	if ( !file )
 		return 0;
 
-	return g_pFullFileSystem->Tell( (FileHandle_t)file );
+	return g_pFullFileSystem->Tell( file );
 }
 
-unsigned int CFSIOReadBinary::size( int file )
+unsigned int CFSIOReadBinary::size(FileHandle_t file )
 {
 	if ( !file )
 		return 0;
 
-	return g_pFullFileSystem->Size( (FileHandle_t)file );
+	return g_pFullFileSystem->Size( file );
 }
 
-void CFSIOReadBinary::close( int file )
+void CFSIOReadBinary::close(FileHandle_t file )
 {
 	if ( !file )
 		return;
 
-	g_pFullFileSystem->Close( (FileHandle_t)file );
+	g_pFullFileSystem->Close( file );
 }
 
 
 //-----------------------------------------------------------------------------
 // RIFF writer that use the file system
 //-----------------------------------------------------------------------------
-int CFSIOWriteBinary::create( const char *pFileName )
+FileHandle_t CFSIOWriteBinary::create( const char *pFileName )
 {
 	g_pFullFileSystem->SetFileWritable( pFileName, true );
-	return (int)g_pFullFileSystem->Open( pFileName, "wb" );
+	return g_pFullFileSystem->Open( pFileName, "wb" );
 }
 
-int CFSIOWriteBinary::write( void *pData, int size, int file )
+int CFSIOWriteBinary::write( void *pData, int size, FileHandle_t file )
 {
 	return g_pFullFileSystem->Write( pData, size, (FileHandle_t)file );
 }
 
-void CFSIOWriteBinary::close( int file )
+void CFSIOWriteBinary::close(FileHandle_t file )
 {
-	g_pFullFileSystem->Close( (FileHandle_t)file );
+	g_pFullFileSystem->Close( file );
 }
 
-void CFSIOWriteBinary::seek( int file, int pos )
+void CFSIOWriteBinary::seek(FileHandle_t file, int pos )
 {
-	g_pFullFileSystem->Seek( (FileHandle_t)file, pos, FILESYSTEM_SEEK_HEAD );
+	g_pFullFileSystem->Seek( file, pos, FILESYSTEM_SEEK_HEAD );
 }
 
-unsigned int CFSIOWriteBinary::tell( int file )
+unsigned int CFSIOWriteBinary::tell(FileHandle_t file )
 {
-	return g_pFullFileSystem->Tell( (FileHandle_t)file );
+	return g_pFullFileSystem->Tell( file );
 }
 
 

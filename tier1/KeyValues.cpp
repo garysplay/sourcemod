@@ -231,12 +231,8 @@ class CKeyValuesGrowableStringTable
 public: 
 	// Constructor
 	CKeyValuesGrowableStringTable() :
-		#ifdef PLATFORM_64BITS
-			m_vecStrings( 0, 4 * 512 * 1024 )
-		#else
-			m_vecStrings( 0, 512 * 1024 )
-		#endif
-		, m_hashLookup( 2048, 0, 0, m_Functor, m_Functor )
+		m_vecStrings( 0, 512 * 1024 ), 
+		m_hashLookup( 2048, 0, 0, m_Functor, m_Functor )
 	{
 		m_vecStrings.AddToTail( '\0' );
 	}
@@ -645,92 +641,34 @@ void KeyValues::UsesConditionals(bool state)
 //-----------------------------------------------------------------------------
 bool KeyValues::LoadFromFile( IBaseFileSystem *filesystem, const char *resourceName, const char *pathID, bool refreshCache )
 {
-	Assert(filesystem);
-#ifdef WIN32
-	Assert( IsX360() || ( IsPC() && _heapchk() == _HEAPOK ) );
-#endif
-
-#ifdef STAGING_ONLY
-	static bool s_bCacheEnabled = !!CommandLine()->FindParm( "-enable_keyvalues_cache" );
-	const bool bUseCache = s_bCacheEnabled && ( s_pfGetSymbolForString == KeyValues::GetSymbolForStringClassic );
-#else
-	/*
-	People are cheating with the keyvalue cache enabled by doing the below, so disable it.
-
-	For example if one is to allow a blue demoman texture on sv_pure they
-	change it to this, "$basetexture" "temp/demoman_blue". Remember to move the
-	demoman texture to the temp folder in the materials folder. It will likely
-	not be there so make a new folder for it. Once the directory in the
-	demoman_blue vmt is changed to the temp folder and the vtf texture is in
-	the temp folder itself you are finally done.
-
-	I packed my mods into a vpk but I don't think it's required. Once in game
-	you must create a server via the create server button and select the map
-	that will load the custom texture before you join a valve server. I suggest
-	you only do this with player textures and such as they are always loaded.
-	After you load the map you join the valve server and the textures should
-	appear and work on valve servers.
-
-	This can be done on any sv_pure 1 server but it depends on what is type of
-	files are allowed. All valve servers allow temp files so that is the
-	example I used here."
-
-	So all vmt's files can bypass sv_pure 1. And I believe this mod is mostly
-	made of vmt files, so valve's sv_pure 1 bull is pretty redundant.
-	*/
-	const bool bUseCache = false;
-#endif
-
-	// If pathID is null, we cannot cache the result because that has a weird iterate-through-a-bunch-of-locations behavior.
-	const bool bUseCacheForRead = bUseCache && !refreshCache && pathID != NULL; 
-	const bool bUseCacheForWrite = bUseCache && pathID != NULL;
-
-	COM_TimestampedLog( "KeyValues::LoadFromFile(%s%s%s): Begin", pathID ? pathID : "", pathID && resourceName ? "/" : "", resourceName ? resourceName : "" );
-
-	// Keep a cache of keyvalues, try to load it here.
-	if ( bUseCacheForRead && KeyValuesSystem()->LoadFileKeyValuesFromCache( this, resourceName, pathID, filesystem ) ) {
-		COM_TimestampedLog( "KeyValues::LoadFromFile(%s%s%s): End / CacheHit", pathID ? pathID : "", pathID && resourceName ? "/" : "", resourceName ? resourceName : "" );
-		return true;
-	}
+	//TM_ZONE_FILTERED( TELEMETRY_LEVEL0, 50, TMZF_NONE, "%s %s", __FUNCTION__, tmDynamicString( TELEMETRY_LEVEL0, resourceName ) );
 
 	FileHandle_t f = filesystem->Open(resourceName, "rb", pathID);
-	if ( !f )
-	{
-		COM_TimestampedLog("KeyValues::LoadFromFile(%s%s%s): End / FileNotFound", pathID ? pathID : "", pathID && resourceName ? "/" : "", resourceName ? resourceName : "");
+	if (!f)
 		return false;
-	}
 
 	s_LastFileLoadingFrom = (char*)resourceName;
 
 	// load file into a null-terminated buffer
-	int fileSize = filesystem->Size( f );
-	unsigned bufSize = ((IFileSystem *)filesystem)->GetOptimalReadSize( f, fileSize + 2 );
+	int fileSize = filesystem->Size(f);
+	unsigned bufSize = ((IFileSystem*)filesystem)->GetOptimalReadSize(f, fileSize + 2);
 
-	char *buffer = (char*)((IFileSystem *)filesystem)->AllocOptimalReadBuffer( f, bufSize );
-	Assert( buffer );
-	
+	char* buffer = (char*)((IFileSystem*)filesystem)->AllocOptimalReadBuffer(f, bufSize);
+	Assert(buffer);
+
 	// read into local buffer
-	bool bRetOK = ( ((IFileSystem *)filesystem)->ReadEx( buffer, bufSize, fileSize, f ) != 0 );
+	bool bRetOK = (((IFileSystem*)filesystem)->ReadEx(buffer, bufSize, fileSize, f) != 0);
 
-	filesystem->Close( f );	// close file after reading
+	filesystem->Close(f);	// close file after reading
 
-	if ( bRetOK )
+	if (bRetOK)
 	{
 		buffer[fileSize] = 0; // null terminate file as EOF
-		buffer[fileSize+1] = 0; // double NULL terminating in case this is a unicode file
-		bRetOK = LoadFromBuffer( resourceName, buffer, filesystem );
-	}
-	
-	// The cache relies on the KeyValuesSystem string table, which will only be valid if we're
-	// using classic mode. 
-	if ( bUseCacheForWrite && bRetOK )
-	{
-		KeyValuesSystem()->AddFileKeyValuesToCache( this, resourceName, pathID );
+		buffer[fileSize + 1] = 0; // double NULL terminating in case this is a unicode file
+		bRetOK = LoadFromBuffer(resourceName, buffer, filesystem, pathID);
 	}
 
-	( (IFileSystem *)filesystem )->FreeOptimalReadBuffer( buffer );
-
-	COM_TimestampedLog("KeyValues::LoadFromFile(%s%s%s): End / Success", pathID ? pathID : "", pathID && resourceName ? "/" : "", resourceName ? resourceName : "");
+	((IFileSystem*)filesystem)->FreeOptimalReadBuffer(buffer);
 
 	return bRetOK;
 }
@@ -1322,10 +1260,10 @@ int KeyValues::GetInt( const char *keyName, int defaultValue )
 //-----------------------------------------------------------------------------
 uint64 KeyValues::GetUint64( const char *keyName, uint64 defaultValue )
 {
-	KeyValues *dat = FindKey( keyName, false );
-	if ( dat )
+	KeyValues* dat = FindKey(keyName, false);
+	if (dat)
 	{
-		switch ( dat->m_iDataType )
+		switch (dat->m_iDataType)
 		{
 		case TYPE_STRING:
 			return (uint64)Q_atoi64(dat->m_sValue);
@@ -1334,7 +1272,7 @@ uint64 KeyValues::GetUint64( const char *keyName, uint64 defaultValue )
 		case TYPE_FLOAT:
 			return (int)dat->m_flValue;
 		case TYPE_UINT64:
-			return *((uint64 *)dat->m_sValue);
+			return *((uint64*)dat->m_sValue);
 		case TYPE_INT:
 		case TYPE_PTR:
 		default:
@@ -2651,9 +2589,20 @@ bool KeyValues::WriteAsBinary( CUtlBuffer &buffer )
 				break;
 			}
 		case TYPE_PTR:
-			{
-				buffer.PutUnsignedInt( (int)dat->m_pValue );
-			}
+		{
+#if defined( PLATFORM_64BITS )
+			// We only put an int here, because 32-bit clients do not expect 64 bits. It'll cause them to read the wrong
+			// amount of data and then crash. Longer term, we may bump this up in size on all platforms, but short term 
+			// we don't really have much of a choice other than sticking in something that appears to not be NULL.
+			if (dat->m_pValue != 0 && (((int)(intp)dat->m_pValue) == 0))
+				buffer.PutInt(31337); // Put not 0, but not a valid number. Yuck.
+			else
+				buffer.PutInt(((int)(intp)dat->m_pValue));
+#else
+			buffer.PutPtr(dat->m_pValue);
+#endif
+			break;
+		}
 
 		default:
 			break;
@@ -2755,9 +2704,18 @@ bool KeyValues::ReadAsBinary( CUtlBuffer &buffer, int nStackDepth )
 				break;
 			}
 		case TYPE_PTR:
-			{
-				dat->m_pValue = (void*)buffer.GetUnsignedInt();
-			}
+		    {
+#if defined( PLATFORM_64BITS )
+			// We need to ensure we only read 32 bits out of the stream because 32 bit clients only wrote 
+			// 32 bits of data there. The actual pointer is irrelevant, all that we really care about here
+			// contractually is whether the pointer is zero or not zero.
+			dat->m_pValue = (void*)(intp)buffer.GetInt();
+#else
+			dat->m_pValue = buffer.GetPtr();
+#endif
+			break;
+	    	}
+
 
 		default:
 			break;

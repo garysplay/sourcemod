@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "tier0/dbg.h"
+#include "filesystem.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -127,7 +128,7 @@ InFileRIFF::~InFileRIFF( void )
 int InFileRIFF::ReadInt( void )
 {
 	int tmp = 0;
-	m_io.read( &tmp, sizeof(int), m_file );
+	m_io.read( &tmp, sizeof(intp), m_file );
 	tmp = LittleLong( tmp );
 
 	return tmp;
