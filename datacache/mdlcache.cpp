@@ -235,7 +235,7 @@ struct AsyncInfo_t
 	int					iAnimBlock;
 };
 
-const int NO_ASYNC = CUtlLinkedList< AsyncInfo_t >::InvalidIndex();
+const intp NO_ASYNC = CUtlFixedLinkedList< AsyncInfo_t >::InvalidIndex();
 
 //-------------------------------------
 
@@ -1025,7 +1025,7 @@ void CMDLCache::UnserializeVCollide( MDLHandle_t handle, bool synchronousLoad )
 			{
 				for ( int i = 1; i < pVirtualModel->m_group.Count(); i++ )
 				{
-					MDLHandle_t sharedHandle = (MDLHandle_t) (int)pVirtualModel->m_group[i].cache & 0xffff;
+					MDLHandle_t sharedHandle = VoidPtrToMDLHandle(pVirtualModel->m_group[i].cache);
 					studiodata_t *pData = m_MDLDict[sharedHandle];
 					if ( !(pData->m_nFlags & STUDIODATA_FLAGS_VCOLLISION_LOADED) )
 					{
@@ -1398,12 +1398,12 @@ void CMDLCache::FreeVirtualModel( MDLHandle_t handle )
 	if ( pStudioData && pStudioData->m_pVirtualModel )
 	{
 		int nGroupCount = pStudioData->m_pVirtualModel->m_group.Count();
-		Assert( (nGroupCount >= 1) && pStudioData->m_pVirtualModel->m_group[0].cache == (void*)(uintp)handle );
+		Assert( (nGroupCount >= 1) && pStudioData->m_pVirtualModel->m_group[0].cache == MDLHandleToVirtual(handle) );
 
 		// NOTE: Start at *1* here because the 0th element contains a reference to *this* handle
 		for ( int i = 1; i < nGroupCount; ++i )
 		{
-			MDLHandle_t h = (MDLHandle_t)(int)pStudioData->m_pVirtualModel->m_group[i].cache&0xffff;
+			MDLHandle_t h = VoidPtrToMDLHandle( pStudioData->m_pVirtualModel->m_group[i].cache );
 			FreeVirtualModel( h );
 			Release( h );
 		}
@@ -1450,10 +1450,12 @@ virtualmodel_t *CMDLCache::GetVirtualModelFast( const studiohdr_t *pStudioHdr, M
 
 		AllocateVirtualModel( handle );
 
+		pStudioHdr->SetVirtualModel(MDLHandleToVirtual(handle));
+		
 		// Group has to be zero to ensure refcounting is correct
 		int nGroup = pStudioData->m_pVirtualModel->m_group.AddToTail( );
 		Assert( nGroup == 0 );
-		pStudioData->m_pVirtualModel->m_group[nGroup].cache = (void *)(uintp)handle;
+		pStudioData->m_pVirtualModel->m_group[nGroup].cache = MDLHandleToVirtual(handle);
 
 		// Add all dependent data
 		pStudioData->m_pVirtualModel->AppendModels( 0, pStudioHdr );
@@ -1976,13 +1978,26 @@ studiohdr_t *CMDLCache::UnserializeMDL( MDLHandle_t handle, void *pData, int nDa
 
 	// allocate cache space
 	MemAlloc_PushAllocDbgInfo( "Models:StudioHdr", 0);
-	studiohdr_t *pHdr = (studiohdr_t *)AllocData( MDLCACHE_STUDIOHDR, pStudioHdrIn->length );
+    studiohdr_t *pHdr = (studiohdr_t *)AllocData( MDLCACHE_STUDIOHDR, pStudioHdrIn->length + sizeof(studiohdr_shim64_index) );
 	MemAlloc_PopAllocDbgInfo();
 	if ( !pHdr )
 		return NULL;
 
+#ifdef PLATFORM_64BITS
+    studiohdr_shim64_index *pHdrIndex = (studiohdr_shim64_index *)(((byte *)pHdr)+ pStudioHdrIn->length);
+    pHdrIndex->virtualModel = nullptr;
+    pHdrIndex->animblockModel = nullptr;
+    pHdrIndex->pVertexBase = nullptr;
+    pHdrIndex->pIndexBase = nullptr;
+    pStudioHdrIn->unused_virtualModel = (byte *)&pHdrIndex->virtualModel - (byte *)pHdr;
+    pStudioHdrIn->unused_animblockModel = (byte *)&pHdrIndex->animblockModel - (byte *)pHdr;
+    pStudioHdrIn->unused_pVertexBase = (byte *)&pHdrIndex->pVertexBase - (byte *)pHdr;
+    pStudioHdrIn->unused_pIndexBase = (byte *)&pHdrIndex->pIndexBase - (byte *)pHdr;
+    pStudioHdrIn->SetVirtualModel( MDLHandleToVirtual( handle ) );
+    CacheData( &m_MDLDict[handle]->m_MDLCache, pHdr, pStudioHdrIn->length + sizeof(studiohdr_shim64_index), GetModelName( handle ), MDLCACHE_STUDIOHDR, MakeCacheID( handle, MDLCACHE_STUDIOHDR) );
+#else
 	CacheData( &m_MDLDict[handle]->m_MDLCache, pHdr, pStudioHdrIn->length, GetModelName( handle ), MDLCACHE_STUDIOHDR, MakeCacheID( handle, MDLCACHE_STUDIOHDR) );
-
+#endif
 	if ( mod_lock_mdls_on_load.GetBool() )
 	{
 		GetCacheSection( MDLCACHE_STUDIOHDR )->Lock( m_MDLDict[handle]->m_MDLCache );
@@ -2073,8 +2088,28 @@ bool CMDLCache::ReadMDLFile( MDLHandle_t handle, const char *pMDLFileName, CUtlB
 
 	// critical! store a back link to our data
 	// this is fetched when re-establishing dependent cached data (vtx/vvd)
-	pStudioHdr->SetVirtualModel(MDLHandleToVirtual(handle));
+#if PLATFORM_64BITS
+    int length = buf.Size();
+    {
+        studiohdr_shim64_index shim;
+        buf.Put( &shim, sizeof(shim) );
+    }
+    studiohdr_shim64_index *pHdrIndex = (studiohdr_shim64_index *)(((byte *)buf.PeekGet())+ length);
+    pStudioHdr = (studiohdr_t*)buf.PeekGet();
 
+    pHdrIndex->virtualModel = nullptr;
+    pHdrIndex->animblockModel = nullptr;
+    pHdrIndex->pVertexBase = nullptr;
+    pHdrIndex->pIndexBase = nullptr;
+    pStudioHdr->unused_virtualModel = (byte *)&pHdrIndex->virtualModel - (byte *)pStudioHdr;
+    pStudioHdr->unused_animblockModel = (byte *)&pHdrIndex->animblockModel - (byte *)pStudioHdr;
+    pStudioHdr->unused_pVertexBase = (byte *)&pHdrIndex->pVertexBase - (byte *)pStudioHdr;
+    pStudioHdr->unused_pIndexBase = (byte *)&pHdrIndex->pIndexBase - (byte *)pStudioHdr;
+    pStudioHdr->SetVirtualModel( MDLHandleToVirtual( handle ) );
+#else
+    pStudioHdr->SetVirtualModel( MDLHandleToVirtual( handle ) );
+#endif
+	
 	// Make sure all dependent files are valid
 	if ( !VerifyHeaders( pStudioHdr ) )
 	{
@@ -2236,7 +2271,7 @@ void CMDLCache::TouchAllData( MDLHandle_t handle )
 		// ensure all sub models are cached
 		for ( int i=1; i<pVModel->m_group.Count(); ++i )
 		{
-			MDLHandle_t childHandle = (MDLHandle_t)(int)pVModel->m_group[i].cache&0xffff;
+			MDLHandle_t childHandle = VoidPtrToMDLHandle( pVModel->m_group[i].cache );
 			if ( childHandle != MDLHANDLE_INVALID )
 			{
 				// FIXME: Should this be calling TouchAllData on the child?
@@ -2301,7 +2336,7 @@ bool CMDLCache::HandleCacheNotification( const DataCacheNotification_t &notifica
 		{
 			MdlCacheMsg( "MDLCache: Data cache discard %s %s\n", g_ppszTypes[TypeFromCacheID( notification.clientId )], GetModelName( HandleFromCacheID( notification.clientId ) ) );
 
-			if ( (DataCacheClientID_t)notification.pItemData == notification.clientId ||
+			if ( (DataCacheClientID_t)(intp)notification.pItemData == notification.clientId ||
 				 TypeFromCacheID(notification.clientId) != MDLCACHE_STUDIOHWDATA )
 			{
 				Assert( notification.pItemData );
@@ -2320,7 +2355,7 @@ bool CMDLCache::HandleCacheNotification( const DataCacheNotification_t &notifica
 
 bool CMDLCache::GetItemName( DataCacheClientID_t clientId, const void *pItem, char *pDest, unsigned nMaxLen  )
 {
-	if ( (DataCacheClientID_t)pItem == clientId )
+	if ( (DataCacheClientID_t)(uintp)pItem == clientId )
 	{
 		return false;
 	}
@@ -2426,7 +2461,7 @@ void CMDLCache::FinishPendingLoads()
 	AUTO_LOCK( m_AsyncMutex );
 
 	// finish just our known jobs
-	int iAsync = m_PendingAsyncs.Head();
+	intp iAsync = m_PendingAsyncs.Head();
 	while ( iAsync != m_PendingAsyncs.InvalidIndex() )
 	{
 		AsyncInfo_t &info = m_PendingAsyncs[iAsync];
@@ -3123,10 +3158,10 @@ void CMDLCache::ProcessPendingAsyncs( MDLCacheDataType_t type )
 	// things -- the LRU is in correct order, and it catches precached items lurking
 	// in the async queue that have only been requested once (thus aren't being cached
 	// and might lurk forever, e.g., wood gibs in the citadel)
-	int current = m_PendingAsyncs.Head();
+	intp current = m_PendingAsyncs.Head();
 	while ( current != m_PendingAsyncs.InvalidIndex() )
 	{
-		int next = m_PendingAsyncs.Next( current );
+		intp next = m_PendingAsyncs.Next( current );
 
 		if ( type == MDLCACHE_NONE || m_PendingAsyncs[current].type == type )
 		{
@@ -3421,7 +3456,7 @@ void CMDLCache::CacheData( DataCacheHandle_t *c, void *pData, int size, const ch
 	}
 
 	if ( id == (DataCacheClientID_t)-1 )
-		id = (DataCacheClientID_t)pData;
+		id = (DataCacheClientID_t)(intp)pData;
 
 	GetCacheSection( type )->Add(id, pData, size, c );
 }
@@ -3585,7 +3620,7 @@ void CMDLCache::QueuedLoaderCallback_MDL( void *pContext, void *pContext2, const
 
 	// journal each incoming buffer
 	ModelParts_t *pModelParts = (ModelParts_t *)pContext;
-	ModelParts_t::BufferType_t bufferType = static_cast< ModelParts_t::BufferType_t >((int)pContext2);
+	ModelParts_t::BufferType_t bufferType = static_cast< ModelParts_t::BufferType_t >((intp)pContext2);
 	pModelParts->Buffers[bufferType].SetExternalBuffer( (void *)pData, nSize, nSize, CUtlBuffer::READ_ONLY );
 	pModelParts->nLoadedParts += (1 << bufferType);
 
@@ -3896,7 +3931,7 @@ void CMDLCache::MarkFrame()
 const studiohdr_t *studiohdr_t::FindModel( void **cache, char const *pModelName ) const
 {
 	MDLHandle_t handle = g_MDLCache.FindMDL( pModelName );
-	*cache = (void*)(uintp)handle;
+	*cache = MDLHandleToVirtual(handle);
 	return g_MDLCache.GetStudioHdr( handle );
 }
 
