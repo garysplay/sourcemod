@@ -40,24 +40,24 @@ mstudioanimdesc_t &studiohdr_t::pAnimdesc( int i ) const
 // Purpose:
 //-----------------------------------------------------------------------------
 
-mstudioanim_t *mstudioanimdesc_t::pAnimBlock( int block, int index ) const
+byte *mstudioanimdesc_t::pAnimBlock( int block, int index ) const
 {
 	if (block == -1)
 	{
-		return (mstudioanim_t *)NULL;
+		return (byte*)NULL;
 	}
 	if (block == 0)
 	{
-		return (mstudioanim_t *)(((byte *)this) + index);
+		return (((byte *)this) + index);
 	}
 
 	byte *pAnimBlock = pStudiohdr()->GetAnimBlock( block );
 	if ( pAnimBlock )
 	{
-		return (mstudioanim_t *)(pAnimBlock + index);
+		return (byte*)(pAnimBlock + index);
 	}
 
-	return (mstudioanim_t *)NULL;
+	return (byte*)NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -65,15 +65,15 @@ mstudioanim_t *mstudioanimdesc_t::pAnimBlock( int block, int index ) const
 //-----------------------------------------------------------------------------
 
 static ConVar mod_load_showstall( "mod_load_showstall", "0", 0, "1 - show hitches , 2 - show stalls" );
-mstudioanim_t *mstudioanimdesc_t::pAnim( int *piFrame ) const
+byte *mstudioanimdesc_t::pAnim( int *piFrame ) const
 {
-	float flStall;
+	float flStall = 0;
 	return pAnim( piFrame, flStall );
 }
 
-mstudioanim_t *mstudioanimdesc_t::pAnim( int *piFrame, float &flStall ) const
+byte *mstudioanimdesc_t::pAnim( int *piFrame, float &flStall ) const
 {
-	mstudioanim_t *panim = NULL;
+	byte *panim = NULL;
 
 	int block = animblock;
 	int index = animindex;
@@ -516,7 +516,7 @@ void studiohdr_t::SetAttachmentBone( int iAttachment, int iBone )
 // Purpose:
 //-----------------------------------------------------------------------------
 
-char *studiohdr_t::pszNodeName( int iNode )
+const char *studiohdr_t::pszNodeName( int iNode )
 {
 	if (numincludemodels == 0)
 	{
@@ -1036,10 +1036,8 @@ int CStudioHdr::GetSharedPoseParameter( int iSequence, int iLocalPose ) const
 
 	Assert( m_pVModel );
 
-	int group = m_pVModel->m_seq[iSequence].group;
-	virtualgroup_t *pGroup = m_pVModel->m_group.IsValidIndex( group ) ? &m_pVModel->m_group[ group ] : NULL;
-
-	return pGroup ? pGroup->masterPose[iLocalPose] : iLocalPose;
+	virtualgroup_t* pGroup = &m_pVModel->m_group[m_pVModel->m_seq[iSequence].group];
+	return pGroup->masterPose[iLocalPose];
 }
 
 
@@ -1163,7 +1161,7 @@ void CStudioHdr::SetAttachmentBone( int iAttachment, int iBone )
 // Purpose:
 //-----------------------------------------------------------------------------
 
-char *CStudioHdr::pszNodeName( int iNode )
+const char *CStudioHdr::pszNodeName( int iNode )
 {
 	if (m_pVModel == NULL)
 	{
@@ -1617,13 +1615,15 @@ void CStudioHdr::RunFlexRules( const float *src, float *dest )
 CUtlSymbolTable g_ActivityModifiersTable;
 
 extern void SetActivityForSequence( CStudioHdr *pstudiohdr, int i );
-void CStudioHdr::CActivityToSequenceMapping::Initialize( CStudioHdr * __restrict pstudiohdr )
+void CStudioHdr::CActivityToSequenceMapping::Initialize( const CStudioHdr * __restrict pstudiohdr )
 {
 	// Algorithm: walk through every sequence in the model, determine to which activity
 	// it corresponds, and keep a count of sequences per activity. Once the total count
 	// is available, allocate an array large enough to contain them all, update the 
 	// starting indices for every activity's section in the array, and go back through,
 	// populating the array with its data.
+
+	m_pStudioHdr = pstudiohdr->m_pStudioHdr;
 
 	AssertMsg1( m_pSequenceTuples == NULL, "Tried to double-initialize sequence mapping for %s", pstudiohdr->pszName() );
 	if ( m_pSequenceTuples != NULL )
@@ -1646,12 +1646,12 @@ void CStudioHdr::CActivityToSequenceMapping::Initialize( CStudioHdr * __restrict
 	const int NumSeq = pstudiohdr->GetNumSeq();
 	for ( int i = 0 ; i < NumSeq ; ++i )
 	{
-		const mstudioseqdesc_t &seqdesc = pstudiohdr->pSeqdesc( i );
+		const mstudioseqdesc_t & seqdesc = ((CStudioHdr*)pstudiohdr)->pSeqdesc(i); 
 #if defined(SERVER_DLL) || defined(CLIENT_DLL) || defined(GAME_DLL)
 		if (!(seqdesc.flags & STUDIO_ACTIVITY))
 		{
 			// AssertMsg2( false, "Sequence %d on studiohdr %s didn't have its activity initialized!", i, pstudiohdr->pszName() );
-			SetActivityForSequence( pstudiohdr, i );
+			SetActivityForSequence((CStudioHdr*)pstudiohdr, i);
 		}
 #endif
 
@@ -1688,7 +1688,7 @@ void CStudioHdr::CActivityToSequenceMapping::Initialize( CStudioHdr * __restrict
 
 	// Now, create starting indices for each activity. For an activity n, 
 	// the starting index is of course the sum of counts [0..n-1]. 
-	int sequenceCount = 0;
+	register int sequenceCount = 0;
 	int topActivity = 0; // this will store the highest seen activity number (used later to make an ad hoc map on the stack)
 	for ( UtlHashHandle_t handle = m_ActToSeqHash.GetFirstHandle() ; 
 		  m_ActToSeqHash.IsValidHandle(handle) ;
@@ -1725,7 +1725,7 @@ void CStudioHdr::CActivityToSequenceMapping::Initialize( CStudioHdr * __restrict
 	// our little table.
 	for ( int i = 0 ; i < NumSeq ; ++i )
 	{
-		const mstudioseqdesc_t &seqdesc = pstudiohdr->pSeqdesc( i );
+		const mstudioseqdesc_t& seqdesc = ((CStudioHdr*)pstudiohdr)->pSeqdesc(i);
 		if (seqdesc.activity >= 0)
 		{
 			const HashValueType &element = m_ActToSeqHash[m_ActToSeqHash.Find(HashValueType(seqdesc.activity, 0, 0, 0))];

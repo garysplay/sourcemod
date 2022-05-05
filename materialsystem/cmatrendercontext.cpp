@@ -761,6 +761,7 @@ bool CMatRenderContextBase::EnableClipping( bool bEnable )
 	return bEnable;
 }
 
+
 void CMatRenderContextBase::Viewport( int x, int y, int width, int height )
 {
 	// Verify valid top of RT stack
@@ -2200,7 +2201,7 @@ int CMatRenderContext::CompareMaterialCombos( IMaterial *pMaterial1, IMaterial *
 	if ( dLightmap )
 		return dLightmap;
 
-	return (int)pMat1 - (int)pMat2;
+	return (intp)pMat1 - (intp)pMat2;
 }
 
 

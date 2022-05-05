@@ -92,7 +92,7 @@ bool CCommandBuffer::ParseArgV0( CUtlBuffer &buf, char *pArgV0, int nMaxLen, con
 //-----------------------------------------------------------------------------
 // Insert a command into the command queue
 //-----------------------------------------------------------------------------
-void CCommandBuffer::InsertCommandAtAppropriateTime( intp hCommand )
+void CCommandBuffer::InsertCommandAtAppropriateTime( CommandHandle_t hCommand )
 {
 	intp i;
 	Command_t &command = m_Commands[hCommand];
@@ -108,7 +108,7 @@ void CCommandBuffer::InsertCommandAtAppropriateTime( intp hCommand )
 //-----------------------------------------------------------------------------
 // Insert a command into the command queue at the appropriate time
 //-----------------------------------------------------------------------------
-void CCommandBuffer::InsertImmediateCommand( intp hCommand )
+void CCommandBuffer::InsertImmediateCommand( CommandHandle_t hCommand )
 {
 	m_Commands.LinkBefore( m_hNextCommand, hCommand );
 }
@@ -264,7 +264,7 @@ void CCommandBuffer::DelayAllQueuedCommands( int nDelay )
 	if ( nDelay <= 0 )
 		return;
 
-	for ( int i = m_Commands.Head(); i != m_Commands.InvalidIndex(); i = m_Commands.Next(i) )
+	for ( intp i = m_Commands.Head(); i != m_Commands.InvalidIndex(); i = m_Commands.Next(i) )
 	{
 		m_Commands[i].m_nTick += nDelay;			
 	}

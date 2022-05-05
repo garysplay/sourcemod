@@ -854,7 +854,7 @@ void CRagdollProp::SetupBones( matrix3x4_t *pBoneToWorld, int boneMask )
 		}
 	}
 
-	mstudiobone_t *pbones = pStudioHdr->pBone( 0 );
+	const mstudiobone_t *pbones = pStudioHdr->pBone( 0 );
 	for ( i = 0; i < pStudioHdr->numbones(); i++ )
 	{
 		if ( sim[i] )
@@ -1501,7 +1501,7 @@ void CRagdollPropAttached::InitRagdollAttached(
 	if ( parentBoneAttach > 0 )
 	{
 		CStudioHdr *pStudioHdr = GetModelPtr();
-		mstudiobone_t *pBone = pStudioHdr->pBone( parentBoneAttach );
+		const mstudiobone_t *pBone = pStudioHdr->pBone( parentBoneAttach );
 		ragdollAttachedIndex = pBone->physicsbone;
 	}
 

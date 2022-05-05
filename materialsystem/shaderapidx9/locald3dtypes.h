@@ -131,7 +131,7 @@ typedef long long GeometryShader_t;
 //-----------------------------------------------------------------------------
 // Bitpattern for an invalid shader
 //-----------------------------------------------------------------------------
-#define INVALID_SHADER	( 0xFFFFFFFF )
+#define INVALID_SHADER	(-1)
 #define INVALID_HARDWARE_SHADER ( NULL )
 
 #define D3DSAMP_NOTSUPPORTED					D3DSAMP_FORCE_DWORD

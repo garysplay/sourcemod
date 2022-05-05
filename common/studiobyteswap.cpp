@@ -16,10 +16,10 @@
 #undef ALIGN4
 #undef ALIGN16
 #undef ALIGN32
-#define ALIGN4( a ) a = (byte *)((int)((byte *)a + 3) & ~ 3)
-#define ALIGN16( a ) a = (byte *)((int)((byte *)a + 15) & ~ 15)
-#define ALIGN32( a ) a = (byte *)((int)((byte *)a + 31) & ~ 31)
-#define ALIGN64( a ) a = (byte *)((int)((byte *)a + 63) & ~ 63)
+#define ALIGN4( a ) a = (byte *)((intp)((byte *)a + 3) & ~ 3)
+#define ALIGN16( a ) a = (byte *)((intp)((byte *)a + 15) & ~ 15)
+#define ALIGN32( a ) a = (byte *)((intp)((byte *)a + 31) & ~ 31)
+#define ALIGN64( a ) a = (byte *)((intp)((byte *)a + 63) & ~ 63)
 
 // Fixup macros create variables that may not be referenced
 #pragma warning( push )
@@ -511,7 +511,7 @@ int ByteswapPHY( void *pDestBase, const void *pSrcBase, const int fileSize )
 		pDest = (byte*)pDestBase + pHdr->size;
 
 		int bufSize = fileSize - pHdr->size;
-		pCollision->VCollideLoad( &collide, pHdr->solidCount, (const char *)pSrc, bufSize, false );
+		pCollision->VCollideLoad( &collide, pHdr->solidCount, (const char*)pSrc, bufSize, false );
 	}
 
 	// Swap the collision data headers
@@ -569,7 +569,7 @@ int ByteswapPHY( void *pDestBase, const void *pSrcBase, const int fileSize )
 		// let ivp swap the ledge tree
 		pSrc = (byte*)pSrcBase + pHdr->size;
 		int bufSize = fileSize - pHdr->size;
-		pCollision->VCollideLoad( &collide, pHdr->solidCount, (const char *)pSrc, bufSize, true );
+		pCollision->VCollideLoad( &collide, pHdr->solidCount, (const char*)pSrc, bufSize, true );
 	}
 
 	// Write out the ledge tree data
@@ -1228,8 +1228,8 @@ int ByteswapANI( studiohdr_t* pHdr, void *pDestBase, const void *pSrcBase, const
 		V_memcpy( pNewDest, pDestBase, pAnimBlock->datastart );
 		pNewDest += pAnimBlock->datastart;
 
-		int padding = AlignValue( (unsigned int)pNewDest - (unsigned int)pNewDestBase, 2048 );
-		padding -= (unsigned int)pNewDest - (unsigned int)pNewDestBase;
+		int padding = AlignValue( (uintp)pNewDest - (uintp)pNewDestBase, 2048 );
+		padding -= (uintp)pNewDest - (uintp)pNewDestBase;
 		pNewDest += padding;
 
 		// iterate and compress anim blocks
@@ -1240,7 +1240,7 @@ int ByteswapANI( studiohdr_t* pHdr, void *pDestBase, const void *pSrcBase, const
 			void *pInput = (byte *)pDestBase + pAnimBlock->datastart;
 			int inputSize = pAnimBlock->dataend - pAnimBlock->datastart;
 
-			pAnimBlock->datastart = (unsigned int)pNewDest - (unsigned int)pNewDestBase;
+			pAnimBlock->datastart = (uintp)pNewDest - (uintp)pNewDestBase;
 
 			void *pOutput;
 			int outputSize;
@@ -1257,11 +1257,11 @@ int ByteswapANI( studiohdr_t* pHdr, void *pDestBase, const void *pSrcBase, const
 				pNewDest += inputSize;
 			}
 
-			padding = AlignValue( (unsigned int)pNewDest - (unsigned int)pNewDestBase, 2048 );
-			padding -= (unsigned int)pNewDest - (unsigned int)pNewDestBase;
+			padding = AlignValue( (uintp)pNewDest - (uintp)pNewDestBase, 2048 );
+			padding -= (uintp)pNewDest - (uintp)pNewDestBase;
 			pNewDest += padding;
 
-			pAnimBlock->dataend = (unsigned int)pNewDest - (unsigned int)pNewDestBase;
+			pAnimBlock->dataend = (uintp)pNewDest - (uintp)pNewDestBase;
 		}
 
 		fixedFileSize = pNewDest - pNewDestBase;
@@ -2522,14 +2522,14 @@ BEGIN_BYTESWAP_DATADESC( studiohdr_t )
 	DEFINE_FIELD( contents, FIELD_INTEGER ),
 	DEFINE_FIELD( numincludemodels, FIELD_INTEGER ),
 	DEFINE_INDEX( includemodelindex, FIELD_INTEGER ),
-	DEFINE_FIELD( virtualModel, FIELD_INTEGER ),				// void*
+	DEFINE_FIELD( unused_virtualModel, FIELD_INTEGER ),				// void*
 	DEFINE_INDEX( szanimblocknameindex, FIELD_INTEGER ),	
 	DEFINE_FIELD( numanimblocks, FIELD_INTEGER ),
 	DEFINE_INDEX( animblockindex, FIELD_INTEGER ),
-	DEFINE_FIELD( animblockModel, FIELD_INTEGER ),				// void*
+	DEFINE_FIELD( unused_animblockModel, FIELD_INTEGER ),				// void*
 	DEFINE_INDEX( bonetablebynameindex, FIELD_INTEGER ),
-	DEFINE_FIELD( pVertexBase, FIELD_INTEGER ),					// void*
-	DEFINE_FIELD( pIndexBase, FIELD_INTEGER ),					// void*
+	DEFINE_FIELD( unused_pVertexBase, FIELD_INTEGER ),					// void*
+	DEFINE_FIELD( unused_pIndexBase, FIELD_INTEGER ),					// void*
 	DEFINE_FIELD( constdirectionallightdot, FIELD_CHARACTER ),	// byte
 	DEFINE_FIELD( rootLOD, FIELD_CHARACTER ),					// byte
 	DEFINE_FIELD( numAllowedRootLODs, FIELD_CHARACTER ),		// byte
@@ -3050,9 +3050,13 @@ BEGIN_BYTESWAP_DATADESC( mstudiotexture_t )
 	DEFINE_FIELD( flags, FIELD_INTEGER ),
 	DEFINE_FIELD( used, FIELD_INTEGER ),
 	DEFINE_FIELD( unused1, FIELD_INTEGER ),
+#ifdef PLATFORM_64BITS
+	DEFINE_ARRAY( unused, FIELD_INTEGER, 12),
+#else
 	DEFINE_FIELD( material, FIELD_INTEGER ),		// IMaterial*
 	DEFINE_FIELD( clientmaterial, FIELD_INTEGER ),	// void*
 	DEFINE_ARRAY( unused, FIELD_INTEGER, 10 ),
+#endif
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( vertexFileHeader_t )

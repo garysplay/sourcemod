@@ -189,6 +189,8 @@ public:
 	unsigned int	GetUnsignedInt( );
 	float			GetFloat( );
 	double			GetDouble( );
+	void*           GetPtr();
+
 	template <size_t maxLenInChars> void GetString( char( &pString )[maxLenInChars] )
 	{
 		GetStringInternal( pString, maxLenInChars );
@@ -273,6 +275,7 @@ public:
 	void			PutUnsignedInt( unsigned int u );
 	void			PutFloat( float f );
 	void			PutDouble( double d );
+	void			PutPtr(void*);
 	void			PutString( const char* pString );
 	void			Put( const void* pMem, int size );
 
@@ -752,6 +755,18 @@ inline float CUtlBuffer::GetFloat( )
 	return f;
 }
 
+inline void* CUtlBuffer::GetPtr()
+{
+	void* p;
+	// LEGACY WARNING: in text mode, PutPtr writes 32 bit pointers in hex, while GetPtr reads 32 or 64 bit pointers in decimal
+#ifndef PLATFORM_64BITS
+	p = (void*)GetUnsignedInt();
+#else
+	p = (void*)GetInt64();
+#endif
+	return p;
+}
+
 inline double CUtlBuffer::GetDouble( )
 {
 	double d;
@@ -981,6 +996,18 @@ inline void CUtlBuffer::PutDouble( double d )
 	PutType( d, "%f" );
 }
 
+inline void CUtlBuffer::PutPtr(void* p)
+{
+	// LEGACY WARNING: in text mode, PutPtr writes 32 bit pointers in hex, while GetPtr reads 32 or 64 bit pointers in decimal
+	if (!IsText())
+	{
+		PutTypeBin(p);
+	}
+	else
+	{
+		Printf("0x%p", p);
+	}
+}
 
 //-----------------------------------------------------------------------------
 // Am I a text buffer?

@@ -66,6 +66,11 @@ public:
 		Put(nValue);
 	}
 
+	FORCEINLINE void PutIntPtr(intp nValue)
+	{
+		Put(nValue);
+	}
+	
 	FORCEINLINE void PutFloat( float nValue )
 	{
 		Put( nValue );
@@ -340,7 +345,7 @@ public:
 		{
 			m_Storage.PutInt( CBCMD_BIND_SHADERAPI_TEXTURE_HANDLE );
 			m_Storage.PutInt( nSampler );
-			m_Storage.PutIntp( hTexture );
+			m_Storage.PutIntPtr( hTexture );
 		}
 	}
 

@@ -75,8 +75,8 @@ void CBoneMergeCache::UpdateCache()
 			m_BoneMergeBits.SetSize( pOwnerHdr->numbones() / 8 + 1 );
 			memset( m_BoneMergeBits.Base(), 0, m_BoneMergeBits.Count() );
 
-			mstudiobone_t *pOwnerBones = m_pOwnerHdr->pBone( 0 );
-			
+			const mstudiobone_t* pOwnerBones = m_pOwnerHdr->pBone(0);
+
 			m_nFollowBoneSetupMask = BONE_USED_BY_BONE_MERGE;
 			for ( int i = 0; i < m_pOwnerHdr->numbones(); i++ )
 			{

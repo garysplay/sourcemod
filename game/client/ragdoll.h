@@ -30,7 +30,7 @@ abstract_class IRagdoll
 public:
 	virtual ~IRagdoll() {}
 
-	virtual void RagdollBone( C_BaseEntity *ent, mstudiobone_t *pbones, int boneCount, bool *boneSimulated, CBoneAccessor &pBoneToWorld ) = 0;
+	virtual void RagdollBone( C_BaseEntity *ent, const mstudiobone_t *pbones, int boneCount, bool *boneSimulated, CBoneAccessor &pBoneToWorld ) = 0;
 	virtual const Vector& GetRagdollOrigin( ) = 0;
 	virtual void GetRagdollBounds( Vector &mins, Vector &maxs ) = 0;
 	virtual int RagdollBoneCount() const = 0;
@@ -59,7 +59,7 @@ public:
 		float boneDt,
 		bool bFixedConstraints=false );
 
-	virtual void RagdollBone( C_BaseEntity *ent, mstudiobone_t *pbones, int boneCount, bool *boneSimulated, CBoneAccessor &pBoneToWorld );
+	virtual void RagdollBone( C_BaseEntity *ent, const mstudiobone_t *pbones, int boneCount, bool *boneSimulated, CBoneAccessor &pBoneToWorld );
 	virtual const Vector& GetRagdollOrigin( );
 	virtual void GetRagdollBounds( Vector &theMins, Vector &theMaxs );
 	void	BuildRagdollBounds( C_BaseEntity *ent );

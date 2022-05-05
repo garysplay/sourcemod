@@ -361,7 +361,7 @@ public:
 	CLightSurface(int iThread) : m_pSurface(0), m_HitFrac(1.0f), m_bHasLuxel(false), m_iThread(iThread) {}
 
 	// call back with a node and a context
-	bool EnumerateNode( int node, Ray_t const& ray, float f, int context )
+	bool EnumerateNode( int node, Ray_t const& ray, float f, intp context )
 	{
 		dface_t* pSkySurface = 0;
 
@@ -410,7 +410,7 @@ public:
 	}
 
 	// call back with a leaf and a context
-	virtual bool EnumerateLeaf( int leaf, Ray_t const& ray, float start, float end, int context )
+	virtual bool EnumerateLeaf( int leaf, Ray_t const& ray, float start, float end, intp context )
 	{
 		bool hit = false;
 		dleaf_t* pLeaf = &dleafs[leaf];
@@ -524,8 +524,7 @@ private:
 	bool TestPointAgainstSkySurface( Vector const &pt, dface_t *pFace )
 	{
 		// Create sky face winding.
-		Vector v( 0.0f, 0.0f, 0.0f );
-		winding_t *pWinding = WindingFromFace( pFace, v );
+		winding_t *pWinding = WindingFromFace( pFace, Vector( 0.0f, 0.0f, 0.0f ) );
 
 		// Test point in winding. (Since it is at the node, it is in the plane.)
 		bool bRet = PointInWinding( pt, pWinding );

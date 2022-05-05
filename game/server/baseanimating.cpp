@@ -1712,7 +1712,7 @@ void CBaseAnimating::BuildMatricesWithBoneMerge(
 	)
 {
 	CStudioHdr *fhdr = pParent->GetModelPtr();
-	mstudiobone_t *pbones = pStudioHdr->pBone( 0 );
+	const mstudiobone_t *pbones = pStudioHdr->pBone( 0 );
 
 	matrix3x4_t rotationmatrix; // model to world transformation
 	AngleMatrix( angles, origin, rotationmatrix);
@@ -2557,8 +2557,8 @@ void CBaseAnimating::LockStudioHdr()
 
 			if ( pStudioHdrContainer && pStudioHdrContainer->GetVirtualModel() )
 			{
-				MDLHandle_t hVirtualModel = (MDLHandle_t)(int)(pStudioHdrContainer->GetRenderHdr()->virtualModel)&0xffff;
-				mdlcache->LockStudioHdr( hVirtualModel );
+				MDLHandle_t hVirtualModel = VoidPtrToMDLHandle(pStudioHdrContainer->GetRenderHdr()->VirtualModel());
+				mdlcache->LockStudioHdr(hVirtualModel);
 			}
 			m_pStudioHdr = pStudioHdrContainer; // must be last to ensure virtual model correctly set up
 		}
@@ -2575,8 +2575,8 @@ void CBaseAnimating::UnlockStudioHdr()
 			mdlcache->UnlockStudioHdr( modelinfo->GetCacheHandle( mdl ) );
 			if ( m_pStudioHdr->GetVirtualModel() )
 			{
-				MDLHandle_t hVirtualModel = (MDLHandle_t)(int)(m_pStudioHdr->GetRenderHdr()->virtualModel)&0xffff;
-				mdlcache->UnlockStudioHdr( hVirtualModel );
+				MDLHandle_t hVirtualModel = VoidPtrToMDLHandle(m_pStudioHdr->GetRenderHdr()->VirtualModel());
+				mdlcache->UnlockStudioHdr(hVirtualModel);
 			}
 		}
 	}
@@ -2693,7 +2693,7 @@ bool CBaseAnimating::TestHitboxes( const Ray_t &ray, unsigned int fContentsMask,
 	if ( TraceToStudio( physprops, ray, pStudioHdr, set, hitboxbones, fContentsMask, GetAbsOrigin(), GetModelScale(), tr ) )
 	{
 		mstudiobbox_t *pbox = set->pHitbox( tr.hitbox );
-		mstudiobone_t *pBone = pStudioHdr->pBone(pbox->bone);
+		const mstudiobone_t *pBone = pStudioHdr->pBone(pbox->bone);
 		tr.surface.name = "**studio**";
 		tr.surface.flags = SURF_HITBOX;
 		tr.surface.surfaceProps = physprops->GetSurfaceIndex( pBone->pszSurfaceProp() );

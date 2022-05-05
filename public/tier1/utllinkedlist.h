@@ -413,7 +413,7 @@ public:
 	}
 
 private:
-	int	MaxElementIndex() const { Assert(0); return this->InvalidIndex(); } // fixedmemory containers don't support iteration from 0..maxelements-1
+	intp MaxElementIndex() const { Assert(0); return this->InvalidIndex(); } // fixedmemory containers don't support iteration from 0..maxelements-1
 	void ResetDbgInfo() {}
 };
 

@@ -15,7 +15,7 @@
 #pragma once
 #endif
 
-#include "igamesystem.h"
+#include "../game/shared/igamesystem.h"
 #include "engine/IClientLeafSystem.h"
 #include "cdll_int.h"
 #include "ivrenderview.h"

@@ -411,7 +411,8 @@ void virtualmodel_t::AppendAttachments( int group, const studiohdr_t *pStudioHdr
 			{
 				while (n != -1)
 				{
-					m_group[ 0 ].GetStudioHdr()->pBone( n )->flags |= BONE_USED_BY_ATTACHMENT;
+					//FIXME64:
+					//m_group[ 0 ].GetStudioHdr()->pBone( n )->flags |= BONE_USED_BY_ATTACHMENT;
 
 					if (m_group[ 0 ].GetStudioHdr()->pLinearBones())
 					{

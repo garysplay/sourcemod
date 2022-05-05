@@ -990,11 +990,11 @@ void CVGui::ShutdownMessage(unsigned int shutdownID)
 	VPANEL panel = g_pSurface->GetEmbeddedPanel();
 	for (int i = 0; i < ((VPanel *)panel)->GetChildCount(); i++)
 	{
-		g_pIVgui->PostMessage((VPANEL)((VPanel *)panel)->GetChild(i), new KeyValues("ShutdownRequest", "id", shutdownID), NULL);
+		g_pIVgui->PostMessage((VPANEL)((VPanel *)panel)->GetChild(i), new KeyValues("ShutdownRequest", "id", (size_t)shutdownID), NULL);
 	}
 
 	// post to the top level window as well
-	g_pIVgui->PostMessage(panel, new KeyValues("ShutdownRequest", "id", shutdownID), NULL);
+	g_pIVgui->PostMessage(panel, new KeyValues("ShutdownRequest", "id", (size_t)shutdownID), NULL);
 }
 
 //-----------------------------------------------------------------------------

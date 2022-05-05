@@ -208,8 +208,8 @@ protected:
 public:
 	struct ModelFileHandleHash
 	{
-		uint operator()( model_t *p ) const { return Mix32HashFunctor()( (uint32)( p->fnHandle ) ); }
-		uint operator()( FileNameHandle_t fn ) const { return Mix32HashFunctor()( (uint32) fn ); }
+		uint operator()( model_t *p ) const { return PointerHashFunctor()( p->fnHandle ); }
+		uint operator()( FileNameHandle_t fn ) const { return PointerHashFunctor()( fn ); }
 	};
 	struct ModelFileHandleEq
 	{
@@ -512,52 +512,52 @@ void *CModelInfo::GetModelExtraData( const model_t *model )
 //-----------------------------------------------------------------------------
 // Purpose: Translate "cache" pointer into model_t, or lookup model by name
 //-----------------------------------------------------------------------------
-const studiohdr_t *CModelInfo::FindModel( const studiohdr_t *pStudioHdr, void **cache, char const *modelname ) const
+const studiohdr_t* CModelInfo::FindModel(const studiohdr_t* pStudioHdr, void** cache, char const* modelname) const
 {
-	const model_t *model = (model_t *)*cache;
+	const model_t* model = (model_t*)*cache;
 
 	if (!model)
 	{
 		// FIXME: what do I pass in here?
-		model = modelloader->GetModelForName( modelname, IModelLoader::FMODELLOADER_SERVER );
-		*cache = (void *)model;
+		model = modelloader->GetModelForName(modelname, IModelLoader::FMODELLOADER_SERVER);
+		*cache = (void*)model;
 	}
 
-	return (const studiohdr_t *)modelloader->GetExtraData( (model_t *)model );
+	return (const studiohdr_t*)modelloader->GetExtraData((model_t*)model);
 }
 
 
 //-----------------------------------------------------------------------------
 // Purpose: Translate "cache" pointer into model_t
 //-----------------------------------------------------------------------------
-const studiohdr_t *CModelInfo::FindModel( void *cache ) const
+const studiohdr_t* CModelInfo::FindModel(void* cache) const
 {
-	return g_pMDLCache->GetStudioHdr( (MDLHandle_t)(int)cache&0xffff );
+	return g_pMDLCache->GetStudioHdr(VoidPtrToMDLHandle(cache));
 }
 
 
 //-----------------------------------------------------------------------------
 // Purpose: Return virtualmodel_t block associated with model_t
 //-----------------------------------------------------------------------------
-virtualmodel_t *CModelInfo::GetVirtualModel( const studiohdr_t *pStudioHdr ) const
+virtualmodel_t* CModelInfo::GetVirtualModel(const studiohdr_t* pStudioHdr) const
 {
-	MDLHandle_t handle = (MDLHandle_t)(int)pStudioHdr->virtualModel&0xffff;
-	return g_pMDLCache->GetVirtualModelFast( pStudioHdr, handle );
+	MDLHandle_t handle = VoidPtrToMDLHandle(pStudioHdr->VirtualModel());
+	return g_pMDLCache->GetVirtualModelFast(pStudioHdr, handle);
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-byte *CModelInfo::GetAnimBlock( const studiohdr_t *pStudioHdr, int nBlock ) const
+byte* CModelInfo::GetAnimBlock(const studiohdr_t* pStudioHdr, int nBlock) const
 {
-	MDLHandle_t handle = (MDLHandle_t)(int)pStudioHdr->virtualModel&0xffff;
-	return g_pMDLCache->GetAnimBlock( handle, nBlock );
+	MDLHandle_t handle = VoidPtrToMDLHandle(pStudioHdr->VirtualModel());
+	return g_pMDLCache->GetAnimBlock(handle, nBlock);
 }
 
-int CModelInfo::GetAutoplayList( const studiohdr_t *pStudioHdr, unsigned short **pAutoplayList ) const
+int CModelInfo::GetAutoplayList(const studiohdr_t* pStudioHdr, unsigned short** pAutoplayList) const
 {
-	MDLHandle_t handle = (MDLHandle_t)(int)pStudioHdr->virtualModel&0xffff;
-	return g_pMDLCache->GetAutoplayList( handle, pAutoplayList );
+	MDLHandle_t handle = VoidPtrToMDLHandle(pStudioHdr->VirtualModel());
+	return g_pMDLCache->GetAutoplayList(handle, pAutoplayList);
 }
 
 
@@ -565,34 +565,35 @@ int CModelInfo::GetAutoplayList( const studiohdr_t *pStudioHdr, unsigned short *
 // Purpose: bind studiohdr_t support functions to engine
 // FIXME: This should be moved into studio.cpp?
 //-----------------------------------------------------------------------------
-const studiohdr_t *studiohdr_t::FindModel( void **cache, char const *pModelName ) const
+const studiohdr_t* studiohdr_t::FindModel(void** cache, char const* pModelName) const
 {
-	MDLHandle_t handle = g_pMDLCache->FindMDL( pModelName );
+	MDLHandle_t handle = g_pMDLCache->FindMDL(pModelName);
 	*cache = (void*)(uintp)handle;
-	return g_pMDLCache->GetStudioHdr( handle );
+	return g_pMDLCache->GetStudioHdr(handle);
 }
 
-virtualmodel_t *studiohdr_t::GetVirtualModel( void ) const
+virtualmodel_t* studiohdr_t::GetVirtualModel(void) const
 {
-	if ( numincludemodels == 0 )
+	if (numincludemodels == 0)
 		return NULL;
-	return g_pMDLCache->GetVirtualModelFast( this, (MDLHandle_t)(int)virtualModel&0xffff );
+	return g_pMDLCache->GetVirtualModelFast(this, VoidPtrToMDLHandle(VirtualModel()));
 }
 
-byte *studiohdr_t::GetAnimBlock( int i ) const
+byte* studiohdr_t::GetAnimBlock(int i ) const
 {
-	return g_pMDLCache->GetAnimBlock( (MDLHandle_t)(int)virtualModel&0xffff, i );
+	return g_pMDLCache->GetAnimBlock(VoidPtrToMDLHandle(VirtualModel()), i);
 }
 
-int	studiohdr_t::GetAutoplayList( unsigned short **pOut ) const
+int	studiohdr_t::GetAutoplayList(unsigned short** pOut) const
 {
-	return g_pMDLCache->GetAutoplayList( (MDLHandle_t)(int)virtualModel&0xffff, pOut );
+	return g_pMDLCache->GetAutoplayList(VoidPtrToMDLHandle(VirtualModel()), pOut);
 }
 
-const studiohdr_t *virtualgroup_t::GetStudioHdr( void ) const
+const studiohdr_t* virtualgroup_t::GetStudioHdr(void) const
 {
-	return g_pMDLCache->GetStudioHdr( (MDLHandle_t)(int)cache&0xffff );
+	return g_pMDLCache->GetStudioHdr(VoidPtrToMDLHandle(cache));
 }
+
 
 
 //-----------------------------------------------------------------------------

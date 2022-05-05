@@ -5,7 +5,6 @@
 //===========================================================================//
 
 #include <stdlib.h>
-#include <malloc.h>
 #include "materialsystem_global.h"
 #include "string.h"
 #include "shaderapi/ishaderapi.h"
@@ -751,8 +750,8 @@ protected:
 	friend class AsyncReader;
 	AsyncReader* m_pAsyncReader;
 
-	uint m_nAsyncLoadThread;
-	uint m_nAsyncReadThread;
+	ThreadId_t m_nAsyncLoadThread;
+	ThreadId_t m_nAsyncReadThread;
 
 	int m_iSuspendTextureStreaming;
 };

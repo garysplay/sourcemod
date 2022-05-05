@@ -154,7 +154,7 @@ void CStudioRender::R_StudioDrawBones(void)
 	Vector		p[8];
 	Vector		up, right, forward;
 	Vector		a1;
-	mstudiobone_t* pbones;
+	const mstudiobone_t* pbones;
 	Vector		positionArray[4];
 
 	pbones = m_pStudioHdr->pBone(0);

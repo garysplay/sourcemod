@@ -281,6 +281,8 @@ private:
 	// Unique static prop models
 	struct StaticPropDict_t
 	{
+		//enderzip
+		Vector			m_vReflectivity;
 		vcollide_t		m_loadedModel;
 		CPhysCollide*	m_pModel;
 		Vector			m_Mins;			// Bounding box is in local coordinates
@@ -320,6 +322,8 @@ private:
 		unsigned int			m_LightmapImageWidth;
 		unsigned int			m_LightmapImageHeight;
 
+		//enderzip
+		Vector					m_vReflectivity;
 		float					m_Scale;
 
 	};
@@ -1033,22 +1037,25 @@ void CVradStaticPropMgr::UnserializeModels( CUtlBuffer& buf )
 	m_StaticProps.AddMultipleToTail(count);
 	for ( int i = 0; i < count; ++i )				  
 	{
+		//enderzip
 		StaticPropLump_t lump;
 		buf.Get( &lump, sizeof(StaticPropLump_t) );
 		
-		VectorCopy( lump.m_Origin, m_StaticProps[i].m_Origin );
-		VectorCopy( lump.m_Angles, m_StaticProps[i].m_Angles );
-		VectorCopy( lump.m_LightingOrigin, m_StaticProps[i].m_LightingOrigin );
-		m_StaticProps[i].m_bLightingOriginValid = ( lump.m_Flags & STATIC_PROP_USE_LIGHTING_ORIGIN ) > 0;
+		VectorCopy(lump.m_Origin, m_StaticProps[i].m_Origin);
+		VectorCopy(lump.m_Angles, m_StaticProps[i].m_Angles);
+		VectorCopy(lump.m_LightingOrigin, m_StaticProps[i].m_LightingOrigin);
+		m_StaticProps[i].m_bLightingOriginValid = (lump.m_Flags & STATIC_PROP_USE_LIGHTING_ORIGIN) > 0;
 		m_StaticProps[i].m_ModelIdx = lump.m_PropType;
 		m_StaticProps[i].m_Handle = TREEDATA_INVALID_HANDLE;
 		m_StaticProps[i].m_Flags = lump.m_Flags;
 
 		// Changed this from using DXT1 to RGB888 because the compression artifacts were pretty nasty. 
 		// TODO: Consider changing back or basing this on user selection in hammer.
+		
 		m_StaticProps[i].m_LightmapImageFormat = IMAGE_FORMAT_RGB888;
 		m_StaticProps[i].m_LightmapImageWidth = lump.m_nLightmapResolutionX;
 		m_StaticProps[i].m_LightmapImageHeight = lump.m_nLightmapResolutionY;
+		
 
 		m_StaticProps[i].m_Scale = lump.m_Scale;
 	}
@@ -1066,10 +1073,11 @@ void CVradStaticPropMgr::UnserializeStaticProps()
 	if (!size)
 		return;
 
-	if ( g_GameLumps.GetGameLumpVersion( handle ) != GAMELUMP_STATIC_PROPS_VERSION )
+    //if ( g_GameLumps.GetGameLumpVersion( handle ) != GAMELUMP_STATIC_PROPS_VERSION )
 	{
-		Error( "Cannot load the static props... encountered a stale map version. Re-vbsp the map." );
+	//	Error( "Cannot load the static props... encountered a stale map version. Re-vbsp the map." );
 	}
+	//enderzip ^
 
 	if ( g_GameLumps.GetGameLump( handle ) )
 	{

@@ -41,11 +41,20 @@ namespace OptimizedModel
 //-----------------------------------------------------------------------------
 typedef unsigned short MDLHandle_t;
 
+inline MDLHandle_t VoidPtrToMDLHandle(void* ptr)
+{
+	return (MDLHandle_t)(int)(intp)ptr;
+}
+
+inline void* MDLHandleToVirtual(MDLHandle_t hndl)
+{
+	return (void*)(uintp)hndl;
+}
+
 enum
 {
-	MDLHANDLE_INVALID = (MDLHandle_t)~0 
+	MDLHANDLE_INVALID = (MDLHandle_t)~0
 };
-
 
 //-----------------------------------------------------------------------------
 // Cache data types

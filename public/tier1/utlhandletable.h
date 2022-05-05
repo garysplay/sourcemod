@@ -64,8 +64,17 @@ private:
 			Assert( i < ( 1 << HandleBits ) );
 			Assert( s < ( 1 << ( 31 - HandleBits ) ) );
 		}
-		unsigned int nIndex  : HandleBits;
-		unsigned int nSerial : 31 - HandleBits;
+		HandleType_t(UtlHandle_t handle) : handle(handle) {}
+
+		union 
+		{
+			UtlHandle_t handle;
+			struct 
+			{
+				unsigned int nIndex : HandleBits;
+				unsigned int nSerial : 31 - HandleBits;
+			};
+		};
 	};
 
 	struct EntryType_t
@@ -186,7 +195,7 @@ bool CUtlHandleTable<T, HandleBits>::IsHandleValid( UtlHandle_t handle ) const
 		return false;
 
 	unsigned int nIndex = GetListIndex( handle );
-	AssertOnce( nIndex < ( unsigned int )m_list.Count() );
+	//AssertOnce( nIndex < ( unsigned int )m_list.Count() );
 	if ( nIndex >= ( unsigned int )m_list.Count() )
 		return false;
 
@@ -241,20 +250,20 @@ int CUtlHandleTable<T, HandleBits>::GetIndexFromHandle( UtlHandle_t h ) const
 template< class T, int HandleBits >
 unsigned int CUtlHandleTable<T, HandleBits>::GetSerialNumber( UtlHandle_t handle )
 {
-	return ( ( HandleType_t* )&handle )->nSerial;
+    return HandleType_t(handle).nSerial;
 }
 
 template< class T, int HandleBits >
 unsigned int CUtlHandleTable<T, HandleBits>::GetListIndex( UtlHandle_t handle )
 {
-	return ( ( HandleType_t* )&handle )->nIndex;
+	return HandleType_t(handle).nIndex;
 }
 
 template< class T, int HandleBits >
 UtlHandle_t CUtlHandleTable<T, HandleBits>::CreateHandle( unsigned int nSerial, unsigned int nIndex )
 {
-	HandleType_t h( nIndex, nSerial );
-	return *( UtlHandle_t* )&h;
+	HandleType_t h(nIndex, nSerial);
+	return h.handle;
 }
 
 
@@ -268,7 +277,7 @@ const typename CUtlHandleTable<T, HandleBits>::EntryType_t *CUtlHandleTable<T, H
 		return NULL;
 
 	unsigned int nIndex = GetListIndex( handle );
-	Assert( nIndex < ( unsigned int )m_list.Count() );
+	//Assert( nIndex < ( unsigned int )m_list.Count() );
 	if ( nIndex >= ( unsigned int )m_list.Count() )
 		return NULL;
 

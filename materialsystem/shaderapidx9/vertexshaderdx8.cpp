@@ -1018,7 +1018,7 @@ void CShaderManager::DestroyVertexShader( VertexShaderHandle_t hShader )
 	if ( hShader == VERTEX_SHADER_HANDLE_INVALID )
 		return;
 
-	VertexShaderIndex_t i = (VertexShaderIndex_t)hShader;
+	VertexShaderIndex_t i = (VertexShaderIndex_t)(uintp)hShader;
 	IDirect3DVertexShader9 *pVertexShader = m_RawVertexShaderDict[ i ];
 
 	UnregisterVS( pVertexShader );
@@ -1054,7 +1054,7 @@ void CShaderManager::DestroyPixelShader( PixelShaderHandle_t hShader )
 	if ( hShader == PIXEL_SHADER_HANDLE_INVALID )
 		return;
 
-	PixelShaderIndex_t i = (PixelShaderIndex_t)hShader;
+	PixelShaderIndex_t i = (PixelShaderIndex_t)(uintp)hShader;
 	IDirect3DPixelShader9 *pPixelShader = m_RawPixelShaderDict[ i ];
 
 	UnregisterPS( pPixelShader );
@@ -3287,7 +3287,7 @@ void CShaderManager::SetVertexShaderState( HardwareShader_t shader, DataCacheHan
 
 void CShaderManager::BindVertexShader( VertexShaderHandle_t hVertexShader )
 {
-	HardwareShader_t hHardwareShader = m_RawVertexShaderDict[ (VertexShaderIndex_t)hVertexShader] ;
+	HardwareShader_t hHardwareShader = m_RawVertexShaderDict[ (VertexShaderIndex_t)(uintp)hVertexShader] ;
 	SetVertexShaderState( hHardwareShader );
 }
 
@@ -3396,7 +3396,7 @@ void CShaderManager::SetPixelShaderState( HardwareShader_t shader, DataCacheHand
 
 void CShaderManager::BindPixelShader( PixelShaderHandle_t hPixelShader )
 {
-	HardwareShader_t hHardwareShader = m_RawPixelShaderDict[ (PixelShaderIndex_t)hPixelShader ];
+	HardwareShader_t hHardwareShader = m_RawPixelShaderDict[ (PixelShaderIndex_t)(uintp)hPixelShader ];
 	SetPixelShaderState( hHardwareShader );
 }
 
@@ -3595,7 +3595,7 @@ void CShaderManager::SpewVertexAndPixelShaders( void )
 {
 	// only spew a populated shader file cache
 	Msg( "\nShader File Cache:\n" );
-	for ( int cacheIndex = m_ShaderFileCache.Head(); 
+	for ( intp cacheIndex = m_ShaderFileCache.Head(); 
 		 cacheIndex != m_ShaderFileCache.InvalidIndex();
 		 cacheIndex = m_ShaderFileCache.Next( cacheIndex ) )
 	{

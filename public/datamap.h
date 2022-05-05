@@ -64,6 +64,7 @@ typedef enum _fieldtypes
 	FIELD_MATERIALINDEX,	// a material index (using the material precache string table)
 	
 	FIELD_VECTOR2D,			// 2 floats
+	FIELD_INTEGER64,		// 64bit integer
 
 	FIELD_TYPECOUNT,		// MUST BE LAST
 } fieldtype_t;

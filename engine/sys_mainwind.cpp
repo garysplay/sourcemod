@@ -923,6 +923,11 @@ bool CGame::CreateGameWindow( void )
 		V_strcat( windowName, " - OpenGL", sizeof( windowName ) );
 	}
 	
+	if ( IsVulkan() )
+	{
+		V_strcat( windowName, " - Vulkan", sizeof( windowName ) );
+	}
+
 #if PIX_ENABLE || defined( PIX_INSTRUMENTATION )
 	// PIX_ENABLE/PIX_INSTRUMENTATION is a big slowdown (that should never be checked in, but sometimes is by accident), so add this to the Window title too.
 	V_strcat( windowName, " - PIX_ENABLE", sizeof( windowName ) );

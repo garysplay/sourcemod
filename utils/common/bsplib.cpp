@@ -1246,6 +1246,7 @@ void CGameLump::SwapGameLump(GameLumpId_t id, int version, byte* dest, byte* src
 
 		// The one-at-a-time swap is to compensate for these structures 
 		// possibly being misaligned, which crashes the Xbox 360.
+		/*
 		if (version == 4)
 		{
 			StaticPropLumpV4_t lump;
@@ -1345,20 +1346,21 @@ void CGameLump::SwapGameLump(GameLumpId_t id, int version, byte* dest, byte* src
 			}
 		}
 		else
+		*/
 		{
 			if (version != 11)
 			{
 				Error("Unknown Static Prop Lump version %d didn't get swapped!\n", version);
 			}
 
-			StaticPropLumpV11_t lump;
+			StaticPropLump_t lump;
 			for (int i = 0; i < count; ++i)
 			{
-				Q_memcpy(&lump, src, sizeof(StaticPropLumpV11_t));
+				Q_memcpy(&lump, src, sizeof(StaticPropLump_t));
 				g_Swap.SwapFieldsToTargetEndian(&lump, &lump);
-				Q_memcpy(dest, &lump, sizeof(StaticPropLumpV11_t));
-				src += sizeof(StaticPropLumpV11_t);
-				dest += sizeof(StaticPropLumpV11_t);
+				Q_memcpy(dest, &lump, sizeof(StaticPropLump_t));
+				src += sizeof(StaticPropLump_t);
+				dest += sizeof(StaticPropLump_t);
 			}
 			//enderzip ^
 		}
@@ -3705,10 +3707,10 @@ public:
 	int LeafCount() const;
 
 	// Enumerates the leaves along a ray, box, etc.
-	bool EnumerateLeavesAtPoint( Vector const& pt, ISpatialLeafEnumerator* pEnum, int context );
-	bool EnumerateLeavesInBox( Vector const& mins, Vector const& maxs, ISpatialLeafEnumerator* pEnum, int context );
-	bool EnumerateLeavesInSphere( Vector const& center, float radius, ISpatialLeafEnumerator* pEnum, int context );
-	bool EnumerateLeavesAlongRay( Ray_t const& ray, ISpatialLeafEnumerator* pEnum, int context );
+    bool EnumerateLeavesAtPoint( Vector const& pt, ISpatialLeafEnumerator* pEnum, intp context );
+	bool EnumerateLeavesInBox( Vector const& mins, Vector const& maxs, ISpatialLeafEnumerator* pEnum, intp context );
+	bool EnumerateLeavesInSphere( Vector const& center, float radius, ISpatialLeafEnumerator* pEnum, intp context );
+	bool EnumerateLeavesAlongRay( Ray_t const& ray, ISpatialLeafEnumerator* pEnum, intp context );
 };
 
 
@@ -3727,7 +3729,7 @@ int CToolBSPTree::LeafCount() const
 //-----------------------------------------------------------------------------
 
 bool CToolBSPTree::EnumerateLeavesAtPoint( Vector const& pt, 
-									ISpatialLeafEnumerator* pEnum, int context )
+									ISpatialLeafEnumerator* pEnum, intp context )
 {
 	int node = 0;
 	while( node >= 0 )
@@ -3754,7 +3756,7 @@ bool CToolBSPTree::EnumerateLeavesAtPoint( Vector const& pt,
 //-----------------------------------------------------------------------------
 
 static bool EnumerateLeavesInBox_R( int node, Vector const& mins, 
-				Vector const& maxs, ISpatialLeafEnumerator* pEnum, int context )
+				Vector const& maxs, ISpatialLeafEnumerator* pEnum, intp context )
 {
 	Vector cornermin, cornermax;
 
@@ -3801,7 +3803,7 @@ static bool EnumerateLeavesInBox_R( int node, Vector const& mins,
 }
 
 bool CToolBSPTree::EnumerateLeavesInBox( Vector const& mins, Vector const& maxs, 
-									ISpatialLeafEnumerator* pEnum, int context )
+									ISpatialLeafEnumerator* pEnum, intp context )
 {
 	return EnumerateLeavesInBox_R( 0, mins, maxs, pEnum, context );
 }
@@ -3811,7 +3813,7 @@ bool CToolBSPTree::EnumerateLeavesInBox( Vector const& mins, Vector const& maxs,
 //-----------------------------------------------------------------------------
 
 static bool EnumerateLeavesInSphere_R( int node, Vector const& origin, 
-				float radius, ISpatialLeafEnumerator* pEnum, int context )
+				float radius, ISpatialLeafEnumerator* pEnum, intp context )
 {
 	while( node >= 0 )
 	{
@@ -3842,7 +3844,7 @@ static bool EnumerateLeavesInSphere_R( int node, Vector const& origin,
 	return pEnum->EnumerateLeaf( - node - 1, context );
 }
 
-bool CToolBSPTree::EnumerateLeavesInSphere( Vector const& center, float radius, ISpatialLeafEnumerator* pEnum, int context )
+bool CToolBSPTree::EnumerateLeavesInSphere( Vector const& center, float radius, ISpatialLeafEnumerator* pEnum, intp context )
 {
 	return EnumerateLeavesInSphere_R( 0, center, radius, pEnum, context );
 }
@@ -3853,7 +3855,7 @@ bool CToolBSPTree::EnumerateLeavesInSphere( Vector const& center, float radius, 
 //-----------------------------------------------------------------------------
 
 static bool EnumerateLeavesAlongRay_R( int node, Ray_t const& ray, 
-	Vector const& start, Vector const& end, ISpatialLeafEnumerator* pEnum, int context )
+	Vector const& start, Vector const& end, ISpatialLeafEnumerator* pEnum, intp context )
 {
 	float front,back;
 
@@ -3916,7 +3918,7 @@ static bool EnumerateLeavesAlongRay_R( int node, Ray_t const& ray,
 	return pEnum->EnumerateLeaf( - node - 1, context );
 }
 
-bool CToolBSPTree::EnumerateLeavesAlongRay( Ray_t const& ray, ISpatialLeafEnumerator* pEnum, int context )
+bool CToolBSPTree::EnumerateLeavesAlongRay( Ray_t const& ray, ISpatialLeafEnumerator* pEnum, intp context )
 {
 	if (!ray.m_IsSwept)
 	{
@@ -3955,7 +3957,7 @@ ISpatialQuery* ToolBSPTree()
 // FIXME: Do we want this in the IBSPTree interface?
 
 static bool EnumerateNodesAlongRay_R( int node, Ray_t const& ray, float start, float end,
-	IBSPNodeEnumerator* pEnum, int context )
+	IBSPNodeEnumerator* pEnum, intp context )
 {
 	float front, back;
 	float startDotN, deltaDotN;
@@ -4024,7 +4026,7 @@ static bool EnumerateNodesAlongRay_R( int node, Ray_t const& ray, float start, f
 }
 
 
-bool EnumerateNodesAlongRay( Ray_t const& ray, IBSPNodeEnumerator* pEnum, int context )
+bool EnumerateNodesAlongRay( Ray_t const& ray, IBSPNodeEnumerator* pEnum, intp context )
 {
 	Vector end;
 	VectorAdd( ray.m_Start, ray.m_Delta, end );
@@ -4731,10 +4733,11 @@ void BuildStaticPropNameTable()
 			return;
 		}
 
-		if (nVersion < 4 || nVersion > GAMELUMP_STATIC_PROPS_VERSION)
+		//if (nVersion < 4 || nVersion > GAMELUMP_STATIC_PROPS_VERSION)
 		{
-			Error( "Unknown Static Prop Lump version %d!\n", nVersion );
+		//	Error( "Unknown Static Prop Lump version %d!\n", nVersion );
 		}
+		//enderzip ^
 
 		byte *pGameLumpData = (byte *)g_GameLumps.GetGameLump( hGameLump );
 		if ( pGameLumpData && g_GameLumps.GameLumpSize( hGameLump ) )
@@ -4760,6 +4763,7 @@ void BuildStaticPropNameTable()
 			for (int i = 0; i < count; i++)
 			{
 				int propType;
+				/*
 				if (nVersion == 4)
 				{
 					propType = ((StaticPropLumpV4_t*)pGameLumpData)->m_PropType;
@@ -4801,14 +4805,15 @@ void BuildStaticPropNameTable()
 					pGameLumpData += sizeof(StaticPropLumpV11_t);
 				}
 				else
+				*/
 				{
 					if (nVersion != 11)
 					{
 						Error("BuildStaticPropNameTable: Unknown Static Prop Lump version %d!\n", nVersion);
 					}
 
-					propType = ((StaticPropLumpV11_t*)pGameLumpData)->m_PropType;
-					pGameLumpData += sizeof(StaticPropLumpV11_t);
+					propType = ((StaticPropLump_t*)pGameLumpData)->m_PropType;
+					pGameLumpData += sizeof(StaticPropLump_t);
 					//enderzip ^
 				}
 				g_StaticPropInstances.AddToTail(propType);

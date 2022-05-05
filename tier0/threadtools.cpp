@@ -326,12 +326,12 @@ void ThreadSleep(unsigned nMilliseconds)
 //-----------------------------------------------------------------------------
 
 #ifndef ThreadGetCurrentId
-uint ThreadGetCurrentId()
+ThreadId_t ThreadGetCurrentId()
 {
 #ifdef _WIN32
 	return GetCurrentThreadId();
 #elif defined(POSIX)
-	return (uint)pthread_self();
+	return (ThreadId_t)pthread_self();
 #endif
 }
 #endif
@@ -451,7 +451,7 @@ void ThreadSetAffinity( ThreadHandle_t hThread, int nAffinityMask )
 
 //-----------------------------------------------------------------------------
 
-uint InitMainThread()
+ThreadId_t InitMainThread()
 {
 #ifndef LINUX
 	// Skip doing the setname on Linux for the main thread. Here is why...
@@ -475,11 +475,11 @@ uint InitMainThread()
 #ifdef _WIN32
 	return ThreadGetCurrentId();
 #elif defined(POSIX)
-	return (uint)pthread_self();
+	return (ThreadId_t)pthread_self();
 #endif
 }
 
-uint g_ThreadMainThreadID = InitMainThread();
+ThreadId_t g_ThreadMainThreadID = InitMainThread();
 
 bool ThreadInMainThread()
 {
@@ -965,37 +965,37 @@ void CThreadLocalBase::Set( void *value )
 #endif
 
 #ifndef USE_INTRINSIC_INTERLOCKED
-long ThreadInterlockedIncrement( long volatile *pDest )
+int32 ThreadInterlockedIncrement(int32 volatile *pDest )
 {
 	Assert( (size_t)pDest % 4 == 0 );
 	return InterlockedIncrement( TO_INTERLOCK_PARAM(pDest) );
 }
 
-long ThreadInterlockedDecrement( long volatile *pDest )
+int32 ThreadInterlockedDecrement(int32 volatile *pDest )
 {
 	Assert( (size_t)pDest % 4 == 0 );
 	return InterlockedDecrement( TO_INTERLOCK_PARAM(pDest) );
 }
 
-long ThreadInterlockedExchange( long volatile *pDest, long value )
+int32 ThreadInterlockedExchange(int32 volatile *pDest, int32 value )
 {
 	Assert( (size_t)pDest % 4 == 0 );
 	return InterlockedExchange( TO_INTERLOCK_PARAM(pDest), value );
 }
 
-long ThreadInterlockedExchangeAdd( long volatile *pDest, long value )
+int32 ThreadInterlockedExchangeAdd(int32 volatile *pDest, int32 value )
 {
 	Assert( (size_t)pDest % 4 == 0 );
 	return InterlockedExchangeAdd( TO_INTERLOCK_PARAM(pDest), value );
 }
 
-long ThreadInterlockedCompareExchange( long volatile *pDest, long value, long comperand )
+int32 ThreadInterlockedCompareExchange(int32 volatile *pDest, int32 value, int32 comperand )
 {
 	Assert( (size_t)pDest % 4 == 0 );
 	return InterlockedCompareExchange( TO_INTERLOCK_PARAM(pDest), value, comperand );
 }
 
-bool ThreadInterlockedAssignIf( long volatile *pDest, long value, long comperand )
+bool ThreadInterlockedAssignIf(int32 volatile *pDest, int32 value, int32 comperand )
 {
 	Assert( (size_t)pDest % 4 == 0 );
 
@@ -1454,7 +1454,7 @@ bool CThreadMutex::TryLock()
 
 #define THREAD_SPIN (8*1024)
 
-void CThreadFastMutex::Lock( const uint32 threadId, unsigned nSpinSleepTime ) volatile 
+void CThreadFastMutex::Lock( const uintp threadId, unsigned nSpinSleepTime ) volatile 
 {
 	int i;
 	if ( nSpinSleepTime != TT_INFINITE )
@@ -1589,7 +1589,7 @@ void CThreadRWLock::UnlockWrite()
 //
 //-----------------------------------------------------------------------------
 
-void CThreadSpinRWLock::SpinLockForWrite( const uint32 threadId )
+void CThreadSpinRWLock::SpinLockForWrite( const uintp threadId )
 {
 	int i;
 
@@ -1840,7 +1840,7 @@ bool CThread::Start( unsigned nBytesStack )
 														(LPTHREAD_START_ROUTINE)GetThreadProc(),
 														new ThreadInit_t(init),
 		                                                nBytesStack ? STACK_SIZE_PARAM_IS_A_RESERVATION : 0,
-		                                                (LPDWORD)&m_threadId );
+		                                                &m_threadId );
 	if ( !hThread )
 	{
 		AssertMsg1( 0, "Failed to create thread (error 0x%x)", GetLastError() );
@@ -1992,7 +1992,7 @@ void CThread::Stop(int exitCode)
 		if ( !( m_flags & SUPPORT_STOP_PROTOCOL ) )
 		{
 			OnExit();
-			g_pCurThread = (int)NULL;
+			g_pCurThread = NULL;
 
 #ifdef _WIN32
 			CloseHandle( m_hThread );
@@ -2053,7 +2053,7 @@ void CThread::SuspendCooperative()
 
 void CThread::ResumeCooperative()
 {
-	Assert( m_nSuspendCount == 1 );
+	//Assert( m_nSuspendCount == 1 );
 	m_SuspendEvent.Set();
 }
 
@@ -2222,7 +2222,7 @@ CThread::ThreadProc_t CThread::GetThreadProc()
 
 unsigned __stdcall CThread::ThreadProc(LPVOID pv)
 {
-  std::auto_ptr<ThreadInit_t> pInit((ThreadInit_t *)pv);
+  std::unique_ptr<ThreadInit_t> pInit((ThreadInit_t *)pv);
   
 #ifdef _X360
         // Make sure all threads are consistent w.r.t floating-point math
@@ -2274,7 +2274,7 @@ unsigned __stdcall CThread::ThreadProc(LPVOID pv)
 	}
 	
 	pInit->pThread->OnExit();
-	g_pCurThread = (int)NULL;
+	g_pCurThread = NULL;
 	pInit->pThread->Cleanup();
 	
 	return pInit->pThread->m_result;

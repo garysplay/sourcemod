@@ -577,9 +577,9 @@ void SetupSingleBoneMatrix(
 	mstudioseqdesc_t &seqdesc = pOwnerHdr->pSeqdesc( nSequence );
 	mstudioanimdesc_t &animdesc = pOwnerHdr->pAnimdesc( seqdesc.anim( 0, 0 ) );
 	int iLocalFrame = iFrame;
-	mstudioanim_t *panim = animdesc.pAnim( &iLocalFrame );
+	const mstudioanim_t *panim = (mstudioanim_t*)animdesc.pAnim( &iLocalFrame );
 	float s = 0;
-	mstudiobone_t *pbone = pOwnerHdr->pBone( iBone );
+	const mstudiobone_t* pbone = pOwnerHdr->pBone(iBone);
 
 	Quaternion boneQuat;
 	Vector bonePos;
@@ -924,7 +924,7 @@ static void CalcVirtualAnimation( virtualmodel_t *pVModel, const CStudioHdr *pSt
 
 	int iLocalFrame = iFrame;
 	float flStall;
-	panim = animdesc.pAnim( &iLocalFrame, flStall );
+	panim = (mstudioanim_t*)animdesc.pAnim( &iLocalFrame, flStall );
 
 	float *pweight = seqdesc.pBoneweight( 0 );
 	pbone = pStudioHdr->pBone( 0 );
@@ -1051,7 +1051,7 @@ static void CalcAnimation( const CStudioHdr *pStudioHdr,	Vector *pos, Quaternion
 	}
 
 	mstudioanimdesc_t &animdesc = ((CStudioHdr *)pStudioHdr)->pAnimdesc( animation );
-	mstudiobone_t *pbone = pStudioHdr->pBone( 0 );
+	const mstudiobone_t *pbone = pStudioHdr->pBone( 0 );
 	const mstudiolinearbone_t *pLinearBones = pStudioHdr->pLinearBones();
 
 	int					i;
@@ -1065,7 +1065,7 @@ static void CalcAnimation( const CStudioHdr *pStudioHdr,	Vector *pos, Quaternion
 
 	int iLocalFrame = iFrame;
 	float flStall;
-	mstudioanim_t *panim = animdesc.pAnim( &iLocalFrame, flStall );
+	mstudioanim_t *panim = (mstudioanim_t*)animdesc.pAnim( &iLocalFrame, flStall );
 
 	float *pweight = seqdesc.pBoneweight( 0 );
 
@@ -1287,7 +1287,7 @@ void WorldSpaceSlerp(
 		pSeqGroup = pVModel->pSeqGroup( sequence );
 	}
 
-	mstudiobone_t *pbone = pStudioHdr->pBone( 0 );
+	const mstudiobone_t *pbone = pStudioHdr->pBone( 0 );
 
 	for (i = 0; i < pStudioHdr->numbones(); i++)
 	{
@@ -1769,7 +1769,7 @@ void Studio_LocalPoseParameter( const CStudioHdr *pStudioHdr, const float posePa
 
 void Studio_CalcBoneToBoneTransform( const CStudioHdr *pStudioHdr, int inputBoneIndex, int outputBoneIndex, matrix3x4_t& matrixOut )
 {
-	mstudiobone_t *pbone = pStudioHdr->pBone( inputBoneIndex );
+	const mstudiobone_t *pbone = pStudioHdr->pBone( inputBoneIndex );
 
 	matrix3x4_t inputToPose;
 	MatrixInvert( pbone->poseToBone, inputToPose );
@@ -1792,7 +1792,7 @@ void InitPose(
 		{
 			if (pStudioHdr->boneFlags(  i ) & boneMask ) 
 			{
-				mstudiobone_t *pbone = pStudioHdr->pBone( i );
+				const mstudiobone_t *pbone = pStudioHdr->pBone( i );
 				pos[i] = pbone->pos;
 				q[i] = pbone->quat;
 			}
@@ -3998,7 +3998,7 @@ void CIKContext::AutoIKRelease( void )
 						int bone = pchain->pLink( 2 )->bone;
 						if (bone >= 0 && bone < m_pStudioHdr->numbones())
 						{
-							mstudiobone_t *pBone = m_pStudioHdr->pBone( bone );
+							const mstudiobone_t *pBone = m_pStudioHdr->pBone( bone );
 							if (pBone != NULL)
 							{
 								if ( !(m_pStudioHdr->boneFlags( bone ) & m_boneMask))
@@ -4587,7 +4587,7 @@ void Studio_BuildMatrices(
 //-----------------------------------------------------------------------------
 
 void DoAxisInterpBone(
-	mstudiobone_t		*pbones,
+	const mstudiobone_t		*pbones,
 	int	ibone,
 	CBoneAccessor &bonetoworld
 	)
@@ -4701,7 +4701,7 @@ void DoAxisInterpBone(
 //			local transformation matches a set of target orientations.
 //-----------------------------------------------------------------------------
 void DoQuatInterpBone(
-	mstudiobone_t		*pbones,
+	const mstudiobone_t		*pbones,
 	int	ibone,
 	CBoneAccessor &bonetoworld
 	)
@@ -4787,7 +4787,7 @@ static ConVar aim_constraint( "aim_constraint", "1", FCVAR_REPLICATED, "Toggle <
 //			another point on the model
 //-----------------------------------------------------------------------------
 void DoAimAtBone(
-	mstudiobone_t *pBones,
+	const mstudiobone_t *pBones,
 	int	iBone,
 	CBoneAccessor &bonetoworld,
 	const CStudioHdr *pStudioHdr
@@ -4939,7 +4939,7 @@ bool CalcProceduralBone(
 	CBoneAccessor &bonetoworld
 	)
 {
-	mstudiobone_t		*pbones = pStudioHdr->pBone( 0 );
+	const mstudiobone_t		*pbones = pStudioHdr->pBone( 0 );
 
 	if ( pStudioHdr->boneFlags(iBone) & BONE_ALWAYS_PROCEDURAL )
 	{
@@ -5899,7 +5899,7 @@ int Studio_BoneIndexByName( const CStudioHdr *pStudioHdr, const char *pName )
 		// binary search for the bone matching pName
 		int start = 0, end = pStudioHdr->numbones()-1;
 		const byte *pBoneTable = pStudioHdr->GetBoneTableSortedByName();
-		mstudiobone_t *pbones = pStudioHdr->pBone( 0 );
+		const mstudiobone_t *pbones = pStudioHdr->pBone( 0 );
 		while (start <= end)
 		{
 			int mid = (start + end) >> 1;
@@ -5961,7 +5961,7 @@ bool Studio_PrefetchSequence( const CStudioHdr *pStudioHdr, int iSequence )
 		{
 			mstudioanimdesc_t &animdesc = ((CStudioHdr *)pStudioHdr)->pAnimdesc( seqdesc.anim( i, j ) );
 			int iFrame = 0;
-			mstudioanim_t *panim = animdesc.pAnim( &iFrame );
+			mstudioanim_t *panim = (mstudioanim_t*)animdesc.pAnim( &iFrame );
 			if ( !panim )
 			{
 				pendingload = true;

@@ -126,6 +126,7 @@ void Hunk_Print()
 #endif
 }
 
+const int HUNK_COMMIT_FLOOR = (IsGameConsole() ? 4/*18*/ : 40) * (1024 * 1024);
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -136,7 +137,7 @@ void Memory_Init( void )
 	int nMaxBytes = 256*1024*1024;
 	const int nMinCommitBytes = 0x8000;
 #ifndef HUNK_USE_16MB_PAGE
-	const int nInitialCommit = 0x280000;
+	const int nInitialCommit = MIN(HUNK_COMMIT_FLOOR, nMaxBytes);;
 	while ( !g_HunkMemoryStack.Init( nMaxBytes, nMinCommitBytes, nInitialCommit ) )	 
 	{
 		Warning( "Unable to allocate %d MB of memory, trying %d MB instead\n", nMaxBytes, nMaxBytes/2 );

@@ -353,7 +353,7 @@ void ComputePoseToWorld( matrix3x4_t *pPoseToWorld, studiohdr_t *pStudioHdr, int
 		// convert bone to world transformations into pose to world transformations
 		for (int i = 0; i < pStudioHdr->numbones; i++)
 		{
-			mstudiobone_t *pCurBone = pStudioHdr->pBone( i );
+			const mstudiobone_t *pCurBone = pStudioHdr->pBone( i );
 			if ( !(pCurBone->flags & boneMask) )
 				continue;
 

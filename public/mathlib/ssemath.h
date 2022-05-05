@@ -10,6 +10,7 @@
 #include <xboxmath.h>
 #else
 #include <xmmintrin.h>
+#include <mmintrin.h>
 #endif
 
 #include <mathlib/vector.h>

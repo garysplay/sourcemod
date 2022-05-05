@@ -111,7 +111,7 @@ void CMDL::SetMDL( MDLHandle_t h )
 	{
 		g_pMDLCache->AddRef( m_MDLHandle );
 		
-		studiohdr_t *pHdr = g_pMDLCache->LockStudioHdr( m_MDLHandle );
+		studiohdr_t* pHdr = g_pMDLCache->GetStudioHdr(m_MDLHandle);
 
 		if ( pHdr )
 		{
@@ -152,11 +152,7 @@ void CMDL::UnreferenceMDL()
 		}
 		else
 #endif
-		{
-			// Immediate-mode rendering, can unlock immediately
-			g_pMDLCache->UnlockStudioHdr( m_MDLHandle );
-			g_pMDLCache->Release( m_MDLHandle );
-		}
+		g_pMDLCache->Release(m_MDLHandle);
 		m_MDLHandle = MDLHANDLE_INVALID;
 	}
 }
@@ -253,6 +249,8 @@ void CMDL::Draw( const matrix3x4_t &rootToWorld )
 
 void CMDL::SetUpBones( const matrix3x4_t& rootToWorld, int nMaxBoneCount, matrix3x4_t *pBoneToWorld, const float *pPoseParameters, MDLSquenceLayer_t *pSequenceLayers, int nNumSequenceLayers )
 {
+	MDLCACHE_CRITICAL_SECTION();
+
 	CStudioHdr studioHdr( g_pMDLCache->GetStudioHdr( m_MDLHandle ), g_pMDLCache );
 
 	float pPoseParameter[MAXSTUDIOPOSEPARAM];
@@ -427,7 +425,7 @@ void CMDL::SetupBonesWithBoneMerge( const CStudioHdr *pMergeHdr, matrix3x4_t *pM
 	boneSetup.AccumulatePose( pos, q, m_nSequence, flCycle, 1.0f, m_flTime, NULL );
 
 	// Get the merge bone list.
-	mstudiobone_t *pMergeBones = pMergeHdr->pBone( 0 );
+	const mstudiobone_t* pMergeBones = pMergeHdr->pBone(0);
 	for ( int iMergeBone = 0; iMergeBone < pMergeHdr->numbones(); ++iMergeBone )
 	{
 		// Now find the bone in the parent entity.
