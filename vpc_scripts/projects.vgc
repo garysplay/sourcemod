@@ -144,6 +144,11 @@ $Project "movieobjects"
 	"movieobjects\movieobjects.vpc"
 }
 
+$Project "modelbrowser"
+{
+	"utils\modelbrowser\modelbrowser.vpc"
+}
+
 $Project "mxtoolkitwin32"
 {
 	"utils\mxtk\mxtoolkitwin32.vpc"
@@ -262,6 +267,11 @@ $Project "stdshader_dx11"
 $Project "shaderlib_dx11"
 {
 	"materialsystem\shaderlib_dx11\shaderlib.vpc"
+}
+
+$Project "soundsystem"
+{
+	"soundsystem\soundsystem.vpc"
 }
 
 $Project "tgadiff"
