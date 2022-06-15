@@ -37,13 +37,13 @@
 
 // This needs to match the value in gl_lightmap.h
 // Need to dynamically allocate the weights and light values in radial_t to make this variable.
-#define MAX_BRUSH_LIGHTMAP_DIM_WITHOUT_BORDER 32
+#define MAX_BRUSH_LIGHTMAP_DIM_WITHOUT_BORDER 64
 // This is one more than what vbsp cuts for to allow for rounding errors
-#define MAX_BRUSH_LIGHTMAP_DIM_INCLUDING_BORDER	35
+#define MAX_BRUSH_LIGHTMAP_DIM_INCLUDING_BORDER	67
 
 // We can have larger lightmaps on displacements
-#define MAX_DISP_LIGHTMAP_DIM_WITHOUT_BORDER	125
-#define MAX_DISP_LIGHTMAP_DIM_INCLUDING_BORDER	128
+#define MAX_DISP_LIGHTMAP_DIM_WITHOUT_BORDER	253
+#define MAX_DISP_LIGHTMAP_DIM_INCLUDING_BORDER	256
 
 
 // This is the actual max.. (change if you change the brush lightmap dim or disp lightmap dim
@@ -70,46 +70,46 @@
 #define	MAX_MAP_MODELS					1024	
 #define	MAX_MAP_BRUSHES					8192	
 #define	MAX_MAP_ENTITIES				8192	
-#define	MAX_MAP_TEXINFO					12288	
-#define MAX_MAP_TEXDATA					2048	
-#define MAX_MAP_DISPINFO				16384	
+#define	MAX_MAP_TEXINFO					32768	
+#define MAX_MAP_TEXDATA					8192	
+#define MAX_MAP_DISPINFO				32768	
 #define MAX_MAP_DISP_VERTS				( MAX_MAP_DISPINFO * ((1<<MAX_MAP_DISP_POWER)+1) * ((1<<MAX_MAP_DISP_POWER)+1) )	
 #define MAX_MAP_DISP_TRIS				( (1 << MAX_MAP_DISP_POWER) * (1 << MAX_MAP_DISP_POWER) * 2 )	
 #define MAX_DISPVERTS					NUM_DISP_POWER_VERTS( MAX_MAP_DISP_POWER )	
 #define MAX_DISPTRIS					NUM_DISP_POWER_TRIS( MAX_MAP_DISP_POWER )	
-#define	MAX_MAP_AREAS					256
+#define	MAX_MAP_AREAS					1024
 #define MAX_MAP_AREA_BYTES				(MAX_MAP_AREAS/8)	
-#define	MAX_MAP_AREAPORTALS				1024	
+#define	MAX_MAP_AREAPORTALS				4096	
 // Planes come in pairs, thus an even number.	
-#define	MAX_MAP_PLANES					65536
-#define	MAX_MAP_NODES					65536
-#define	MAX_MAP_BRUSHSIDES				65536
-#define	MAX_MAP_LEAFS					65536
-#define	MAX_MAP_VERTS					65536
-#define MAX_MAP_VERTNORMALS				256000	
-#define MAX_MAP_VERTNORMALINDICES		256000
-#define	MAX_MAP_FACES					65536
-#define	MAX_MAP_LEAFFACES				65536
-#define	MAX_MAP_LEAFBRUSHES 			65536
-#define	MAX_MAP_PORTALS					65536	
-#define MAX_MAP_CLUSTERS				65536	
-#define MAX_MAP_LEAFWATERDATA			32768	
-#define MAX_MAP_PORTALVERTS				128000	
-#define	MAX_MAP_EDGES					256000
+#define	MAX_MAP_PLANES					131072
+#define	MAX_MAP_NODES					131072
+#define	MAX_MAP_BRUSHSIDES				131072
+#define	MAX_MAP_LEAFS					131072
+#define	MAX_MAP_VERTS					131072
+#define MAX_MAP_VERTNORMALS				512000	
+#define MAX_MAP_VERTNORMALINDICES		512000
+#define	MAX_MAP_FACES					131072
+#define	MAX_MAP_LEAFFACES				131072
+#define	MAX_MAP_LEAFBRUSHES 			131072
+#define	MAX_MAP_PORTALS					131072	
+#define MAX_MAP_CLUSTERS				131072	
+#define MAX_MAP_LEAFWATERDATA			65536	
+#define MAX_MAP_PORTALVERTS				256000	
+#define	MAX_MAP_EDGES					512000
 #define	MAX_MAP_SURFEDGES				512000	
-#define	MAX_MAP_LIGHTING				0x1000000
-#define	MAX_MAP_VISIBILITY				0x1000000			// increased BSPVERSION 7
-#define	MAX_MAP_TEXTURES				1024	
-#define MAX_MAP_WORLDLIGHTS				8192	
+#define	MAX_MAP_LIGHTING				0x10000000
+#define	MAX_MAP_VISIBILITY				0x10000000			// increased BSPVERSION 7
+#define	MAX_MAP_TEXTURES				4096	
+#define MAX_MAP_WORLDLIGHTS				16384	
 #define MAX_MAP_CUBEMAPSAMPLES			1024	
-#define MAX_MAP_OVERLAYS				512 	
+#define MAX_MAP_OVERLAYS				1024 	
 #define MAX_MAP_WATEROVERLAYS			16384	
-#define MAX_MAP_TEXDATA_STRING_DATA		256000	
-#define MAX_MAP_TEXDATA_STRING_TABLE	65536	
+#define MAX_MAP_TEXDATA_STRING_DATA		512000	
+#define MAX_MAP_TEXDATA_STRING_TABLE	131072	
 // this is stuff for trilist/tristrips, etc.	
-#define MAX_MAP_PRIMITIVES				32768	
-#define MAX_MAP_PRIMVERTS				65536	
-#define MAX_MAP_PRIMINDICES				65536
+#define MAX_MAP_PRIMITIVES				65536	
+#define MAX_MAP_PRIMVERTS				131072	
+#define MAX_MAP_PRIMINDICES				131072
 
 #else
 
@@ -478,7 +478,7 @@ struct dphysmodel_t
 struct dphysdisp_t
 {
 	DECLARE_BYTESWAP_DATADESC()
-	unsigned short numDisplacements;
+	int numDisplacements;
 	//unsigned short dataSize[numDisplacements];
 };
 
@@ -506,11 +506,11 @@ struct dnode_t
 	DECLARE_BYTESWAP_DATADESC();
 	int			planenum;
 	int			children[2];	// negative numbers are -(leafs+1), not nodes
-	short		mins[3];		// for frustom culling
-	short		maxs[3];
-	unsigned short	firstface;
-	unsigned short	numfaces;	// counting both sides
-	short			area;		// If all leaves below this node are in the same area, then
+	int		    mins[3];		// for frustom culling
+	int	 	    maxs[3];
+	int  	    firstface;
+	int  	    numfaces;	// counting both sides
+	int			area;		// If all leaves below this node are in the same area, then
 								// this is the area index. If not, this is -1.
 };
 
@@ -578,7 +578,7 @@ struct CDispSubNeighbor
 {
 public:
 	DECLARE_BYTESWAP_DATADESC();
-	unsigned short		GetNeighborIndex() const		{ return m_iNeighbor; }
+	int          		GetNeighborIndex() const		{ return m_iNeighbor; }
 	NeighborSpan		GetSpan() const					{ return (NeighborSpan)m_Span; }
 	NeighborSpan		GetNeighborSpan() const			{ return (NeighborSpan)m_NeighborSpan; }
 	NeighborOrientation	GetNeighborOrientation() const	{ return (NeighborOrientation)m_NeighborOrientation; }
@@ -588,7 +588,7 @@ public:
 
 
 public:
-	unsigned short		m_iNeighbor;		// This indexes into ddispinfos.
+	int		            m_iNeighbor;		// This indexes into ddispinfos.
 											// 0xFFFF if there is no neighbor here.
 
 	unsigned char		m_NeighborOrientation;		// (CCW) rotation of the neighbor wrt this displacement.
@@ -625,7 +625,7 @@ public:
 
 
 public:
-	unsigned short	m_Neighbors[MAX_DISP_CORNER_NEIGHBORS];	// indices of neighbors.
+	int         	m_Neighbors[MAX_DISP_CORNER_NEIGHBORS];	// indices of neighbors.
 	unsigned char	m_nNeighbors;
 };
 
@@ -696,7 +696,7 @@ public:
 struct dedge_t
 {
 	DECLARE_BYTESWAP_DATADESC();
-	unsigned short	v[2];		// vertex numbers
+	int	v[2];		// vertex numbers
 };
 
 #define	MAXLIGHTMAPS	4
@@ -711,10 +711,10 @@ struct dprimitive_t
 {
 	DECLARE_BYTESWAP_DATADESC();
 	unsigned char type;
-	unsigned short	firstIndex;
-	unsigned short	indexCount;
-	unsigned short	firstVert;
-	unsigned short	vertCount;
+	int	firstIndex;
+	int	indexCount;
+	int	firstVert;
+	int	vertCount;
 };
 
 struct dprimvert_t
@@ -726,25 +726,25 @@ struct dprimvert_t
 struct dface_t
 {
 	DECLARE_BYTESWAP_DATADESC();
-	unsigned short	planenum;
+	int      	planenum;
 	byte		side;	// faces opposite to the node's plane direction	
 	byte		onNode; // 1 of on node, 0 if in leaf	
 
 	int			firstedge;		// we must support > 64k edges
-	short		numedges;	
-	short		texinfo;
+	int		numedges;
+	int		texinfo;
 	// This is a union under the assumption that a fog volume boundary (ie. water surface)	
 	// isn't a displacement map.	
 	// FIXME: These should be made a union with a flags or type field for which one it is	
 	// if we can add more to this.	
 //	union	
 //	{	
-	    short       dispinfo;
+	int       dispinfo;
 	// This is only for surfaces that are the boundaries of fog volumes	
 	// (ie. water surfaces)	
 	// All of the rest of the surfaces can look at their leaf to find out	
 	// what fog volume they are in.	
-		short		surfaceFogVolumeID;
+	int		  surfaceFogVolumeID;
 	//	};	
 
 		// lighting info	
@@ -761,14 +761,14 @@ struct dface_t
 
 public:
 
-	unsigned short GetNumPrims() const;
-	void SetNumPrims( unsigned short nPrims );
+	int GetNumPrims() const;
+	void SetNumPrims( int nPrims );
 	bool AreDynamicShadowsEnabled();
 	void SetDynamicShadowsEnabled(bool bEnabled);
 
 	// non-polygon primitives (strips and lists)	
 private:
-	unsigned short m_NumPrims;	// Top bit, if set, disables shadows on this surface (this is why there are accessors).
+	int m_NumPrims;	// Top bit, if set, disables shadows on this surface (this is why there are accessors).
 
 public:
 	unsigned short	firstPrimID; 
@@ -777,12 +777,12 @@ public:
 };
 
 
-inline unsigned short dface_t::GetNumPrims() const
+inline int dface_t::GetNumPrims() const
 {
 	return m_NumPrims & 0x7FFF;
 }
 
-inline void dface_t::SetNumPrims( unsigned short nPrims )
+inline void dface_t::SetNumPrims(int nPrims )
 {
 	Assert( (nPrims & 0x8000) == 0 );
 	m_NumPrims &= ~0x7FFF;
@@ -823,22 +823,22 @@ struct dleaf_version_0_t
 	DECLARE_BYTESWAP_DATADESC();
 	int				contents;			// OR of all brushes (not needed?)	
 
-	short			cluster;
+	int			cluster;
 
 	BEGIN_BITFIELD(bf);
 	short			area:9;
 	short			flags:7;			// Per leaf flags.
 	END_BITFIELD();
 
-	short			mins[3];			// for frustum culling
-	short			maxs[3];
+	int			mins[3];			// for frustum culling
+	int			maxs[3];
 
 	unsigned short	firstleafface;
 	unsigned short	numleaffaces;
 
 	unsigned short	firstleafbrush;
 	unsigned short	numleafbrushes;
-	short			leafWaterDataID; // -1 for not in water
+	int 			leafWaterDataID; // -1 for not in water
 
 	// Precaculated light info for entities.	
 	CompressedLightCube m_AmbientLighting;
@@ -850,22 +850,22 @@ struct dleaf_t
 	DECLARE_BYTESWAP_DATADESC();
 	int				contents;			// OR of all brushes (not needed?)	
 
-	short			cluster;
+	int 			cluster;
 
 	BEGIN_BITFIELD(bf);
 	short			area:9;
 	short			flags:7;			// Per leaf flags.
 	END_BITFIELD();
 
-	short			mins[3];			// for frustum culling
-	short			maxs[3];
+	int 			mins[3];			// for frustum culling
+	int 			maxs[3];
 
 	unsigned short	firstleafface;
 	unsigned short	numleaffaces;
 
 	unsigned short	firstleafbrush;
 	unsigned short	numleafbrushes;
-	short			leafWaterDataID; // -1 for not in water
+	int 			leafWaterDataID; // -1 for not in water
 
 	// NOTE: removed this for version 1 and moved into separate lump "LUMP_LEAF_AMBIENT_LIGHTING" or "LUMP_LEAF_AMBIENT_LIGHTING_HDR"	
 	// Precaculated light info for entities.	
@@ -893,16 +893,16 @@ struct dleafambientindex_t
 {
 	DECLARE_BYTESWAP_DATADESC();
 
-	unsigned short ambientSampleCount;
-	unsigned short firstAmbientSample;
+	int ambientSampleCount;
+	int firstAmbientSample;
 };
 
 struct dbrushside_t
 {
 	DECLARE_BYTESWAP_DATADESC();
-	unsigned short	planenum;		// facing out of the leaf
-	short			texinfo;
-	short			dispinfo;		// displacement info (BSPVERSION 7)
+	int          	planenum;		// facing out of the leaf
+	int			    texinfo;
+	int		    	dispinfo;		// displacement info (BSPVERSION 7)
 	short			bevel;			// is the side a bevel plane? (BSPVERSION 7)
 };
 
@@ -1054,17 +1054,17 @@ struct doverlay_t
 {
 	DECLARE_BYTESWAP_DATADESC();
 	int			nId;
-	 short		nTexInfo;
+	int 		nTexInfo;
 
 	// Accessors..
-	void			SetFaceCount(unsigned short count);
-	unsigned short	GetFaceCount() const;
+	void			SetFaceCount(int count);
+	int           	GetFaceCount() const;
 
-	void			SetRenderOrder(unsigned short order);
-	unsigned short	GetRenderOrder() const;
+	void			SetRenderOrder(int order);
+	int            	GetRenderOrder() const;
 
 private:
-	unsigned short	m_nFaceCountAndRenderOrder;
+	int       	m_nFaceCountAndRenderOrder;
 
 public:
 	int			aFaces[OVERLAY_BSP_FACE_COUNT];
@@ -1078,24 +1078,24 @@ public:
 	Vector		vecBasisNormal;
 };
 
-inline void doverlay_t::SetFaceCount( unsigned short count )
+inline void doverlay_t::SetFaceCount( int count )
 {
 	m_nFaceCountAndRenderOrder &= OVERLAY_RENDER_ORDER_MASK;
 	m_nFaceCountAndRenderOrder |= (count & ~OVERLAY_RENDER_ORDER_MASK);
 }
 
-inline unsigned short doverlay_t::GetFaceCount() const
+inline int doverlay_t::GetFaceCount() const
 {
 	return m_nFaceCountAndRenderOrder & ~OVERLAY_RENDER_ORDER_MASK;
 }
 
-inline void doverlay_t::SetRenderOrder( unsigned short order )
+inline void doverlay_t::SetRenderOrder( int order )
 {
 	m_nFaceCountAndRenderOrder &= ~OVERLAY_RENDER_ORDER_MASK;
 	m_nFaceCountAndRenderOrder |= (order << (16 - OVERLAY_RENDER_ORDER_NUM_BITS));	// leave 2 bits for render order.
 }
 
-inline unsigned short doverlay_t::GetRenderOrder() const
+inline int doverlay_t::GetRenderOrder() const
 {
 	return (m_nFaceCountAndRenderOrder >> (16 - OVERLAY_RENDER_ORDER_NUM_BITS));
 }
@@ -1118,17 +1118,17 @@ struct dwateroverlay_t
 {
 	DECLARE_BYTESWAP_DATADESC();
 	int				nId;
-	short			nTexInfo;
+	int 			nTexInfo;
 
 	// Accessors..
-	void			SetFaceCount( unsigned short count );
-	unsigned short	GetFaceCount() const;
-	void			SetRenderOrder( unsigned short order );
-	unsigned short	GetRenderOrder() const;
+	void			SetFaceCount(int count );
+	int	            GetFaceCount() const;
+	void			SetRenderOrder(int order );
+	int	            GetRenderOrder() const;
 
 private:
 
-	unsigned short	m_nFaceCountAndRenderOrder;
+	int	m_nFaceCountAndRenderOrder;
 
 public:
 
@@ -1140,24 +1140,24 @@ public:
 	Vector			vecBasisNormal;
 };
 
-inline void dwateroverlay_t::SetFaceCount( unsigned short count )
+inline void dwateroverlay_t::SetFaceCount(int count )
 {
 	m_nFaceCountAndRenderOrder &= WATEROVERLAY_RENDER_ORDER_MASK;
 	m_nFaceCountAndRenderOrder |= (count & ~WATEROVERLAY_RENDER_ORDER_MASK);
 }
 
-inline unsigned short dwateroverlay_t::GetFaceCount() const
+inline int dwateroverlay_t::GetFaceCount() const
 {
 	return m_nFaceCountAndRenderOrder & ~WATEROVERLAY_RENDER_ORDER_MASK;
 }
 
-inline void dwateroverlay_t::SetRenderOrder( unsigned short order )
+inline void dwateroverlay_t::SetRenderOrder(int order )
 {
 	m_nFaceCountAndRenderOrder &= ~WATEROVERLAY_RENDER_ORDER_MASK;
 	m_nFaceCountAndRenderOrder |= ( order << ( 16 - WATEROVERLAY_RENDER_ORDER_NUM_BITS ) );	// leave 2 bits for render order.
 }
 
-inline unsigned short dwateroverlay_t::GetRenderOrder() const
+inline int dwateroverlay_t::GetRenderOrder() const
 {
 	return ( m_nFaceCountAndRenderOrder >> ( 16 - WATEROVERLAY_RENDER_ORDER_NUM_BITS ) );
 }
