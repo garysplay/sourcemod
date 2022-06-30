@@ -3,8 +3,8 @@
 
 # NOTE!!!
 DOWNLOAD THIS AND PUT IT INTO THE BIN FOLDER:
-https://www.mediafire.com/file/8e0pthnuwh62g88/x64_bin.zip/file
-Now run createallprojects.bat and compile the solution using VS2022
+https://www.mediafire.com/file/8e0pthnuwh62g88/x64_bin.zip/file.  
+Now run createallprojects.bat and compile the solution using VS2022.  
 Go into launcher_main\Release\x64 to grab the launcher exe (default.exe)
 
 # Features
@@ -16,6 +16,6 @@ Go into launcher_main\Release\x64 to grab the launcher exe (default.exe)
 6. DX11 support.
 
 # Current win64 state
-Can't launch yet.
+Can't load a map yet.
 
 
