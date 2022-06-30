@@ -41,7 +41,7 @@ $Configuration
 
 	$Linker
 	{
-		$AdditionalDependencies			"$BASE dxgi.lib d3d11.lib D3DCompiler.lib dxguid.lib legacy_stdio_definitions.lib"	[$WIN32]
+		$AdditionalDependencies			"$BASE dxgi.lib d3d11.lib D3DCompiler.lib dxguid.lib legacy_stdio_definitions.lib"	[$WINDOWS]
 	}
 }
 

@@ -3,12 +3,14 @@
 
 inline void hk_query_performance_timer(hk_uint64* ticks)
 {
+#if defined(WIN32) && !defined(WIN64)
 	__asm {
 		mov edi, ticks
 		rdtsc
 		mov [edi  ], eax
 		mov [edi+4], edx
 	}
+#endif
 }
 
 #elif defined(HK_HAVE_GNU_INLINE_ASSEMBLY)

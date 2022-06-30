@@ -122,7 +122,7 @@ $Project "tier0"
 				$CustomBuildStep
 				{
 					// General
-					$CommandLine                "$QUOTE$(VCInstallDir)Tools\MSVC\14.30.30705\bin\Hostx64\x64\ml64.exe$QUOTE /nologo /c /Fo$QUOTE$(IntDir)\$(InputName).obj$QUOTE $QUOTE$(InputPath)$QUOTE"
+					$CommandLine                "$QUOTE$(VCInstallDir)Tools\MSVC\14.32.31326\bin\Hostx64\x64\ml64.exe$QUOTE /nologo /c /Fo$QUOTE$(IntDir)\$(InputName).obj$QUOTE $QUOTE$(InputPath)$QUOTE"
 					$Description                "Compiling $(InputName).masm"
 					$Outputs                    "$(IntDir)$(InputName).obj"
 				}

@@ -1,7 +1,7 @@
 #ifdef HK_PS2
 #	include <hk_math/math_ps2.inl>
 #else	//HK_PS2
-#include <corecrt_math.h>
+//#include <corecrt_math.h>
 #ifdef _WIN32
 inline hk_double hk_Math::fabsd( hk_double r ) { return hk_double(::fabs(r)); }
 

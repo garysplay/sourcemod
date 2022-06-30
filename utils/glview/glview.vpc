@@ -19,7 +19,7 @@ $Configuration
 
 	$Linker
 	{
-		$AdditionalDependencies				"$BASE glu32.lib opengl32.lib odbc32.lib odbccp32.lib winmm.lib"
+		$AdditionalDependencies				"$BASE glu32.lib opengl32.lib odbc32.lib odbccp32.lib winmm.lib User32.lib Advapi32.lib Gdi32.lib"
 	}
 }
 
