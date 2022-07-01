@@ -511,7 +511,7 @@ int ByteswapPHY( void *pDestBase, const void *pSrcBase, const int fileSize )
 		pDest = (byte*)pDestBase + pHdr->size;
 
 		int bufSize = fileSize - pHdr->size;
-		pCollision->VCollideLoad( &collide, pHdr->solidCount, (const char*)pSrc, bufSize, false );
+		pCollision->VCollideLoad( &collide, pHdr->solidCount, (const char *)pSrc, bufSize, false );
 	}
 
 	// Swap the collision data headers
@@ -569,7 +569,7 @@ int ByteswapPHY( void *pDestBase, const void *pSrcBase, const int fileSize )
 		// let ivp swap the ledge tree
 		pSrc = (byte*)pSrcBase + pHdr->size;
 		int bufSize = fileSize - pHdr->size;
-		pCollision->VCollideLoad( &collide, pHdr->solidCount, (const char*)pSrc, bufSize, true );
+		pCollision->VCollideLoad( &collide, pHdr->solidCount, (const char *)pSrc, bufSize, true );
 	}
 
 	// Write out the ledge tree data
@@ -860,9 +860,9 @@ void ByteswapAnimData( mstudioanimdesc_t *pAnimDesc, int section, byte *&pDataSr
 
 			if ( pAnimation->flags & STUDIO_ANIM_ANIMPOS )
 			{
-				int offset = (byte*)pAnimation->pPosV() - (byte*)pAnimation;
-				pDataSrc = (byte*)pAnimationSrc + offset;
-				pDataDest = (byte*)pAnimationDest + offset;
+				int offsetAnim = (byte*)pAnimation->pPosV() - (byte*)pAnimation;
+				pDataSrc = (byte*)pAnimationSrc + offsetAnim;
+				pDataDest = (byte*)pAnimationDest + offsetAnim;
 
 				mstudioanim_valueptr_t *posvptr	= (mstudioanim_valueptr_t*)pDataSrc;
 				WriteObjects<mstudioanim_valueptr_t>( &pDataDest, &pDataSrc );
@@ -1073,10 +1073,10 @@ int ByteswapANIFile( studiohdr_t* pHdr, void *pDestBase, const void *pSrcBase, c
 		{
 			int numsections = pAnimDesc->numframes / pAnimDesc->sectionframes + 2;
 
-			for ( int i = 0; i < numsections; ++i )
+			for ( int iSec = 0; iSec < numsections; ++iSec )
 			{
-				int block = pAnimDesc->pSection( i )->animblock;
-				int index = pAnimDesc->pSection( i )->animindex;
+				int block = pAnimDesc->pSection( iSec )->animblock;
+				int index = pAnimDesc->pSection( iSec )->animindex;
 
 				if ( block != 0 )
 				{
@@ -1093,7 +1093,7 @@ int ByteswapANIFile( studiohdr_t* pHdr, void *pDestBase, const void *pSrcBase, c
 					byte *pDataSrc = pBlockBaseSrc + index;
 					byte *pDataDest = pBlockBaseDest + index;
 
-					ByteswapAnimData( pAnimDesc, i, pDataSrc, pDataDest );
+					ByteswapAnimData( pAnimDesc, iSec, pDataSrc, pDataDest );
 				}
 			}
 		}
@@ -1418,10 +1418,10 @@ int ByteswapMDLFile( void *pDestBase, void *pSrcBase, const int fileSize )
 						int index = pAnimDesc->pSection( i )->animindex;
 
 						// Base address of the animation in the animblock
-						byte *pDataSrc = (byte *)pAnimDescSrc + index;
-						byte *pDataDest = (byte *)pAnimDescDest + index;
+						byte *pDataSrcAnim = (byte *)pAnimDescSrc + index;
+						byte *pDataDestAnim = (byte *)pAnimDescDest + index;
 
-						ByteswapAnimData( pAnimDesc, i, pDataSrc, pDataDest );
+						ByteswapAnimData( pAnimDesc, i, pDataSrcAnim, pDataDestAnim );
 					}
 				}
 			}
@@ -2068,7 +2068,7 @@ int ByteswapStudioFile( const char *pFilename, void *pOutBase, const void *pFile
 void ProcessANIFields( void *pDataBase, datadescProcessFunc_t pfnProcessFunc )
 {
 	studiohdr_t *pHdr = g_pHdr;
-	byte *pData = (byte*)pDataBase;
+	//byte *pData = (byte*)pDataBase;
 	byte *pSrcBase = (byte*)g_pDataSrcBase;
 
 	// Since the animblocks and animdescs are native data, trick the system
@@ -2088,7 +2088,7 @@ void ProcessANIFields( void *pDataBase, datadescProcessFunc_t pfnProcessFunc )
 	mstudioanimdesc_t *pAnimDesc = pHdr->pLocalAnimdesc( 0 );
 	for ( int i = 0; i < pHdr->numlocalanim; ++i, ++pAnimDesc )
 	{
-		mstudioanimblock_t *pAnimBlock = pHdr->pAnimBlock( pAnimDesc->animblock );
+		pAnimBlock = pHdr->pAnimBlock( pAnimDesc->animblock );
 		byte *pBlockBase = (byte*)pSrcBase + pAnimBlock->datastart;
 
 		ProcessFieldByName( pBlockBase, pAnimDesc, &mstudioanimdesc_t::m_DataMap, "animindex", pfnProcessFunc );
@@ -2133,7 +2133,7 @@ void ProcessANIFields( void *pDataBase, datadescProcessFunc_t pfnProcessFunc )
 			pData = (byte*)pBlockBase + pAnimDesc->animblockikruleindex;
 
 			mstudioikrule_t *pIKRule = (mstudioikrule_t *)pData;
-			for ( int i = 0; i < pAnimDesc->numikrules; ++i, ++pIKRule )
+			for ( int iIK = 0; iIK < pAnimDesc->numikrules; ++iIK, ++pIKRule )
 			{
 				ProcessFields( pIKRule, &mstudioikrule_t::m_DataMap, pfnProcessFunc );
 			}
@@ -2227,7 +2227,7 @@ void ProcessMDLFields( void *pDataBase, datadescProcessFunc_t pfnProcessFunc  )
 		/** HITBOXES **/
 		pData = (byte*)pHitboxSet + SrcNative( &pHitboxSet->hitboxindex );
 		mstudiobbox_t *pBBox = (mstudiobbox_t*)pData;
-		for ( int i = 0; i < SrcNative( &pHitboxSet->numhitboxes ); ++i, ++pBBox )
+		for ( int iHit = 0; iHit < SrcNative( &pHitboxSet->numhitboxes ); ++iHit, ++pBBox )
 		{
 			ProcessFields( pBBox, &mstudiobbox_t::m_DataMap, pfnProcessFunc );
 		}
@@ -2275,7 +2275,7 @@ void ProcessMDLFields( void *pDataBase, datadescProcessFunc_t pfnProcessFunc  )
 			pData = (byte*)pAnimDesc + SrcNative( &pAnimDesc->ikruleindex );
 
 			mstudioikrule_t *pIKRule = (mstudioikrule_t *)pData;
-			for ( int i = 0; i < SrcNative( &pAnimDesc->numikrules ); ++i, ++pIKRule )
+			for ( int iIK = 0; iIK < SrcNative( &pAnimDesc->numikrules ); ++iIK, ++pIKRule )
 			{
 				ProcessFields( pIKRule, &mstudioikrule_t::m_DataMap, pfnProcessFunc );
 			}
@@ -2294,7 +2294,7 @@ void ProcessMDLFields( void *pDataBase, datadescProcessFunc_t pfnProcessFunc  )
 
 		pData = (byte*)pHdr + SrcNative( &pSequenceHdr->eventindex );
 		mstudioevent_t *pEvent = (mstudioevent_t*)pData;
-		for ( int i = 0; i < SrcNative( &pSequenceHdr->numevents ); ++i, ++pEvent )
+		for ( int iEvent = 0; iEvent < SrcNative( &pSequenceHdr->numevents ); ++iEvent, ++pEvent )
 		{
 			ProcessFields( pSequenceHdr, &mstudioevent_t::m_DataMap, pfnProcessFunc );
 		}
@@ -2310,9 +2310,9 @@ void ProcessMDLFields( void *pDataBase, datadescProcessFunc_t pfnProcessFunc  )
 
 		/** MODEL INFO **/
 
-		byte *pData = (byte*)pBodypart + SrcNative( &pBodypart->modelindex );
-		mstudiomodel_t *pModel = (mstudiomodel_t*)pData;
-		for ( int i = 0; i < SrcNative( &pBodypart->nummodels ); ++i, ++pModel )
+		byte *pDataModel = (byte*)pBodypart + SrcNative( &pBodypart->modelindex );
+		mstudiomodel_t *pModel = (mstudiomodel_t*)pDataModel;
+		for ( int iModel = 0; iModel < SrcNative( &pBodypart->nummodels ); ++iModel, ++pModel )
 		{
 			ProcessFields( pModel, &mstudiomodel_t::m_DataMap, pfnProcessFunc );
 
@@ -2320,7 +2320,7 @@ void ProcessMDLFields( void *pDataBase, datadescProcessFunc_t pfnProcessFunc  )
 
 			pData = (byte*)pModel + SrcNative( &pModel->meshindex );
 			mstudiomesh_t *pMesh = (mstudiomesh_t*)pData;
-			for ( int i = 0; i < SrcNative( &pModel->nummeshes ); ++i, ++pMesh )
+			for ( int iMesh = 0; iMesh < SrcNative( &pModel->nummeshes ); ++iMesh, ++pMesh )
 			{	
 				ProcessFields( pMesh, &mstudiomesh_t::m_DataMap, pfnProcessFunc );
 
@@ -2331,7 +2331,7 @@ void ProcessMDLFields( void *pDataBase, datadescProcessFunc_t pfnProcessFunc  )
 
 				pData = (byte*)pMesh + SrcNative( &pMesh->flexindex );
 				mstudioflex_t *pFlex = (mstudioflex_t*)pData;
-				for ( int i = 0; i < SrcNative( &pMesh->numflexes ); ++i, ++pFlex )
+				for ( int iFlesh = 0; iFlesh < SrcNative( &pMesh->numflexes ); ++iFlesh, ++pFlex )
 				{	
 					ProcessFields( pFlex, &mstudioflex_t::m_DataMap, pfnProcessFunc );
 				}
@@ -2341,7 +2341,7 @@ void ProcessMDLFields( void *pDataBase, datadescProcessFunc_t pfnProcessFunc  )
 
 			pData= (byte*)pModel + SrcNative( &pModel->eyeballindex );
 			mstudioeyeball_t *pEyeball = (mstudioeyeball_t*)pData;
-			for ( int i = 0; i < SrcNative( &pModel->numeyeballs ); ++i, ++pEyeball )
+			for ( int iEye = 0; iEye < SrcNative( &pModel->numeyeballs ); ++iEye, ++pEyeball )
 			{
 				ProcessFields( pEyeball, &mstudioeyeball_t::m_DataMap, pfnProcessFunc );
 			}
@@ -2445,7 +2445,7 @@ void ProcessMDLFields( void *pDataBase, datadescProcessFunc_t pfnProcessFunc  )
 
 			pData = (byte*)pHdr + SrcNative( &pStudioHdr2->srcbonetransformindex );
 			mstudiosrcbonetransform_t *pSrcBoneTransform = (mstudiosrcbonetransform_t*)pData;
-			for ( int i = 0; i < SrcNative( &pStudioHdr2->numsrcbonetransform ); ++i, ++pSrcBoneTransform )
+			for ( int iBone = 0; iBone < SrcNative( &pStudioHdr2->numsrcbonetransform ); ++iBone, ++pSrcBoneTransform )
 			{
 				ProcessFields( pSrcBoneTransform, &mstudiosrcbonetransform_t::m_DataMap, pfnProcessFunc );
 			}
@@ -2985,7 +2985,11 @@ BEGIN_BYTESWAP_DATADESC( mstudiomesh_t )
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( mstudio_meshvertexdata_t )
+#ifdef PLATFORM_64BITS
+	DEFINE_FIELD( index_ptr_modelvertexdata, FIELD_INTEGER ),	// mstudio_modelvertexdata_t*
+#else
 	DEFINE_FIELD( modelvertexdata, FIELD_INTEGER ),	// mstudio_modelvertexdata_t*
+#endif
 	DEFINE_ARRAY( numLODVertexes, FIELD_INTEGER, MAX_NUM_LODS ),
 END_BYTESWAP_DATADESC()
 
@@ -3050,13 +3054,9 @@ BEGIN_BYTESWAP_DATADESC( mstudiotexture_t )
 	DEFINE_FIELD( flags, FIELD_INTEGER ),
 	DEFINE_FIELD( used, FIELD_INTEGER ),
 	DEFINE_FIELD( unused1, FIELD_INTEGER ),
-#ifdef PLATFORM_64BITS
-	DEFINE_ARRAY( unused, FIELD_INTEGER, 12),
-#else
 	DEFINE_FIELD( material, FIELD_INTEGER ),		// IMaterial*
 	DEFINE_FIELD( clientmaterial, FIELD_INTEGER ),	// void*
 	DEFINE_ARRAY( unused, FIELD_INTEGER, 10 ),
-#endif
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( vertexFileHeader_t )

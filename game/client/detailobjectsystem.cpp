@@ -2331,7 +2331,15 @@ void CDetailObjectSystem::RenderFastSprites( const Vector &viewOrigin, const Vec
 					color[2] = pquad->m_RGBColor[0][2];
 					color[3] = pColorsCasted[MANTISSA_LSB_OFFSET];
 
-					DetailPropSpriteDict_t *pDict = pquad->m_pSpriteDefs[0];
+                    DetailPropSpriteDict_t *pDict;
+#ifdef PLATFORM_64BITS
+					if( nSubIdx == 1 )
+						pDict = ((FastSpriteQuadBuildoutBufferNonSIMDView_t*)((intp)pquad+4))->m_pSpriteDefs[0];
+					else if( nSubIdx == 3 )
+						pDict = ((FastSpriteQuadBuildoutBufferNonSIMDView_t*)((intp)pquad-4))->m_pSpriteDefs[0];
+					else
+#endif
+					pDict = pquad->m_pSpriteDefs[0];
 
 					meshBuilder.Position3f( pquad->m_flX0[0], pquad->m_flY0[0], pquad->m_flZ0[0] );
 					meshBuilder.Color4ubv( color );
@@ -2563,7 +2571,15 @@ void CDetailObjectSystem::RenderFastTranslucentDetailObjectsInLeaf( const Vector
 			color[2] = pquad->m_RGBColor[0][2];
 			color[3] = pColorsCasted[MANTISSA_LSB_OFFSET];
 
-			DetailPropSpriteDict_t *pDict = pquad->m_pSpriteDefs[0];
+			DetailPropSpriteDict_t *pDict;
+#ifdef PLATFORM_64BITS
+			if( nSubIdx == 1 )
+				pDict = ((FastSpriteQuadBuildoutBufferNonSIMDView_t*)((intp)pquad+4))->m_pSpriteDefs[0];
+			else if( nSubIdx == 3 )
+				pDict = ((FastSpriteQuadBuildoutBufferNonSIMDView_t*)((intp)pquad-4))->m_pSpriteDefs[0];
+			else
+#endif
+			pDict = pquad->m_pSpriteDefs[0];
 
 			meshBuilder.Position3f( pquad->m_flX0[0], pquad->m_flY0[0], pquad->m_flZ0[0] );
 			meshBuilder.Color4ubv( color );

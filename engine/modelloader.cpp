@@ -68,7 +68,7 @@ ConVar mat_loadtextures( "mat_loadtextures", "1", FCVAR_CHEAT );
 #else
 	#define CONVAR_DEFAULT_MOD_OFFLINE_HDR_SWITCH "0"
 #endif
-static ConVar mod_offline_hdr_switch( "mod_offline_hdr_switch", CONVAR_DEFAULT_MOD_OFFLINE_HDR_SWITCH, 0,
+static ConVar mod_offline_hdr_switch( "mod_offline_hdr_switch", CONVAR_DEFAULT_MOD_OFFLINE_HDR_SWITCH, FCVAR_CHEAT,
                                       "Re-order the HDR/LDR mode switch to do most of the material system "
                                       "reloading with the device offline. This reduces unnecessary device "
                                       "resource uploads and may drastically reduce load time and memory pressure "
@@ -483,27 +483,10 @@ void CMapLoadHelper::Init( model_t *pMapModel, const char *loadname )
 	InitDLightGlobals( s_MapHeader.version );
 #endif
 
-	bspver = s_MapHeader.version;
-
 	s_pMap = &g_ModelLoader.m_worldBrushData;
 
-	// lump_t fix for l4d2 maps
-	if (s_MapHeader.version == 21 && s_MapHeader.lumps[0].fileofs == 0)
-	{
-		DevMsg("Detected v21 bsp, fixing lump struct order for compatibility\n");
+	// nillerusr: Fuck you johns
 
-		for (int iLump = 0; iLump < HEADER_LUMPS; iLump++)
-		{
-			lump_21_t lump21;
-			V_memcpy(&lump21, &s_MapHeader.lumps[iLump], sizeof(lump_t));
-
-			s_MapHeader.lumps[iLump].version = lump21.version;
-			s_MapHeader.lumps[iLump].filelen = lump21.filelen;
-			s_MapHeader.lumps[iLump].fileofs = lump21.fileofs;
-		}
-	}
-
-#if 0
 	// XXX(johns): There are security issues with this system currently. sv_pure doesn't handle unexpected/mismatched
 	//             lumps, so players can create lumps for maps not using them to wallhack/etc.. Currently unused,
 	//             disabling until we have time to make a proper security pass.
@@ -550,7 +533,6 @@ void CMapLoadHelper::Init( model_t *pMapModel, const char *loadname )
 			}
 		}
 	}
-#endif
 }
 
 int GetBSPVersion()
@@ -604,22 +586,6 @@ void CMapLoadHelper::InitFromMemory( model_t *pMapModel, const void *pData, int 
 #endif
 
 	s_pMap = &g_ModelLoader.m_worldBrushData;
-
-	// lump_t fix for l4d2 maps
-	if (s_MapHeader.version == 21 && s_MapHeader.lumps[0].fileofs == 0)
-	{
-		DevMsg("Detected v21 bsp, fixing lump struct order for compatibility\n");
-
-		for (int iLump = 0; iLump < HEADER_LUMPS; iLump++)
-		{
-			lump_21_t lump21;
-			V_memcpy(&lump21, &s_MapHeader.lumps[iLump], sizeof(lump_t));
-
-			s_MapHeader.lumps[iLump].version = lump21.version;
-			s_MapHeader.lumps[iLump].filelen = lump21.filelen;
-			s_MapHeader.lumps[iLump].fileofs = lump21.fileofs;
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1079,7 +1045,7 @@ bool Map_CheckForHDR( model_t *pModel, const char *pLoadName )
 	}
 	
 	bool bEnableHDR = ( IsX360() && bHasHDR ) ||
-		( bHasHDR && ( mat_hdr_level.GetInt() >= 2 ) &&
+		( bHasHDR &&
 		( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() >= 90 ) );
 	
 	EnableHDR( bEnableHDR );
@@ -1184,57 +1150,9 @@ void Mod_LoadWorldlights( CMapLoadHelper &lh, bool bIsHDR )
 		lh.GetMap()->worldlights = NULL;
 		return;
 	}
-
-	switch (s_MapHeader.version)
-	{
-	case BSPVERSION:
-	{
-		lh.GetMap()->numworldlights = lh.LumpSize() / sizeof(dworldlight_t);
-		lh.GetMap()->worldlights = (dworldlight_t*)Hunk_AllocName(lh.LumpSize(), va("%s [%s]", lh.GetLoadName(), "worldlights"));
-		memcpy(lh.GetMap()->worldlights, lh.LumpBase(), lh.LumpSize());
-		break;
-	}
-	case 21:
-	{
-		lh.GetMap()->numworldlights = lh.LumpSize() / sizeof(dworldlight_t);
-		lh.GetMap()->worldlights = (dworldlight_t*)Hunk_AllocName(lh.LumpSize(), va("%s [%s]", lh.GetLoadName(), "worldlights"));
-		memcpy(lh.GetMap()->worldlights, lh.LumpBase(), lh.LumpSize());
-		break;
-	}
-	default:
-	{
-		int nNumWorldLights = lh.LumpSize() / sizeof(dworldlight_old_t);
-		lh.GetMap()->numworldlights = nNumWorldLights;
-		lh.GetMap()->worldlights = (dworldlight_t*)Hunk_AllocName(nNumWorldLights * sizeof(dworldlight_t), va("%s [%s]", lh.GetLoadName(), "worldlights"));
-		dworldlight_old_t* RESTRICT pOldWorldLight = reinterpret_cast<dworldlight_old_t*>(lh.LumpBase());
-		dworldlight_t* RESTRICT pNewWorldLight = lh.GetMap()->worldlights;
-
-		for (int i = 0; i < nNumWorldLights; i++)
-		{
-			pNewWorldLight->origin = pOldWorldLight->origin;
-			pNewWorldLight->intensity = pOldWorldLight->intensity;
-			pNewWorldLight->normal = pOldWorldLight->normal;
-			pNewWorldLight->shadow_cast_offset.Init(0.0f, 0.0f, 0.0f);
-			pNewWorldLight->cluster = pOldWorldLight->cluster;
-			pNewWorldLight->type = pOldWorldLight->type;
-			pNewWorldLight->style = pOldWorldLight->style;
-			pNewWorldLight->stopdot = pOldWorldLight->stopdot;
-			pNewWorldLight->stopdot2 = pOldWorldLight->stopdot2;
-			pNewWorldLight->exponent = pOldWorldLight->exponent;
-			pNewWorldLight->radius = pOldWorldLight->radius;
-			pNewWorldLight->constant_attn = pOldWorldLight->constant_attn;
-			pNewWorldLight->linear_attn = pOldWorldLight->linear_attn;
-			pNewWorldLight->quadratic_attn = pOldWorldLight->quadratic_attn;
-			pNewWorldLight->flags = pOldWorldLight->flags;
-			pNewWorldLight->texinfo = pOldWorldLight->texinfo;
-			pNewWorldLight->owner = pOldWorldLight->owner;
-			pNewWorldLight++;
-			pOldWorldLight++;
-		}
-		break;
-	}
-
-    }
+	lh.GetMap()->numworldlights = lh.LumpSize() / sizeof( dworldlight_t );
+	lh.GetMap()->worldlights = (dworldlight_t *)Hunk_AllocName( lh.LumpSize(), va( "%s [%s]", lh.GetLoadName(), "worldlights" ) );
+	memcpy (lh.GetMap()->worldlights, lh.LumpBase(), lh.LumpSize());
 #if !defined( SWDS )
 	if ( r_lightcache_zbuffercache.GetInt() )
 	{
@@ -1920,7 +1838,7 @@ void *Hunk_AllocNameAlignedClear_( int size, int alignment, const char *pHunkNam
 	Assert(IsPowerOfTwo(alignment));
 	void *pMem = Hunk_AllocName( alignment + size, pHunkName );
 	memset( pMem, 0, size + alignment );
-	pMem = (void *)( ( ( ( unsigned long long)pMem ) + (alignment-1) ) & ~(alignment-1) );
+	pMem = (void *)( ( ( ( uintp )pMem ) + (alignment-1) ) & ~(alignment-1) );
 
 	return pMem;
 }
@@ -1945,8 +1863,7 @@ void Mod_LoadFaces( void )
 	int			ti, di;
 
 	int face_lump_to_load = LUMP_FACES;
-	if ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE &&
-		CMapLoadHelper::LumpSize( LUMP_FACES_HDR ) > 0 )
+	if ( g_pMaterialSystemHardwareConfig->GetHDREnabled() && CMapLoadHelper::LumpSize( LUMP_FACES_HDR ) > 0 )
 	{
 		face_lump_to_load = LUMP_FACES_HDR;
 	}
@@ -1960,17 +1877,17 @@ void Mod_LoadFaces( void )
 	// align these allocations
 	// If you trip one of these, you need to rethink the alignment of the struct
 #ifdef PLATFORM_64BITS
-	msurface1_t* out1 = Hunk_AllocNameAlignedClear< msurface1_t >(count, alignof(msurface1_t), va("%s [%s]", lh.GetLoadName(), "surface1"));
-	msurface2_t* out2 = Hunk_AllocNameAlignedClear< msurface2_t >(count, alignof(msurface2_t), va("%s [%s]", lh.GetLoadName(), "surface2"));
+    msurface1_t *out1 = Hunk_AllocNameAlignedClear< msurface1_t >( count, alignof(msurface1_t), va( "%s [%s]", lh.GetLoadName(), "surface1" ) );
+    msurface2_t *out2 = Hunk_AllocNameAlignedClear< msurface2_t >( count, alignof(msurface2_t), va( "%s [%s]", lh.GetLoadName(), "surface2" ) );
 
-	msurfacelighting_t* pLighting = Hunk_AllocNameAlignedClear< msurfacelighting_t >(count, alignof(msurfacelighting_t), va("%s [%s]", lh.GetLoadName(), "surfacelighting"));
+    msurfacelighting_t *pLighting = Hunk_AllocNameAlignedClear< msurfacelighting_t >( count, alignof(msurfacelighting_t), va( "%s [%s]", lh.GetLoadName(), "surfacelighting" ) );
 #else
 	Assert( sizeof(msurface1_t) == 16 );
-	Assert( sizeof(msurface2_t) == 40 );
+	Assert( sizeof(msurface2_t) == 32 );
 	Assert( sizeof(msurfacelighting_t) == 32 );
 
 	msurface1_t *out1 = Hunk_AllocNameAlignedClear< msurface1_t >( count, 16, va( "%s [%s]", lh.GetLoadName(), "surface1" ) );
-	msurface2_t *out2 = Hunk_AllocNameAlignedClear< msurface2_t >( count, 40, va( "%s [%s]", lh.GetLoadName(), "surface2" ) );
+	msurface2_t *out2 = Hunk_AllocNameAlignedClear< msurface2_t >( count, 32, va( "%s [%s]", lh.GetLoadName(), "surface2" ) );
 
 	msurfacelighting_t *pLighting = Hunk_AllocNameAlignedClear< msurfacelighting_t >( count, 32, va( "%s [%s]", lh.GetLoadName(), "surfacelighting" ) );
 #endif
@@ -2385,8 +2302,7 @@ void Mod_LoadLeafs( void )
 		Mod_LoadLeafs_Version_0( lh );
 		break;
 	case 1:
-		if( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE &&
-	  		  CMapLoadHelper::LumpSize( LUMP_LEAF_AMBIENT_LIGHTING_HDR ) > 0 )
+		if( g_pMaterialSystemHardwareConfig->GetHDREnabled() && CMapLoadHelper::LumpSize( LUMP_LEAF_AMBIENT_LIGHTING_HDR ) > 0 )
 		{
 			CMapLoadHelper mlh( LUMP_LEAF_AMBIENT_LIGHTING_HDR );
 			CMapLoadHelper mlhTable( LUMP_LEAF_AMBIENT_INDEX_HDR );
@@ -2481,7 +2397,7 @@ void Mod_LoadCubemapSamples( void )
 	lh.GetMap()->m_pCubemapSamples = out;
 	lh.GetMap()->m_nCubemapSamples = count;
 
-	bool bHDR = g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE;
+	bool bHDR =  g_pMaterialSystemHardwareConfig->GetHDREnabled(); //g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE;
 	int nCreateFlags = bHDR ? 0 : TEXTUREFLAGS_SRGB;
 
 	// We have separate HDR versions of the textures.  In order to deal with this,
@@ -2958,7 +2874,7 @@ void Mod_TouchAllData( model_t *pModel, int nServerCount )
 		// skip self, start at children
 		for ( int i=1; i<pVirtualModel->m_group.Count(); ++i )
 		{
-			MDLHandle_t childHandle = (MDLHandle_t)(intp)pVirtualModel->m_group[i].cache & 0xffff;
+			MDLHandle_t childHandle = (MDLHandle_t)(intp)pVirtualModel->m_group[i].cache&0xffff;
 			model_t *pChildModel = (model_t *)g_pMDLCache->GetUserData( childHandle );
 			if ( pChildModel )
 			{
@@ -4549,8 +4465,7 @@ void CModelLoader::Map_LoadModel( model_t *mod )
 
 	// Until BSP version 19, this must occur after loading texinfo
 	COM_TimestampedLog( "  Mod_LoadLighting" );
-	if ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE &&
-		CMapLoadHelper::LumpSize( LUMP_LIGHTING_HDR ) > 0 )
+	if ( g_pMaterialSystemHardwareConfig->GetHDREnabled() && CMapLoadHelper::LumpSize( LUMP_LIGHTING_HDR ) > 0 )
 	{
 		CMapLoadHelper mlh( LUMP_LIGHTING_HDR );
 		Mod_LoadLighting( mlh );
@@ -4642,8 +4557,7 @@ void CModelLoader::Map_LoadModel( model_t *mod )
 		&m_worldBrushData.m_nAreas );
 
 	COM_TimestampedLog( "  Mod_LoadWorldlights" );
-	if ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE &&
-  		  CMapLoadHelper::LumpSize( LUMP_WORLDLIGHTS_HDR ) > 0 )
+	if ( g_pMaterialSystemHardwareConfig->GetHDREnabled() && CMapLoadHelper::LumpSize( LUMP_WORLDLIGHTS_HDR ) > 0 )
 	{
 		CMapLoadHelper mlh( LUMP_WORLDLIGHTS_HDR );
 		Mod_LoadWorldlights( mlh, true );
@@ -5707,7 +5621,7 @@ void CModelLoader::UpdateDynamicModelLoadQueue()
 
 			// do the clean up after we're actually done
 			// we keep some file cache around to make sure that LoadModel doesn't do blocking load
-			//g_pQueuedLoader->CleanupDynamicLoad(); NOT IMPLEMENTED
+			g_pQueuedLoader->CleanupDynamicLoad();
 			
 			s_LastDynamicLoadTime = Plat_FloatTime();
 		}

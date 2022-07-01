@@ -1179,7 +1179,7 @@ void C_SceneEntity::PrefetchAnimBlocks( CChoreoScene *pScene )
 
 										// Async load the animation
 										int iFrame = 0;
-										const byte* panim = animdesc.pAnim(&iFrame);
+										mstudioanim_t* panim = animdesc.pAnim(&iFrame);
 										if ( panim )
 										{
 											++nResident;

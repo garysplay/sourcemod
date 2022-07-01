@@ -435,7 +435,8 @@ namespace ImageLoader
 		// pRows = (Alpha3BitRows*) & ( pAlphaBlock->stuff[0] );
 		const DWORD mask = 0x00000007;		// bits = 00 00 01 11
 
-		DWORD bits = *((DWORD*)&(pAlphaBlock->stuff[0]));
+        DWORD bits;
+	    memcpy( &bits, &(pAlphaBlock->stuff[0]), sizeof(DWORD) );
 
 		gBits[0][0] = (BYTE)(bits & mask);
 		bits >>= 3;
@@ -454,7 +455,7 @@ namespace ImageLoader
 		gBits[1][3] = (BYTE)(bits & mask);
 
 		// now for last two rows:
-		bits = *((DWORD*)&(pAlphaBlock->stuff[3]));		// last 3 bytes
+	    memcpy( &bits, &(pAlphaBlock->stuff[3]), sizeof(DWORD) );
 
 		gBits[2][0] = (BYTE)(bits & mask);
 		bits >>= 3;

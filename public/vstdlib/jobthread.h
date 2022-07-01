@@ -1147,7 +1147,7 @@ private:
 // Raw thread launching
 //-----------------------------------------------------------------------------
 
-inline unsigned long long FunctorExecuteThread( void *pParam )
+inline uintp FunctorExecuteThread( void *pParam )
 {
 	CFunctor *pFunctor = (CFunctor *)pParam;
 	(*pFunctor)();
@@ -1162,7 +1162,7 @@ inline ThreadHandle_t ThreadExecuteSoloImpl( CFunctor *pFunctor, const char *psz
 	hThread = CreateSimpleThread( FunctorExecuteThread, pFunctor, &threadId );
 	if ( pszName )
 	{
-		ThreadSetDebugName( threadId, pszName );
+		ThreadSetDebugName(threadId, pszName );
 	}
 	return hThread;
 }

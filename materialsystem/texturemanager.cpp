@@ -1780,7 +1780,7 @@ void CTextureManager::RestoreTexture( ITextureInternal* pTexture )
 //-----------------------------------------------------------------------------
 void CTextureManager::CleanupPossiblyUnreferencedTextures()
 {
-	if ( !ThreadInMainThread() || MaterialSystem()->GetRenderThreadId() != 0xFFFFFFFF )
+	if ( !ThreadInMainThread() || MaterialSystem()->GetRenderThreadId() != (uintp)-1 )
 	{
 		Assert( !"CTextureManager::CleanupPossiblyUnreferencedTextures should never be called here" );
 		// This is catastrophically bad, don't do this. Someone needs to fix this. See JohnS or McJohn
@@ -2327,7 +2327,7 @@ void CTextureManager::RemoveTexture( ITextureInternal *pTexture )
 {
 	Assert( pTexture->GetReferenceCount() <= 0 );
 
-	if ( !ThreadInMainThread() || MaterialSystem()->GetRenderThreadId() != 0xFFFFFFFF )
+	if ( !ThreadInMainThread() || MaterialSystem()->GetRenderThreadId() != (uintp)-1 )
 	{
 		Assert( !"CTextureManager::RemoveTexture should never be called here");
 		// This is catastrophically bad, don't do this. Someone needs to fix this. 

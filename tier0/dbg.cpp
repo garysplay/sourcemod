@@ -144,7 +144,7 @@ struct SpewInfo_t
 	int				m_nSpewOutputLevel;
 };
 
-CThreadLocalPtr<SpewInfo_t> g_pSpewInfo;
+CTHREADLOCALPTR(SpewInfo_t) g_pSpewInfo;
 
 
 // Standard groups

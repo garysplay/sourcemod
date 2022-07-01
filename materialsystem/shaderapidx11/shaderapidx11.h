@@ -45,7 +45,7 @@ class CShaderAPIDx11 : public CShaderAPIBase, public IDebugTextureInfo
 public:
 	// constructor, destructor
 	CShaderAPIDx11();
-	virtual ~CShaderAPIDx11();
+	virtual ~CShaderAPIDx11(); 
 
 	// Methods of IShaderAPI
 	// NOTE: These methods have been ported over

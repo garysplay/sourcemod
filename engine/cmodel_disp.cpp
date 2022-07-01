@@ -60,7 +60,7 @@ public:
 		// size both of these to the size of the array since there is exactly one per element
 		m_leafCount.SetCount( g_DispCollTreeCount );
 		m_firstIndex.SetCount( g_DispCollTreeCount );
-		for ( int i = 0; i < g_DispCollTreeCount; i++ )
+		for ( intp i = 0; i < g_DispCollTreeCount; i++ )
 		{
 			m_leafCount[i] = 0;
 			m_firstIndex[i] = -1;

@@ -931,7 +931,7 @@ void CDownloadManager::StartNewDownload()
 #endif
 			DownloadThread, m_activeRequest, 0, &threadID );
 
-		ThreadDetach( ( ThreadHandle_t )threadID );
+		ReleaseThreadHandle( ( ThreadHandle_t )threadID );
 	}
 	else
 	{
@@ -1079,7 +1079,7 @@ public:
 #endif
 		 	DownloadThread, pContext, 0, (uintp*)&nThreadID );
 
-		ThreadDetach( ( ThreadHandle_t )nThreadID );
+		ReleaseThreadHandle( ( ThreadHandle_t )nThreadID );
 		return nThreadID;
 	}
 };

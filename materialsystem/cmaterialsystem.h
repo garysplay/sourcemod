@@ -566,7 +566,7 @@ public:
 	MaterialLock_t							Lock();
 	void									Unlock( MaterialLock_t );
 	CMatCallQueue *							GetRenderCallQueue();
-	uint									GetRenderThreadId() const { return m_nRenderThreadID; }
+	ThreadId_t								GetRenderThreadId() const { return m_nRenderThreadID; }
 	void									UnbindMaterial( IMaterial *pMaterial );
 
 	IMaterialProxy							*DetermineProxyReplacements( IMaterial *pMaterial, KeyValues *pFallbackKeyValues );
@@ -611,7 +611,7 @@ private:
 
 	CMaterialDict							m_MaterialDict;
 	CMatLightmaps							m_Lightmaps;
-	CThreadLocal<IMatRenderContextInternal *> m_pRenderContext;
+	CTHREADLOCAL(IMatRenderContextInternal *) m_pRenderContext;
 	CMatRenderContext						m_HardwareRenderContext;
 
 	CMatQueuedRenderContext					m_QueuedRenderContexts[2];
@@ -692,7 +692,7 @@ private:
 
 	const char *							m_pForcedTextureLoadPathID;
 	FileCacheHandle_t						m_hAsyncLoadFileCache;
-	uint									m_nRenderThreadID;
+	ThreadId_t								m_nRenderThreadID;
 	bool									m_bAllocatingRenderTargets;
 	bool									m_bInStubMode;
 	bool									m_bGeneratedConfig;
