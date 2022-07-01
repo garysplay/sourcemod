@@ -68,7 +68,7 @@ void COcclusionQueryMgr::FlushQuery( OcclusionQueryObjectHandle_t hOcclusionQuer
 
 void COcclusionQueryMgr::DestroyOcclusionQueryObject( OcclusionQueryObjectHandle_t hOcclusionQuery )
 {
-	int h = (intp)hOcclusionQuery;
+	intp h = (intp)hOcclusionQuery;
 	Assert( m_OcclusionQueryObjects.IsValidIndex( h ) );
 	if ( m_OcclusionQueryObjects.IsValidIndex( h ) )
 	{
