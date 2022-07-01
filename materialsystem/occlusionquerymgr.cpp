@@ -56,7 +56,7 @@ void COcclusionQueryMgr::OnCreateOcclusionQueryObject( OcclusionQueryObjectHandl
 void COcclusionQueryMgr::FlushQuery( OcclusionQueryObjectHandle_t hOcclusionQuery, int nIndex )
 {
 	// Flush out any previous queries
-	int h = (intp)hOcclusionQuery;
+	intp h = (intp)hOcclusionQuery;
 	if ( m_OcclusionQueryObjects[h].m_bHasBeenIssued[nIndex] )
 	{
 		ShaderAPIOcclusionQuery_t hQuery = m_OcclusionQueryObjects[h].m_QueryHandle[nIndex];
@@ -133,7 +133,7 @@ void COcclusionQueryMgr::FreeOcclusionQueryObjects( void )
 //-----------------------------------------------------------------------------
 void COcclusionQueryMgr::ResetOcclusionQueryObject( OcclusionQueryObjectHandle_t hOcclusionQuery )
 {
-	int h = (intp)hOcclusionQuery;
+	intp h = (intp)hOcclusionQuery;
 	Assert( m_OcclusionQueryObjects.IsValidIndex( h ) );
 	if ( m_OcclusionQueryObjects.IsValidIndex( h ) )
 	{
@@ -154,7 +154,7 @@ void COcclusionQueryMgr::ResetOcclusionQueryObject( OcclusionQueryObjectHandle_t
 //-----------------------------------------------------------------------------
 void COcclusionQueryMgr::BeginOcclusionQueryDrawing( OcclusionQueryObjectHandle_t hOcclusionQuery )
 {
-	int h = (intp)hOcclusionQuery;
+	intp h = (intp)hOcclusionQuery;
 	Assert( m_OcclusionQueryObjects.IsValidIndex( h ) );
 	if ( m_OcclusionQueryObjects.IsValidIndex( h ) )
 	{
@@ -194,7 +194,7 @@ void COcclusionQueryMgr::BeginOcclusionQueryDrawing( OcclusionQueryObjectHandle_
 
 void COcclusionQueryMgr::EndOcclusionQueryDrawing( OcclusionQueryObjectHandle_t hOcclusionQuery )
 {
-	int h = (intp)hOcclusionQuery;
+	intp h = (intp)hOcclusionQuery;
 	Assert( m_OcclusionQueryObjects.IsValidIndex( h ) );
 	if ( m_OcclusionQueryObjects.IsValidIndex( h ) )
 	{
@@ -220,7 +220,7 @@ void COcclusionQueryMgr::EndOcclusionQueryDrawing( OcclusionQueryObjectHandle_t 
 //-----------------------------------------------------------------------------
 void COcclusionQueryMgr::OcclusionQuery_IssueNumPixelsRenderedQuery( OcclusionQueryObjectHandle_t hOcclusionQuery )
 {
-	int h = (intp)hOcclusionQuery;
+	intp h = (intp)hOcclusionQuery;
 	Assert( m_OcclusionQueryObjects.IsValidIndex( h ) );
 	if ( m_OcclusionQueryObjects.IsValidIndex( h ) )
 	{
@@ -253,6 +253,6 @@ int COcclusionQueryMgr::OcclusionQuery_GetNumPixelsRendered( OcclusionQueryObjec
 		OcclusionQuery_IssueNumPixelsRenderedQuery( h );
 	}
 
-	int nPixels = m_OcclusionQueryObjects[(intp)h].m_LastResult;
+	intp nPixels = m_OcclusionQueryObjects[(intp)h].m_LastResult;
 	return nPixels;
 }
