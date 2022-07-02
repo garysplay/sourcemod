@@ -16,6 +16,5 @@ Go into launcher_main\Release\x64 to grab the launcher exe (default.exe)
 6. DX11 support.
 
 # Current win64 state
-Can't load a map yet.
-
+CAN load a map but still very buggy
 
