@@ -185,20 +185,22 @@ public:
 	unsigned short	GetUnsignedShort( );
 	int				GetInt( );
 	int64			GetInt64( );
-	int				GetIntHex( );
+	unsigned int	GetIntHex( );
 	unsigned int	GetUnsignedInt( );
+	uint64			GetUnsignedInt64();
 	float			GetFloat( );
 	double			GetDouble( );
 	void*           GetPtr();
+	void			GetString( char* pString, int nMaxChars );
 
 	template <size_t maxLenInChars> void GetString( char( &pString )[maxLenInChars] )
 	{
-		GetStringInternal( pString, maxLenInChars );
+		GetString( pString, maxLenInChars );
 	}
 
 	void GetStringManualCharCount( char *pString, size_t maxLenInChars )
 	{
-		GetStringInternal( pString, maxLenInChars );
+		GetString( pString, maxLenInChars );
 	}
 
 	void			Get( void* pMem, int size );
@@ -400,6 +402,7 @@ protected:
 
 	template <typename T> void GetType( T& dest, const char *pszFmt );
 	template <typename T> void GetTypeBin( T& dest );
+	template <typename T> bool GetTypeText( T &value, int nRadix = 10 );
 	template <typename T> void GetObject( T *src );
 
 	template <typename T> void PutType( T src, const char *pszFmt );
@@ -652,7 +655,7 @@ inline void CUtlBuffer::GetTypeBin< float >( float &dest )
 {
 	if ( CheckGet( sizeof( float ) ) )
 	{
-		uintptr_t pData = (uintptr_t)PeekGet();
+		uintp pData = (uintp)PeekGet();
 		if ( IsX360() && ( pData & 0x03 ) )
 		{
 			// handle unaligned read
@@ -664,7 +667,7 @@ inline void CUtlBuffer::GetTypeBin< float >( float &dest )
 		else
 		{
 			// aligned read
-			dest = *(float *)pData;
+			Q_memcmp( &dest, (void*)pData, sizeof(float) );
 		}
 		if ( m_Byteswap.IsSwappingBytes() )
 		{
@@ -676,6 +679,97 @@ inline void CUtlBuffer::GetTypeBin< float >( float &dest )
 	{
 		dest = 0;
 	}					
+}
+
+template < class T >
+inline T StringToNumber(char* pString, char** ppEnd, int nRadix)
+{
+	Assert(0);
+	*ppEnd = pString;
+	return 0;
+}
+
+template <>
+inline int8 StringToNumber(char* pString, char** ppEnd, int nRadix)
+{
+	return (int8)strtol(pString, ppEnd, nRadix);
+}
+
+template <>
+inline uint8 StringToNumber(char* pString, char** ppEnd, int nRadix)
+{
+	return (uint8)strtoul(pString, ppEnd, nRadix);
+}
+
+template <>
+inline int16 StringToNumber(char* pString, char** ppEnd, int nRadix)
+{
+	return (int16)strtol(pString, ppEnd, nRadix);
+}
+
+template <>
+inline uint16 StringToNumber(char* pString, char** ppEnd, int nRadix)
+{
+	return (uint16)strtoul(pString, ppEnd, nRadix);
+}
+
+template <>
+inline int32 StringToNumber(char* pString, char** ppEnd, int nRadix)
+{
+	return (int32)strtol(pString, ppEnd, nRadix);
+}
+
+template <>
+inline uint32 StringToNumber(char* pString, char** ppEnd, int nRadix)
+{
+	return (uint32)strtoul(pString, ppEnd, nRadix);
+}
+
+template <>
+inline int64 StringToNumber(char* pString, char** ppEnd, int nRadix)
+{
+#if defined(_PS3) || defined(POSIX)
+	return (int64)strtoll(pString, ppEnd, nRadix);
+#else // !_PS3
+	return (int64)_strtoi64(pString, ppEnd, nRadix);
+#endif // _PS3
+}
+
+template <>
+inline float StringToNumber(char* pString, char** ppEnd, int nRadix)
+{
+	NOTE_UNUSED(nRadix);
+	return (float)strtod(pString, ppEnd);
+}
+
+template <>
+inline double StringToNumber(char* pString, char** ppEnd, int nRadix)
+{
+	NOTE_UNUSED(nRadix);
+	return (double)strtod(pString, ppEnd);
+}
+
+template <typename T>
+inline bool CUtlBuffer::GetTypeText( T &value, int nRadix /*= 10*/ )
+{
+	// NOTE: This is not bullet-proof; it assumes numbers are < 128 characters
+	int nLength = 128;
+	if ( !CheckArbitraryPeekGet( 0, nLength ) )
+	{
+		value = 0;
+		return false;
+	}
+
+	char *pStart = (char*)PeekGet();
+	char* pEnd = pStart;
+	value = StringToNumber< T >( pStart, &pEnd, nRadix );
+
+	int nBytesRead = (int)( pEnd - pStart );
+	if ( nBytesRead == 0 )
+		return false;
+
+	m_Get += nBytesRead;
+	return true;
 }
 
 template <typename T> 
@@ -734,10 +828,24 @@ inline int64 CUtlBuffer::GetInt64( )
 	return i;
 }
 
-inline int CUtlBuffer::GetIntHex( )
+inline uint64 CUtlBuffer::GetUnsignedInt64()
 {
-	int i;
-	GetType( i, "%x" );
+	uint64 i;
+	GetTypeBin( i );
+	return i;
+}
+
+inline unsigned int CUtlBuffer::GetIntHex( )
+{
+	uint i;
+	if (!IsText())
+	{
+		GetTypeBin( i );
+	}
+	else
+	{
+		GetTypeText( i, 16 );
+	}
 	return i;
 }
 

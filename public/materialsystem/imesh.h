@@ -1207,7 +1207,18 @@ inline void CVertexBuilder::FastVertex(const ModelVertexDX8_t& vertex)
 		"emms\n"
 		:: "r" (pRead), "r" (pCurrPos) : "memory");
 #else
-	Error("Implement CMeshBuilder::FastVertex(dx8)");
+	//Error("Implement CMeshBuilder::FastVertex(dx8)");
+
+	// TODO: Make this less shitty
+	// enderzip: copied this from quiver :)
+	__m128* v1 = (__m128*)m_pCurrPosition;
+	__m128* v2 = ((__m128*)m_pCurrPosition + 1);
+	__m128* v3 = ((__m128*)m_pCurrPosition + 2);
+	__m128* v4 = ((__m128*)m_pCurrPosition + 3);
+	*v1 = _mm_loadu_ps((float*)&vertex);
+	*v2 = _mm_loadu_ps((float*)&vertex + 4);
+	*v3 = _mm_loadu_ps((float*)&vertex + 8);
+	*v4 = _mm_loadu_ps((float*)&vertex + 12);
 #endif
 
 	IncrementFloatPointer(m_pCurrPosition, m_VertexSize_Position);
@@ -1254,7 +1265,17 @@ inline void CVertexBuilder::FastVertexSSE(const ModelVertexDX8_t& vertex)
 		"movntps %%xmm3, 48(%1)\n"
 		:: "r" (pRead), "r" (pCurrPos) : "memory");
 #else
-	Error("Implement CMeshBuilder::FastVertexSSE((dx8)");
+	//Error("Implement CMeshBuilder::FastVertexSSE((dx8)");
+
+	// TODO: Make this less shitty
+	__m128* v1 = (__m128*)m_pCurrPosition;
+	__m128* v2 = ((__m128*)m_pCurrPosition + 1);
+	__m128* v3 = ((__m128*)m_pCurrPosition + 2);
+	__m128* v4 = ((__m128*)m_pCurrPosition + 3);
+	*v1 = _mm_loadu_ps((float*)&vertex);
+	*v2 = _mm_loadu_ps((float*)&vertex + 4);
+	*v3 = _mm_loadu_ps((float*)&vertex + 8);
+	*v4 = _mm_loadu_ps((float*)&vertex + 12);
 #endif
 
 	IncrementFloatPointer(m_pCurrPosition, m_VertexSize_Position);

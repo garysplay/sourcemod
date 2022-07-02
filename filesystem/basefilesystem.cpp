@@ -686,7 +686,7 @@ void CBaseFileSystem::Trace_FClose( FILE *fp )
 }
 
 
-void CBaseFileSystem::Trace_FRead( size_t size, FILE* fp )
+void CBaseFileSystem::Trace_FRead( int size, FILE* fp )
 {
 	if ( !fp || m_fwLevel < FILESYSTEM_WARNING_REPORTALLACCESSES_READ )
 		return;

@@ -151,6 +151,7 @@ public:
 
 	// Purges the list and calls delete on each element in it.
 	void PurgeAndDeleteElements();
+	void PurgeAndDeleteElementsArray();
 
 	// Compacts the vector to the number of elements actually in use 
 	void Compact();
@@ -380,12 +381,12 @@ public:
 		}
 		if ( m_pData == StaticData() )
 		{
-			m_pData = (Data_t *)A::Alloc( sizeof(int) + ( num * sizeof(T) ) );
+			m_pData = (Data_t *)A::Alloc( sizeof(Data_t) + ( num * sizeof(T) ) );
 			m_pData->m_Size = 0;
 		}
 		else
 		{
-			int nNeeded = sizeof(int) + ( num * sizeof(T) );
+			int nNeeded = sizeof(Data_t) + ( num * sizeof(T) );
 			int nHave = A::GetSize( m_pData );
 			if ( nNeeded > nHave )
 			{
@@ -427,6 +428,18 @@ public:
 			for( int i=0; i < m_pData->m_Size; i++ )
 			{
 				delete Element(i);
+			}
+			RemoveAll();
+		}
+	}
+
+	void PurgeAndDeleteElementsArray()
+	{
+		if ( m_pData != StaticData() )
+		{
+			for( int i=0; i < m_pData->m_Size; i++ )
+			{
+				delete[] Element(i);
 			}
 			RemoveAll();
 		}
@@ -1070,7 +1083,7 @@ void CUtlVector<T, A>::FastRemove( int elem )
 	if (m_Size > 0)
 	{
 		if ( elem != m_Size -1 )
-			memcpy( reinterpret_cast<void*>( &Element(elem) ), reinterpret_cast<void*>( &Element(m_Size-1) ), sizeof(T) );
+			memcpy( &Element(elem), &Element(m_Size-1), sizeof(T) );
 		--m_Size;
 	}
 }
@@ -1179,6 +1192,16 @@ inline void CUtlVector<T, A>::PurgeAndDeleteElements()
 }
 
 template< typename T, class A >
+inline void CUtlVector<T, A>::PurgeAndDeleteElementsArray()
+{
+	for( int i=0; i < m_Size; i++ )
+	{
+		delete[] Element(i);
+	}
+	RemoveAll();
+}
+
+template< typename T, class A >
 inline void CUtlVector<T, A>::Compact()
 {
 	m_Memory.Purge(m_Size);
@@ -1220,9 +1243,14 @@ public:
 
 // easy string list class with dynamically allocated strings. For use with V_SplitString, etc.
 // Frees the dynamic strings in destructor.
-class CUtlStringList : public CUtlVectorAutoPurge< char *>
+class CUtlStringList : public CUtlVector< char*, CUtlMemory< char*, int > >
 {
 public:
+	~CUtlStringList( void )
+	{
+		PurgeAndDeleteElementsArray();
+	}
+
 	void CopyAndAddToTail( char const *pString )			// clone the string and add to the end
 	{
 		char *pNewStr = new char[1 + strlen( pString )];
@@ -1235,19 +1263,30 @@ public:
 		return strcmp( *sz1, *sz2 );
 	}
 
-	inline void PurgeAndDeleteElements()
+	CUtlStringList() {}
+
+		CUtlStringList( char const *pString, char const *pSeparator )
 	{
-		for( int i=0; i < m_Size; i++ )
-		{
-			delete [] Element(i);
-		}
-		Purge();
+		SplitString( pString, pSeparator );
 	}
 
-	~CUtlStringList( void )
+	CUtlStringList( char const *pString, const char **pSeparators, int nSeparators )
 	{
-		this->PurgeAndDeleteElements();
+		SplitString2( pString, pSeparators, nSeparators );
 	}
+
+	void SplitString( char const *pString, char const *pSeparator )
+	{
+		V_SplitString( pString, pSeparator, *this );
+	}
+
+	void SplitString2( char const *pString, const char **pSeparators, int nSeparators )
+	{
+		V_SplitString2( pString, pSeparators, nSeparators, *this );
+	}
+
+private:
+	CUtlStringList( const CUtlStringList &other );
 };
 
 

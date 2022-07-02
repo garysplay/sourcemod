@@ -769,7 +769,7 @@ protected:
 
 	FILE						*Trace_FOpen( const char *filename, const char *options, unsigned flags, int64 *size );
 	void						Trace_FClose( FILE *fp );
-	void						Trace_FRead( size_t size, FILE* file );
+	void						Trace_FRead( int size, FILE* file );
 	void						Trace_FWrite( int size, FILE* file );
 
 	void						Trace_DumpUnclosedFiles( void );

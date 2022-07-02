@@ -755,6 +755,22 @@ FSReturnCode_t FileSystem_LoadSearchPaths(CFSSearchPathsInit& initInfo)
 		}
 	}
 
+
+	const char *ExtraVpkPaths = getenv( "EXTRAS_VPK_PATH" );
+	char szAbsSearchPath[MAX_PATH];
+
+	if( ExtraVpkPaths )
+	{
+		CUtlStringList vecPaths;
+		V_SplitString( ExtraVpkPaths, ",", vecPaths );
+
+		FOR_EACH_VEC( vecPaths, idxExtraPath )
+		{
+			FileSystem_AddLoadedSearchPath( initInfo, "GAME", vecPaths[idxExtraPath], false );
+		}
+	}
+
+
 	bool bLowViolence = initInfo.m_bLowViolence;
 	for (KeyValues* pCur = pSearchPaths->GetFirstValue(); pCur; pCur = pCur->GetNextValue())
 	{
@@ -780,7 +796,7 @@ FSReturnCode_t FileSystem_LoadSearchPaths(CFSSearchPathsInit& initInfo)
 		}
 
 		CUtlStringList vecFullLocationPaths;
-		char szAbsSearchPath[MAX_PATH];
+		//char szAbsSearchPath[MAX_PATH];
 		V_MakeAbsolutePath(szAbsSearchPath, sizeof(szAbsSearchPath), pLocation, pszBaseDir);
 
 		// Now resolve any ./'s.
