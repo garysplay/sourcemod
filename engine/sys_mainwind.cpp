@@ -910,7 +910,7 @@ bool CGame::CreateGameWindow( void )
 	KeyValues *modinfo = new KeyValues("ModInfo");
 	if (modinfo->LoadFromFile(g_pFileSystem, "gameinfo.txt"))
 	{
-		Q_strncpy( windowName, modinfo->GetString("game"), sizeof(windowName) );
+		Q_strncpy( windowName, modinfo->GetString("game"), sizeof(windowName));
 	}
 
 	if (!windowName[0])
@@ -927,6 +927,8 @@ bool CGame::CreateGameWindow( void )
 	{
 		V_strcat( windowName, " - Vulkan", sizeof( windowName ) );
 	}
+
+	V_strcat(windowName, " (WIN64)", sizeof(windowName));
 
 #if PIX_ENABLE || defined( PIX_INSTRUMENTATION )
 	// PIX_ENABLE/PIX_INSTRUMENTATION is a big slowdown (that should never be checked in, but sometimes is by accident), so add this to the Window title too.
