@@ -40,7 +40,7 @@ public:
 
 
 	virtual CAudioMixer			*CreateMixer( int initialStreamPosition = 0 );
-	virtual int					GetOutputData( void **pData, int samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] );
+	virtual int					GetOutputData( void **pData, int64 samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] );
 	virtual int					SampleRate( void );
 	
 	// Sample size is in bytes.  It will not be accurate for compressed audio.  This is a best estimate.
@@ -189,7 +189,7 @@ CAudioMixer *CAudioSourceVoice::CreateMixer( int initialStreamPosition )
 	return pMixer;
 }
 
-int CAudioSourceVoice::GetOutputData( void **pData, int samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] )
+int CAudioSourceVoice::GetOutputData( void **pData, int64 samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] )
 {
 	int nSamplesGotten = Voice_GetOutputData(
 		m_iChannel,

@@ -386,7 +386,7 @@ char *CAudioSourceMP3Cache::GetDataPointer( void )
 	return pMP3Data;
 }
 
-int CAudioSourceMP3Cache::GetOutputData( void **pData, int samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] )
+int CAudioSourceMP3Cache::GetOutputData( void **pData, int64 samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] )
 {
 	// how many bytes are available ?
 	int totalSampleCount = m_dataSize - samplePosition;
@@ -548,7 +548,7 @@ CAudioMixer	*CAudioSourceStreamMP3::CreateMixer( int intialStreamPosition )
 	return NULL;
 }
 
-int	CAudioSourceStreamMP3::GetOutputData( void **pData, int samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] )
+int	CAudioSourceStreamMP3::GetOutputData( void **pData, int64 samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] )
 {
 	return 0;
 }

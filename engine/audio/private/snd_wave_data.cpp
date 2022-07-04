@@ -682,16 +682,16 @@ public:
 	virtual void			Shutdown();
 
 	// implementation that treats file as monolithic
-	virtual memhandle_t		AsyncLoadCache( char const *filename, int datasize, int startpos, bool bIsPrefetch = false );
+	virtual WaveCacheHandle_t		AsyncLoadCache( char const *filename, int datasize, int startpos, bool bIsPrefetch = false );
 	virtual void			PrefetchCache( char const *filename, int datasize, int startpos );
 	virtual bool			CopyDataIntoMemory( char const *filename, int datasize, int startpos, void *buffer, int bufsize, int copystartpos, int bytestocopy, bool *pbPostProcessed );
-	virtual bool			CopyDataIntoMemory( memhandle_t& handle, char const *filename, int datasize, int startpos, void *buffer, int bufsize, int copystartpos, int bytestocopy, bool *pbPostProcessed );
-	virtual void			SetPostProcessed( memhandle_t handle, bool proc );
-	virtual void			Unload( memhandle_t handle );
-	virtual bool			GetDataPointer( memhandle_t& handle, char const *filename, int datasize, int startpos, void **pData, int copystartpos, bool *pbPostProcessed );
-	virtual bool			IsDataLoadCompleted( memhandle_t handle, bool *pIsValid );
-	virtual void			RestartDataLoad( memhandle_t* handle, char const *filename, int datasize, int startpos );
-	virtual bool			IsDataLoadInProgress( memhandle_t handle );
+	virtual bool			CopyDataIntoMemory(WaveCacheHandle_t& handle, char const *filename, int datasize, int startpos, void *buffer, int bufsize, int copystartpos, int bytestocopy, bool *pbPostProcessed );
+	virtual void			SetPostProcessed(WaveCacheHandle_t handle, bool proc );
+	virtual void			Unload(WaveCacheHandle_t handle );
+	virtual bool			GetDataPointer(WaveCacheHandle_t& handle, char const *filename, int datasize, int startpos, void **pData, int copystartpos, bool *pbPostProcessed );
+	virtual bool			IsDataLoadCompleted(WaveCacheHandle_t handle, bool *pIsValid );
+	virtual void			RestartDataLoad(WaveCacheHandle_t* handle, char const *filename, int datasize, int startpos );
+	virtual bool			IsDataLoadInProgress(WaveCacheHandle_t handle );
 
 	// Xbox: alternate multi-buffer streaming implementation
 	virtual StreamHandle_t	OpenStreamedLoad( char const *pFileName, int dataSize, int dataStart, int startPos, int loopPos, int bufferSize, int numBuffers, streamFlags_t flags );
@@ -705,7 +705,7 @@ public:
 	virtual void			OnMixBegin();
 	virtual void			OnMixEnd();
 
-	void					QueueUnlock( const memhandle_t &handle );
+	void					QueueUnlock( const WaveCacheHandle_t&handle );
 	void					SpewMemoryUsage( int level );
 
 	// Cache helpers
@@ -722,14 +722,14 @@ private:
 		{
 		}
 		FileNameHandle_t	name;
-		memhandle_t			handle;
+		WaveCacheHandle_t	handle;
 	};
 
 	// tags the signature of a buffer inside a rb tree for faster than linear find
 	struct BufferEntry_t
 	{
 		FileNameHandle_t	m_hName;
-		memhandle_t			m_hWaveData;
+		WaveCacheHandle_t	m_hWaveData;
 		int					m_StartPos;
 		bool				m_bCanBeShared;
 	};
@@ -755,7 +755,7 @@ private:
 	struct StreamedEntry_t
 	{
 		FileNameHandle_t	m_hName;
-		memhandle_t			m_hWaveData[STREAM_BUFFER_COUNT];
+		WaveCacheHandle_t	m_hWaveData[STREAM_BUFFER_COUNT];
 		int					m_Front;			// buffer index, forever incrementing
 		int					m_NextStartPos;		// predicted offset if mixing linearly
 		int					m_DataSize;			// length of the data set in bytes
@@ -774,10 +774,10 @@ private:
 	}
 	CUtlRBTree< CacheEntry_t, int >	m_CacheHandles;
 
-	memhandle_t				FindOrCreateBuffer( asyncwaveparams_t &params, bool bFind );		
+	WaveCacheHandle_t		FindOrCreateBuffer( asyncwaveparams_t &params, bool bFind );
 	bool					m_bInitialized;
 	bool					m_bQueueCacheUnlocks;
-	CUtlVector<memhandle_t> m_unlockQueue;
+	CUtlVector<WaveCacheHandle_t> m_unlockQueue;
 };
 
 //-----------------------------------------------------------------------------
@@ -854,9 +854,9 @@ void CAsyncWavDataCache::Shutdown()
 // Input  : *filename - 
 //			datasize - 
 //			startpos - 
-// Output : memhandle_t
+// Output : WaveCacheHandle_t
 //-----------------------------------------------------------------------------
-memhandle_t CAsyncWavDataCache::AsyncLoadCache( char const *filename, int datasize, int startpos, bool bIsPrefetch )
+WaveCacheHandle_t CAsyncWavDataCache::AsyncLoadCache( char const *filename, int datasize, int startpos, bool bIsPrefetch )
 {
 	VPROF( "CAsyncWavDataCache::AsyncLoadCache" );
 
@@ -877,7 +877,7 @@ memhandle_t CAsyncWavDataCache::AsyncLoadCache( char const *filename, int datasi
 	CacheEntry_t &entry = m_CacheHandles[idx];
 
 	// Try and pull it into cache
-	CAsyncWaveData *data = CacheGet( entry.handle );
+	CAsyncWaveData *data = CacheGet((DataCacheHandle_t)entry.handle );
 	if ( !data )
 	{
 		// Try and reload it
@@ -886,7 +886,7 @@ memhandle_t CAsyncWavDataCache::AsyncLoadCache( char const *filename, int datasi
 		params.datasize = datasize;
 		params.seekpos = startpos;
 		params.bPrefetch = bIsPrefetch;
-		entry.handle = CacheCreate( params );
+		entry.handle = (WaveCacheHandle_t)CacheCreate( params );
 	}
 
 	return entry.handle;
@@ -896,7 +896,7 @@ memhandle_t CAsyncWavDataCache::AsyncLoadCache( char const *filename, int datasi
 //-----------------------------------------------------------------------------
 // Purpose: Reclaim a buffer. A reclaimed resident buffer is ready for play.
 //-----------------------------------------------------------------------------
-memhandle_t CAsyncWavDataCache::FindOrCreateBuffer( asyncwaveparams_t &params, bool bFind )
+WaveCacheHandle_t CAsyncWavDataCache::FindOrCreateBuffer( asyncwaveparams_t &params, bool bFind )
 {
 	CAsyncWaveData *pWaveData;
 	BufferEntry_t	search;
@@ -927,12 +927,12 @@ memhandle_t CAsyncWavDataCache::FindOrCreateBuffer( asyncwaveparams_t &params, b
 	// each resource buffer stays locked (valid) while in use
 	// a buffering stream is not subject to lru and can rely on it's buffers
 	// a buffering stream may obsolete it's buffers by reducing the lock count, allowing for lru
-	pWaveData = CacheLock( search.m_hWaveData );
+	pWaveData = CacheLock((DataCacheHandle_t)search.m_hWaveData );
 	if ( !pWaveData )
 	{
 		// not in cache, create and lock
 		// not found, create buffer and fill with data
-		search.m_hWaveData = CacheCreate( params, DCAF_LOCK );
+		search.m_hWaveData = (WaveCacheHandle_t)CacheCreate( params, DCAF_LOCK );
 
 		// add the buffer to our managed list
 		hBuffer = m_BufferList.Insert( search );
@@ -940,7 +940,7 @@ memhandle_t CAsyncWavDataCache::FindOrCreateBuffer( asyncwaveparams_t &params, b
 
 		// store the handle into our managed list
 		// used during a lru discard as a means to keep the list in-sync
-		pWaveData = CacheGet( search.m_hWaveData );
+		pWaveData = CacheGet((DataCacheHandle_t)search.m_hWaveData );
 		pWaveData->m_hBuffer = hBuffer;
 	}
 	else
@@ -1026,18 +1026,18 @@ void CAsyncWavDataCache::CloseStreamedLoad( StreamHandle_t hStream )
 	for ( int i=0; i<streamedEntry.m_numBuffers; ++i )
 	{
 		// multiple streams could be using the same buffer, keeping the lock count nonzero
-		lockCount = GetCacheSection()->GetLockCount( streamedEntry.m_hWaveData[i] );
+		lockCount = GetCacheSection()->GetLockCount((DataCacheHandle_t)streamedEntry.m_hWaveData[i] );
 		Assert( lockCount >= 1 );
 		if ( lockCount > 0 )
 		{
-			lockCount = CacheUnlock( streamedEntry.m_hWaveData[i] );
+			lockCount = CacheUnlock((DataCacheHandle_t)streamedEntry.m_hWaveData[i] );
 		}
 
 		if ( streamedEntry.m_bSinglePlay )
 		{
 			// a buffering single play stream has no reason to reuse its own buffers and destroys them
 			Assert( lockCount == 0 );
-			CacheRemove( streamedEntry.m_hWaveData[i] );
+			CacheRemove((DataCacheHandle_t)streamedEntry.m_hWaveData[i] );
 		}
 	}
 
@@ -1109,7 +1109,7 @@ bool CAsyncWavDataCache::CopyDataIntoMemory( char const *filename, int datasize,
 //			bytestocopy - 
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool CAsyncWavDataCache::CopyDataIntoMemory( memhandle_t& handle, char const *filename, int datasize, int startpos, void *buffer, int bufsize, int copystartpos, int bytestocopy, bool *pbPostProcessed )
+bool CAsyncWavDataCache::CopyDataIntoMemory(WaveCacheHandle_t& handle, char const *filename, int datasize, int startpos, void *buffer, int bufsize, int copystartpos, int bytestocopy, bool *pbPostProcessed )
 {
 	VPROF( "CAsyncWavDataCache::CopyDataIntoMemory" );
 
@@ -1117,7 +1117,7 @@ bool CAsyncWavDataCache::CopyDataIntoMemory( memhandle_t& handle, char const *fi
 
 	bool bret = false;
 
-	CAsyncWaveData *data = CacheLock( handle );
+	CAsyncWaveData *data = CacheLock((DataCacheHandle_t)handle );
 	if ( !data )
 	{
 		FileNameHandle_t fnh = g_pFileSystem->FindOrAddFileName( filename );
@@ -1140,8 +1140,8 @@ bool CAsyncWavDataCache::CopyDataIntoMemory( memhandle_t& handle, char const *fi
 		params.datasize = datasize;
 		params.seekpos = startpos;
 
-		handle = m_CacheHandles[ idx ].handle = CacheCreate( params );
-		data = CacheLock( handle );
+		handle = m_CacheHandles[ idx ].handle = (WaveCacheHandle_t)CacheCreate( params );
+		data = CacheLock((DataCacheHandle_t)handle );
 		if ( !data )
 		{
 			return bret;
@@ -1157,7 +1157,7 @@ bool CAsyncWavDataCache::CopyDataIntoMemory( memhandle_t& handle, char const *fi
 	*pbPostProcessed = data->GetPostProcessed();
 
 	// Release lock
-	CacheUnlock( handle );
+	CacheUnlock((DataCacheHandle_t)handle );
 	return bret;
 }
 
@@ -1192,7 +1192,7 @@ int CAsyncWavDataCache::CopyStreamedDataIntoMemory( int hStream, void *pBuffer, 
 
 	for ( i=0; i<streamedEntry.m_numBuffers; ++i )
 	{
-		pWaveData[i] = CacheGetNoTouch( streamedEntry.m_hWaveData[i] );
+		pWaveData[i] = CacheGetNoTouch((DataCacheHandle_t)streamedEntry.m_hWaveData[i] );
 		Assert( pWaveData[i] );
 	}
 
@@ -1361,7 +1361,7 @@ int CAsyncWavDataCache::CopyStreamedDataIntoMemory( int hStream, void *pBuffer, 
 			else
 			{
 				// release obsolete buffer to lru management
-				CacheUnlock( streamedEntry.m_hWaveData[which] );
+				CacheUnlock((DataCacheHandle_t)streamedEntry.m_hWaveData[which] );
 				// reclaim or create/load the desired buffer
 				streamedEntry.m_hWaveData[which] = FindOrCreateBuffer( params, true );
 			}
@@ -1394,7 +1394,7 @@ void *CAsyncWavDataCache::GetStreamedDataPointer( StreamHandle_t hStream, bool b
 	StreamedEntry_t &streamedEntry = m_StreamedHandles[hStream];
 
 	index  = streamedEntry.m_Front % streamedEntry.m_numBuffers;
-	pFront = CacheGetNoTouch( streamedEntry.m_hWaveData[index] );
+	pFront = CacheGetNoTouch((DataCacheHandle_t)streamedEntry.m_hWaveData[index] );
 	Assert( pFront );
 	if ( !pFront )
 	{
@@ -1437,7 +1437,7 @@ bool CAsyncWavDataCache::IsStreamedDataReady( int hStream )
 	}
 
 	// only the first front buffer must be present
-	CAsyncWaveData *pFront = CacheGetNoTouch( streamedEntry.m_hWaveData[0] );
+	CAsyncWaveData *pFront = CacheGetNoTouch((DataCacheHandle_t)streamedEntry.m_hWaveData[0] );
 	Assert( pFront );
 	if ( !pFront )
 	{
@@ -1466,9 +1466,9 @@ void CAsyncWavDataCache::MarkBufferDiscarded( BufferHandle_t hBuffer )
 // Input  : handle - 
 //			proc - 
 //-----------------------------------------------------------------------------
-void CAsyncWavDataCache::SetPostProcessed( memhandle_t handle, bool proc )
+void CAsyncWavDataCache::SetPostProcessed(WaveCacheHandle_t handle, bool proc )
 {
-	CAsyncWaveData *data = CacheGet( handle );
+	CAsyncWaveData *data = CacheGet((DataCacheHandle_t)handle );
 	if ( data )
 	{
 		data->SetPostProcessed( proc );
@@ -1480,12 +1480,12 @@ void CAsyncWavDataCache::SetPostProcessed( memhandle_t handle, bool proc )
 // Purpose: 
 // Input  : handle - 
 //-----------------------------------------------------------------------------
-void CAsyncWavDataCache::Unload( memhandle_t handle )
+void CAsyncWavDataCache::Unload(WaveCacheHandle_t handle )
 {
 	// Don't actually unload, just mark it as stale
 	if ( GetCacheSection() )
 	{
-		GetCacheSection()->Age( handle );
+		GetCacheSection()->Age((DataCacheHandle_t)handle );
 	}
 }
 
@@ -1500,7 +1500,7 @@ void CAsyncWavDataCache::Unload( memhandle_t handle )
 //			*pbPostProcessed - 
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool CAsyncWavDataCache::GetDataPointer( memhandle_t& handle, char const *filename, int datasize, int startpos, void **pData, int copystartpos, bool *pbPostProcessed )
+bool CAsyncWavDataCache::GetDataPointer(WaveCacheHandle_t& handle, char const *filename, int datasize, int startpos, void **pData, int copystartpos, bool *pbPostProcessed )
 {
 	VPROF( "CAsyncWavDataCache::GetDataPointer" );
 
@@ -1512,7 +1512,7 @@ bool CAsyncWavDataCache::GetDataPointer( memhandle_t& handle, char const *filena
 	bool bret = false;
 	*pData = NULL;
 
-	CAsyncWaveData *data = CacheLock( handle );
+	CAsyncWaveData *data = CacheLock((DataCacheHandle_t)handle );
 	if ( !data )
 	{
 		FileNameHandle_t fnh = g_pFileSystem->FindOrAddFileName( filename );
@@ -1534,8 +1534,8 @@ bool CAsyncWavDataCache::GetDataPointer( memhandle_t& handle, char const *filena
 		params.datasize = datasize;
 		params.seekpos = startpos;
 
-		handle = m_CacheHandles[ idx ].handle = CacheCreate( params );
-		data = CacheLock( handle );
+		handle = m_CacheHandles[ idx ].handle = (WaveCacheHandle_t)CacheCreate( params );
+		data = CacheLock((DataCacheHandle_t)handle );
 		if ( !data )
 		{
 			return bret;
@@ -1583,11 +1583,11 @@ bool CAsyncWavDataCache::GetDataPointer( memhandle_t& handle, char const *filena
 //			startpos - 
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool CAsyncWavDataCache::IsDataLoadCompleted( memhandle_t handle, bool *pIsValid )
+bool CAsyncWavDataCache::IsDataLoadCompleted(WaveCacheHandle_t handle, bool *pIsValid )
 {
 	VPROF( "CAsyncWavDataCache::IsDataLoadCompleted" );
 
-	CAsyncWaveData *data = CacheGet( handle );
+	CAsyncWaveData *data = CacheGet((DataCacheHandle_t)handle );
 	if ( !data )
 	{
 		*pIsValid = false;
@@ -1601,18 +1601,18 @@ bool CAsyncWavDataCache::IsDataLoadCompleted( memhandle_t handle, bool *pIsValid
 }
 
 
-void CAsyncWavDataCache::RestartDataLoad( memhandle_t *pHandle, const char *pFilename, int dataSize, int startpos )
+void CAsyncWavDataCache::RestartDataLoad(WaveCacheHandle_t*pHandle, const char *pFilename, int dataSize, int startpos )
 {
-	CAsyncWaveData *data = CacheGet( *pHandle );
+	CAsyncWaveData *data = CacheGet((DataCacheHandle_t)*pHandle );
 	if ( !data )
 	{
 		*pHandle = AsyncLoadCache( pFilename, dataSize, startpos );
 	}
 }
 
-bool CAsyncWavDataCache::IsDataLoadInProgress( memhandle_t handle )
+bool CAsyncWavDataCache::IsDataLoadInProgress(WaveCacheHandle_t handle )
 {
-	CAsyncWaveData *data = CacheGet( handle );
+	CAsyncWaveData *data = CacheGet((DataCacheHandle_t)handle );
 	if ( data )
 	{
 		return data->IsCurrentlyLoading();
@@ -1629,12 +1629,12 @@ void CAsyncWavDataCache::Flush()
 	SpewMemoryUsage( 0 );
 }
 
-void CAsyncWavDataCache::QueueUnlock( const memhandle_t &handle )
+void CAsyncWavDataCache::QueueUnlock( const WaveCacheHandle_t&handle )
 {
 	// not queuing right now, just unlock
 	if ( !m_bQueueCacheUnlocks )
 	{
-		CacheUnlock( handle );
+		CacheUnlock( (DataCacheHandle_t)handle );
 		return;
 	}
 	// queue to unlock at the end of mixing
@@ -1654,7 +1654,7 @@ void CAsyncWavDataCache::OnMixEnd()
 	// flush the unlock queue
 	for ( int i = 0; i < m_unlockQueue.Count(); i++ )
 	{
-		CacheUnlock( m_unlockQueue[i] );
+		CacheUnlock((DataCacheHandle_t)m_unlockQueue[i] );
 	}
 	m_unlockQueue.RemoveAll();
 }
@@ -1698,8 +1698,8 @@ void CAsyncWavDataCache::SpewMemoryUsage( int level )
 					Assert( 0 );
 					continue;
 				}
-				memhandle_t &handle = m_CacheHandles[ i ].handle;
-				CAsyncWaveData *data = CacheGetNoTouch( handle );
+				WaveCacheHandle_t&handle = m_CacheHandles[ i ].handle;
+				CAsyncWaveData *data = CacheGetNoTouch((DataCacheHandle_t)handle );
 				if ( data )
 				{
 					Msg( "\t%16.16s : %s\n", Q_pretifymem(data->Size()),name);
@@ -1739,8 +1739,8 @@ void CAsyncWavDataCache::SpewMemoryUsage( int level )
 			for ( h = m_BufferList.FirstInorder(); h != m_BufferList.InvalidIndex(); h = m_BufferList.NextInorder( h ) )
 			{
 				pBuffer = &m_BufferList[h];
-				pData = CacheGetNoTouch( pBuffer->m_hWaveData );
-				lockCount = GetCacheSection()->GetLockCount( pBuffer->m_hWaveData );
+				pData = CacheGetNoTouch((DataCacheHandle_t)pBuffer->m_hWaveData );
+				lockCount = GetCacheSection()->GetLockCount((DataCacheHandle_t)pBuffer->m_hWaveData );
 
 				CacheLockMutex();
 				if ( pData )
@@ -1763,7 +1763,7 @@ void CAsyncWavDataCache::Clear()
 	for ( int i = m_CacheHandles.FirstInorder(); m_CacheHandles.IsValidIndex(i); i = m_CacheHandles.NextInorder(i) )
 	{
 		CacheEntry_t& dat = m_CacheHandles[i];
-		CacheRemove( dat.handle );
+		CacheRemove((DataCacheHandle_t)dat.handle );
 	}
 	m_CacheHandles.RemoveAll();
 
@@ -1772,8 +1772,8 @@ void CAsyncWavDataCache::Clear()
 		StreamedEntry_t &dat = m_StreamedHandles[i];
 		for ( int j=0; j<dat.m_numBuffers; ++j )
 		{
-			GetCacheSection()->BreakLock( dat.m_hWaveData[j] );
-			CacheRemove( dat.m_hWaveData[j] );
+			GetCacheSection()->BreakLock((DataCacheHandle_t)dat.m_hWaveData[j] );
+			CacheRemove((DataCacheHandle_t)dat.m_hWaveData[j] );
 		}
 	}
 	m_StreamedHandles.RemoveAll();
@@ -1866,7 +1866,7 @@ private:
 	int						m_dataStart;
 	int						m_dataSize;
 
-	memhandle_t				m_hCache;
+	WaveCacheHandle_t		m_hCache;
 	StreamHandle_t			m_hStream;
 	FileNameHandle_t		m_hFileName;
 	

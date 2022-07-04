@@ -30,6 +30,7 @@ class IAudioDevice;
 class CUtlBuffer;
 
 #include "tier0/vprof.h"
+#include "utlhandletable.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: This is an instance of an audio source.
@@ -314,7 +315,12 @@ public:
 
 extern IAudioSourceCache *audiosourcecache;
 
-FORWARD_DECLARE_HANDLE( memhandle_t );
+typedef UtlHandle_t WaveCacheHandle_t;
+enum
+{
+	// purposely 0
+	INVALID_WAVECACHE_HANDLE = (UtlHandle_t)0 
+};
 
 typedef int StreamHandle_t;
 enum
@@ -343,15 +349,15 @@ public:
 	virtual void			Shutdown() = 0;
 
 	// implementation that treats file as monolithic
-	virtual memhandle_t		AsyncLoadCache( char const *filename, int datasize, int startpos, bool bIsPrefetch = false ) = 0;
+	virtual WaveCacheHandle_t		AsyncLoadCache( char const *filename, int datasize, int startpos, bool bIsPrefetch = false ) = 0;
 	virtual void			PrefetchCache( char const *filename, int datasize, int startpos ) = 0;
 	virtual bool			CopyDataIntoMemory( char const *filename, int datasize, int startpos, void *buffer, int bufsize, int copystartpos, int bytestocopy, bool *pbPostProcessed ) = 0;
-	virtual bool			CopyDataIntoMemory( memhandle_t& handle, char const *filename, int datasize, int startpos, void *buffer, int bufsize, int copystartpos, int bytestocopy, bool *pbPostProcessed ) = 0;
-	virtual bool			IsDataLoadCompleted( memhandle_t handle, bool *pIsValid ) = 0;
-	virtual void			RestartDataLoad( memhandle_t *pHandle, const char *pFilename, int dataSize, int startpos ) = 0;
-	virtual bool			GetDataPointer( memhandle_t& handle, char const *filename, int datasize, int startpos, void **pData, int copystartpos, bool *pbPostProcessed ) = 0;
-	virtual void			SetPostProcessed( memhandle_t handle, bool proc ) = 0;
-	virtual void			Unload( memhandle_t handle ) = 0;
+	virtual bool			CopyDataIntoMemory(WaveCacheHandle_t& handle, char const *filename, int datasize, int startpos, void *buffer, int bufsize, int copystartpos, int bytestocopy, bool *pbPostProcessed ) = 0;
+	virtual bool			IsDataLoadCompleted(WaveCacheHandle_t handle, bool *pIsValid ) = 0;
+	virtual void			RestartDataLoad(WaveCacheHandle_t*pHandle, const char *pFilename, int dataSize, int startpos ) = 0;
+	virtual bool			GetDataPointer(WaveCacheHandle_t& handle, char const *filename, int datasize, int startpos, void **pData, int copystartpos, bool *pbPostProcessed ) = 0;
+	virtual void			SetPostProcessed(WaveCacheHandle_t handle, bool proc ) = 0;
+	virtual void			Unload(WaveCacheHandle_t handle ) = 0;
 
 	// alternate multi-buffer streaming implementation
 	virtual StreamHandle_t	OpenStreamedLoad( char const *pFileName, int dataSize, int dataStart, int startPos, int loopPos, int bufferSize, int numBuffers, streamFlags_t flags ) = 0;
@@ -360,7 +366,7 @@ public:
 	virtual bool			IsStreamedDataReady( StreamHandle_t hStream ) = 0;
 	virtual void			MarkBufferDiscarded( BufferHandle_t hBuffer ) = 0;
 	virtual void			*GetStreamedDataPointer( StreamHandle_t hStream, bool bSync ) = 0;
-	virtual bool			IsDataLoadInProgress( memhandle_t handle ) = 0;
+	virtual bool			IsDataLoadInProgress(WaveCacheHandle_t handle ) = 0;
 	virtual void			Flush() = 0;
 	virtual void			OnMixBegin() = 0;
 	virtual void			OnMixEnd() = 0;
@@ -388,9 +394,9 @@ struct CAudioSourceCachedInfoHandle_t
 			// Reacquire
 			info = audiosourcecache->GetInfo( audiosourcetype, soundisprecached, sfx );
 
-			if ( pcacheddatasize )
+		    if ( pcacheddatasize && info )
 			{
-				*pcacheddatasize = info ? info->CachedDataSize() : 0;
+				*pcacheddatasize = info->CachedDataSize();
 			}
 
 			// Tag as current
@@ -455,7 +461,7 @@ public:
 
 	// Provide samples for the mixer. You can point pData at your own data, or if you prefer to copy the data,
 	// you can copy it into copyBuf and set pData to copyBuf.
-	virtual int					GetOutputData( void **pData, int samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] ) = 0;
+	virtual int					GetOutputData( void **pData, int64 samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] ) = 0;
 	
 	virtual int					SampleRate( void ) = 0;
 

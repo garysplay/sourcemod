@@ -8,6 +8,7 @@
 
 #include "audio_pch.h"
 #include "snd_mp3_source.h"
+#include "snd_wave_source.h"
 #include "utlsymbol.h"
 #include "checksum_crc.h"
 #include "../../host.h"
@@ -874,7 +875,7 @@ int CAudioSourceWave::GetLoopingInfo( int *pLoopBlock, int *pNumLeadingSamples, 
 // Input  : samplePosition - absolute position
 // Output : int - looped position
 //-----------------------------------------------------------------------------
-int CAudioSourceWave::ConvertLoopedPosition( int samplePosition )
+int64 CAudioSourceWave::ConvertLoopedPosition( int64 samplePosition )
 {
 	if ( m_format == WAVE_FORMAT_XMA )
 	{
@@ -958,7 +959,7 @@ public:
 
 	// These are all implemented by CAudioSourceMemWave.
 	virtual CAudioMixer*	CreateMixer( int initialStreamPosition = 0 );
-	virtual int				GetOutputData( void **pData, int samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] );
+	virtual int				GetOutputData( void **pData, int64 samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] );
 	virtual int				ZeroCrossingBefore( int sample );
 	virtual int				ZeroCrossingAfter( int sample );
 
@@ -977,7 +978,7 @@ protected:
 	// Whoeover derives must implement this.
 	virtual char			*GetDataPointer( void );
 
-	memhandle_t				m_hCache;
+	WaveCacheHandle_t		m_hCache;
 	StreamHandle_t			m_hStream;
 
 private:
@@ -1049,7 +1050,7 @@ CAudioMixer *CAudioSourceMemWave::CreateMixer( int initialStreamPosition )
 //			sampleCount - number of samples (not bytes)
 // Output : int - number of samples available
 //-----------------------------------------------------------------------------
-int CAudioSourceMemWave::GetOutputData( void **pData, int samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] )
+int CAudioSourceMemWave::GetOutputData( void **pData, int64 samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] )
 { 
 	// handle position looping
 	samplePosition = ConvertLoopedPosition( samplePosition );
@@ -1119,8 +1120,8 @@ int CAudioSourceMemWave::GetOutputData( void **pData, int samplePosition, int sa
 
 
 // Hardcoded macros to test for zero crossing
-#define ZERO_X_8(b)		((b)<2 && (b)>-2)
-#define ZERO_X_16(b)	((b)<512 && (b)>-512)
+#define ZERO_X_8(b)		((b)<8 && (b)>-8)
+#define ZERO_X_16(b)	((b)<2048 && (b)>-2048)
 
 //-----------------------------------------------------------------------------
 // Purpose: Search backward for a zero crossing starting at sample
@@ -1520,14 +1521,14 @@ public:
 	~CAudioSourceStreamWave();
 
 	CAudioMixer		*CreateMixer( int initialStreamPosition = 0 );
-	int				GetOutputData( void **pData, int samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] );
+	int				GetOutputData( void **pData, int64 samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] );
 	void			ParseChunk( IterateRIFF &walk, int chunkName );
 	bool			IsStreaming( void ) { return true; }
 
 	virtual int		GetCacheStatus( void );
 
 	// IWaveStreamSource
-	virtual int UpdateLoopingSamplePosition( int samplePosition )
+	virtual int UpdateLoopingSamplePosition( int64 samplePosition )
 	{
 		return ConvertLoopedPosition( samplePosition );
 	}
@@ -1738,7 +1739,7 @@ void CAudioSourceStreamWave::ParseChunk( IterateRIFF &walk, int chunkName )
 // Purpose: This is not implemented here.  This source has no data.  It is the
 //			WaveData's responsibility to load/serve the data
 //-----------------------------------------------------------------------------
-int CAudioSourceStreamWave::GetOutputData( void **pData, int samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] )
+int CAudioSourceStreamWave::GetOutputData( void **pData, int64 samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] )
 {
 	return 0;
 }
@@ -1826,7 +1827,7 @@ CAudioSource *Audio_CreateStreamedWave( CSfxTable *pSfx )
 #if defined( MP3_SUPPORT )
 	if ( Audio_IsMP3( pSfx->GetFileName() ) )
 	{
-		return Audio_CreateStreamedMP3( pSfx );
+		return Audio_CreateMemoryMP3( pSfx );
 	}
 #endif
 

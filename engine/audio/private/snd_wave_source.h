@@ -55,7 +55,7 @@ public:
 	bool					IsStereoWav( void );
 	bool					IsStreaming( void );
 	int						GetCacheStatus( void );
-	int						ConvertLoopedPosition( int samplePosition );
+	int64					ConvertLoopedPosition( int64 samplePosition );
 	void					CacheLoad( void );
 	void					CacheUnload( void );
 	virtual int				ZeroCrossingBefore( int sample );

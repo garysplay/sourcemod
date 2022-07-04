@@ -665,7 +665,7 @@ void VAudioInit()
 		if ( !IsPosix() )
 		{
 			// vaudio_miles.dll will load this...
-			g_pFileSystem->GetLocalCopy( "mss32.dll" );
+			g_pFileSystem->GetLocalCopy( "mss64.dll" );
 		}
 
 		g_pVAudioModule = FileSystem_LoadModule( "vaudio_minimp3" );

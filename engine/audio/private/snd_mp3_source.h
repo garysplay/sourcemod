@@ -34,7 +34,7 @@ public:
 
 	// Provide samples for the mixer. You can point pData at your own data, or if you prefer to copy the data,
 	// you can copy it into copyBuf and set pData to copyBuf.
-	virtual int					GetOutputData( void **pData, int samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] ) = 0;
+	virtual int					GetOutputData( void **pData, int64 samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] ) = 0;
 
 	virtual int					SampleRate( void );
 
@@ -132,10 +132,10 @@ public:
 	bool			IsStreaming( void ) OVERRIDE { return true; }
 	bool			IsStereoWav( void ) OVERRIDE { return false; }
 	CAudioMixer		*CreateMixer( int initialStreamPosition = 0 ) OVERRIDE;
-	int				GetOutputData( void **pData, int samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] ) OVERRIDE;
+	int				GetOutputData( void **pData, int64 samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] ) OVERRIDE;
 
 	// IWaveStreamSource
-	int UpdateLoopingSamplePosition( int samplePosition ) OVERRIDE
+	int UpdateLoopingSamplePosition( int64 samplePosition ) OVERRIDE
 	{
 		return samplePosition;
 	}
@@ -163,7 +163,7 @@ public:
 	void					CacheLoad( void ) OVERRIDE;
 	void					CacheUnload( void ) OVERRIDE;
 	// NOTE: "samples" are bytes for MP3
-	int						GetOutputData( void **pData, int samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] ) OVERRIDE;
+	int						GetOutputData( void **pData, int64 samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] ) OVERRIDE;
 	CAudioMixer				*CreateMixer( int initialStreamPosition = 0 ) OVERRIDE;
 	CSentence				*GetSentence( void ) OVERRIDE;
 
@@ -171,7 +171,7 @@ public:
 
 protected:
 	virtual char			*GetDataPointer( void );
-	memhandle_t				m_hCache;
+	WaveCacheHandle_t		m_hCache;
 
 private:
 	CAudioSourceMP3Cache( const CAudioSourceMP3Cache & );
