@@ -1275,7 +1275,11 @@ void CConPanel::PaintBackground()
 
 	int wide = GetWide();
 	char ver[ 100 ];
-	Q_snprintf(ver, sizeof( ver ), "CoolSource Engine %i (%s)", PROTOCOL_VERSION, __DATE__ );
+#ifdef WIN64
+	Q_snprintf(ver, sizeof(ver), "CoolSource Engine %i (%s)(win64)(build %d)", PROTOCOL_VERSION, __DATE__, build_number());
+#else
+	Q_snprintf(ver, sizeof(ver), "CoolSource Engine %i (%s)(win32)(build %d)", PROTOCOL_VERSION, __DATE__, build_number());
+#endif
 	wchar_t unicode[ 200 ];
 	g_pVGuiLocalize->ConvertANSIToUnicode( ver, unicode, sizeof( unicode ) );
 

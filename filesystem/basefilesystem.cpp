@@ -9,6 +9,9 @@
 #define _snwprintf swprintf
 #endif
 
+#include <windows.h>
+#include <winbase.h>
+
 #include "basefilesystem.h"
 #include "tier0/vprof.h"
 #include "tier1/characterset.h"
