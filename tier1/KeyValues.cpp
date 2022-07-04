@@ -37,8 +37,8 @@
 static const char * s_LastFileLoadingFrom = "unknown"; // just needed for error messages
 
 // Statics for the growable string table
-intp (*KeyValues::s_pfGetSymbolForString)( const char *name, bool bCreate ) = &KeyValues::GetSymbolForStringClassic;
-const char *(*KeyValues::s_pfGetStringForSymbol)( intp symbol ) = &KeyValues::GetStringForSymbolClassic;
+int (*KeyValues::s_pfGetSymbolForString)( const char *name, bool bCreate ) = &KeyValues::GetSymbolForStringClassic;
+const char *(*KeyValues::s_pfGetStringForSymbol)( int symbol ) = &KeyValues::GetStringForSymbolClassic;
 CKeyValuesGrowableStringTable *KeyValues::s_pGrowableStringTable = NULL;
 
 #define KEYVALUES_TOKEN_SIZE	4096
@@ -63,7 +63,7 @@ public:
 
 	// entering a new keyvalues block, save state for errors
 	// Not save symbols instead of pointers because the pointers can move!
-	int Push( intp symName )
+	int Push( int symName )
 	{
 		if ( m_errorIndex < MAX_ERROR_STACK )
 		{
@@ -82,7 +82,7 @@ public:
 	}
 
 	// Allows you to keep the same stack level, but change the name as you parse peers
-	void Reset( int stackLevel, intp symName )
+	void Reset( int stackLevel, int symName )
 	{
 		Assert( stackLevel >= 0 );
 		Assert( stackLevel < m_errorIndex );
@@ -118,7 +118,7 @@ public:
 	}
 
 private:
-	intp	m_errorStack[MAX_ERROR_STACK];
+	int  	m_errorStack[MAX_ERROR_STACK];
 	const char *m_pFilename;
 	int		m_errorIndex;
 	int		m_maxErrorIndex;
@@ -138,11 +138,11 @@ public:
 	{
 		g_KeyValuesErrorStack.Pop();
 	}
-	CKeyErrorContext( intp symName )
+	explicit CKeyErrorContext( int symName )
 	{
 		Init( symName );
 	}
-	void Reset( intp symName )
+	void Reset( int symName )
 	{
 		g_KeyValuesErrorStack.Reset( m_stackLevel, symName );
 	}
@@ -151,7 +151,7 @@ public:
 		return m_stackLevel;
 	}
 private:
-	void Init( intp symName )
+	void Init( int symName )
 	{
 		m_stackLevel = g_KeyValuesErrorStack.Push( symName );
 	}
@@ -242,7 +242,7 @@ public:
 	}
 
 	// Translates a string to an index
-	intp GetSymbolForString( const char *name, bool bCreate = true )
+	int GetSymbolForString( const char *name, bool bCreate = true )
 	{
 		AUTO_LOCK( m_mutex );
 
@@ -273,7 +273,7 @@ public:
 	}
 
 	// Translates an index back to a string
-	const char *GetStringForSymbol( intp symbol )
+	const char *GetStringForSymbol( int symbol )
 	{
 		return (const char *)m_vecStrings.Base() + symbol;
 	}
@@ -292,7 +292,7 @@ private:
 		void SetCurStringBase( const char *pchCurBase ) { m_pchCurBase = pchCurBase; }
 
 		// The compare function.
-		bool operator()( intp nLhs, intp nRhs ) const
+		bool operator()( int nLhs, int nRhs ) const
 		{
 			const char *pchLhs = nLhs > 0 ? m_pchCurBase + nLhs : m_pchCurString;
 			const char *pchRhs = nRhs > 0 ? m_pchCurBase + nRhs : m_pchCurString;
@@ -313,7 +313,7 @@ private:
 
 	CThreadFastMutex m_mutex;
 	CLookupFunctor	m_Functor;
-	CUtlHash<intp, CLookupFunctor &, CLookupFunctor &> m_hashLookup;
+	CUtlHash<int, CLookupFunctor &, CLookupFunctor &> m_hashLookup;
 	CUtlVector<char> m_vecStrings;
 };
 
@@ -348,22 +348,22 @@ void KeyValues::SetUseGrowableStringTable( bool bUseGrowableTable )
 // Purpose: Bodys of the function pointers used for interacting with the key
 //	name string table
 //-----------------------------------------------------------------------------
-intp KeyValues::GetSymbolForStringClassic( const char *name, bool bCreate )
+int KeyValues::GetSymbolForStringClassic( const char *name, bool bCreate )
 {
 	return KeyValuesSystem()->GetSymbolForString( name, bCreate );
 }
 
-const char *KeyValues::GetStringForSymbolClassic( intp symbol )
+const char *KeyValues::GetStringForSymbolClassic( int symbol )
 {
 	return KeyValuesSystem()->GetStringForSymbol( symbol );
 }
 
-intp KeyValues::GetSymbolForStringGrowable( const char *name, bool bCreate )
+int KeyValues::GetSymbolForStringGrowable( const char *name, bool bCreate )
 {
 	return s_pGrowableStringTable->GetSymbolForString( name, bCreate );
 }
 
-const char *KeyValues::GetStringForSymbolGrowable( intp symbol )
+const char *KeyValues::GetStringForSymbolGrowable( int symbol )
 {
 	return s_pGrowableStringTable->GetStringForSymbol( symbol );
 }
@@ -952,7 +952,7 @@ void KeyValues::SaveKeyToFile( KeyValues *dat, IBaseFileSystem *filesystem, File
 //-----------------------------------------------------------------------------
 // Purpose: looks up a key by symbol name
 //-----------------------------------------------------------------------------
-KeyValues *KeyValues::FindKey(intp keySymbol) const
+KeyValues *KeyValues::FindKey(int keySymbol) const
 {
 	for (KeyValues *dat = m_pSub; dat != NULL; dat = dat->m_pPeer)
 	{
@@ -975,7 +975,7 @@ KeyValues *KeyValues::FindKey(const char *keyName, bool bCreate)
 		return this;
 
 	// look for '/' characters deliminating sub fields
-	char szBuf[256];
+	CUtlVector< char > szBuf;
 	const char *subStr = strchr(keyName, '/');
 	const char *searchStr = keyName;
 
@@ -983,9 +983,16 @@ KeyValues *KeyValues::FindKey(const char *keyName, bool bCreate)
 	if (subStr)
 	{
 		int size = subStr - keyName;
-		Q_memcpy( szBuf, keyName, size );
+		Assert( size >= 0 );
+		Assert( size < 1024 * 1024 );
+		szBuf.EnsureCount( size + 1 );
+		V_memcpy( szBuf.Base(), keyName, size );
 		szBuf[size] = 0;
-		searchStr = szBuf;
+		if ( V_strlen( keyName ) > 1 )
+		{
+			// If the key name is just '/', we don't treat is as a key with subfields, but use the '/' as a key name directly
+			searchStr = szBuf.Base();
+		}
 	}
 
 	// lookup the symbol for the search string
@@ -1005,7 +1012,7 @@ KeyValues *KeyValues::FindKey(const char *keyName, bool bCreate)
 		lastItem = dat;	// record the last item looked at (for if we need to append to the end of the list)
 
 		// symbol compare
-		if (dat->m_iKeyName == iSearchStr)
+		if (dat->m_iKeyName == (uint32)iSearchStr)
 		{
 			break;
 		}
@@ -1312,16 +1319,25 @@ uint64 KeyValues::GetUint64( const char *keyName, uint64 defaultValue )
 	{
 		switch (dat->m_iDataType)
 		{
-		case TYPE_STRING:
-			return (uint64)Q_atoi64(dat->m_sValue);
+	    case TYPE_STRING:
+			{
+				uint64 uiResult = 0ull;
+				sscanf( dat->m_sValue, "%lld", &uiResult );
+				return uiResult;
+			}
 		case TYPE_WSTRING:
-			return _wtoi64(dat->m_wsValue);
+			{
+				uint64 uiResult = 0ull;
+				swscanf( dat->m_wsValue, L"%lld", &uiResult );
+				return uiResult;
+			}
 		case TYPE_FLOAT:
 			return (int)dat->m_flValue;
 		case TYPE_UINT64:
 			return *((uint64*)dat->m_sValue);
-		case TYPE_INT:
 		case TYPE_PTR:
+			return (uint64)(uintp)dat->m_pValue;
+		case TYPE_INT:
 		default:
 			return dat->m_iValue;
 		};
@@ -2466,7 +2482,7 @@ void KeyValues::RecursiveLoadFromBuffer( char const *resourceName, CUtlBuffer &b
 			char* pFEnd;	// pos where float scan ended
 			const char* pSEnd = value + len ; // pos where token ends
 
-			int ival = strtol( value, &pIEnd, 10 );
+			long ival = strtol( value, &pIEnd, 10 );
 			float fval = (float)strtod( value, &pFEnd );
 			bool bOverflow = ( ival == LONG_MAX || ival == LONG_MIN ) && errno == ERANGE;
 #ifdef POSIX
@@ -2508,7 +2524,7 @@ void KeyValues::RecursiveLoadFromBuffer( char const *resourceName, CUtlBuffer &b
 			}
 			else if (pIEnd == pSEnd && !bOverflow)
 			{
-				dat->m_iValue = ival; 
+				dat->m_iValue = size_cast< int >(ival);
 				dat->m_iDataType = TYPE_INT;
 			}
 			else
@@ -2606,7 +2622,12 @@ bool KeyValues::WriteAsBinary( CUtlBuffer &buffer )
 			}
 		case TYPE_WSTRING:
 			{
-				Assert( !"TYPE_WSTRING" );
+				int nLength = dat->m_wsValue ? V_wcslen( dat->m_wsValue ) : 0;
+				buffer.PutShort( nLength );
+				for( int k = 0; k < nLength; ++ k )
+				{
+					buffer.PutShort( ( unsigned short ) dat->m_wsValue[k] );
+				}
 				break;
 			}
 
@@ -2618,7 +2639,7 @@ bool KeyValues::WriteAsBinary( CUtlBuffer &buffer )
 
 		case TYPE_UINT64:
 			{
-				buffer.PutDouble( *((double *)dat->m_sValue) );
+				buffer.PutInt64( *((int64 *)dat->m_sValue) );
 				break;
 			}
 
@@ -2637,8 +2658,18 @@ bool KeyValues::WriteAsBinary( CUtlBuffer &buffer )
 			}
 		case TYPE_PTR:
 		{
-			buffer.PutPtr(dat->m_pValue);
-			break;
+#if defined( PLATFORM_64BITS )
+				// We only put an int here, because 32-bit clients do not expect 64 bits. It'll cause them to read the wrong
+				// amount of data and then crash. Longer term, we may bump this up in size on all platforms, but short term 
+				// we don't really have much of a choice other than sticking in something that appears to not be NULL.
+				if ( dat->m_pValue != 0 && ( ( (int)(intp)dat->m_pValue ) == 0 ) )
+					buffer.PutInt( 31337 ); // Put not 0, but not a valid number. Yuck.
+				else
+					buffer.PutInt( ( (int)(intp)dat->m_pValue ) );
+#else
+				buffer.PutPtr( dat->m_pValue );
+#endif
+				break;
 		}
 
 		default:
@@ -2710,7 +2741,15 @@ bool KeyValues::ReadAsBinary( CUtlBuffer &buffer, int nStackDepth )
 			}
 		case TYPE_WSTRING:
 			{
-				Assert( !"TYPE_WSTRING" );
+                int nLength = buffer.GetShort();
+
+				dat->m_wsValue = new wchar_t[nLength + 1];
+
+				for( int k = 0; k < nLength; ++ k )
+				{
+					dat->m_wsValue[k] = buffer.GetShort();
+				}
+				dat->m_wsValue[ nLength ] = 0;				
 				break;
 			}
 
@@ -2742,8 +2781,15 @@ bool KeyValues::ReadAsBinary( CUtlBuffer &buffer, int nStackDepth )
 			}
 		case TYPE_PTR:
 		    {
-			dat->m_pValue = buffer.GetPtr();
-			break;
+#if defined( PLATFORM_64BITS )
+				// We need to ensure we only read 32 bits out of the stream because 32 bit clients only wrote 
+				// 32 bits of data there. The actual pointer is irrelevant, all that we really care about here
+				// contractually is whether the pointer is zero or not zero.
+				dat->m_pValue = ( void* )( intp )buffer.GetInt();
+#else
+				dat->m_pValue = buffer.GetPtr();
+#endif
+				break;
 	    	}
 
 
