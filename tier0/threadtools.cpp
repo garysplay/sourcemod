@@ -2390,7 +2390,7 @@ int CWorkerThread::WaitForReply( unsigned timeout, WaitFunc_t pfnWait )
 {
 	if (!pfnWait)
 	{
-		pfnWait = DefaultWaitFunc;
+		pfnWait = &DefaultWaitFunc;
 	}
 
 #ifdef WIN32
@@ -2415,7 +2415,7 @@ int CWorkerThread::WaitForReply( unsigned timeout, WaitFunc_t pfnWait )
 		// Make sure the thread handle hasn't been closed
 		if ( !GetThreadHandle() )
 		{
-			result = WAIT_OBJECT_0 + 1;
+			result = 1;
 			break;
 		}
 #endif
@@ -2426,11 +2426,11 @@ int CWorkerThread::WaitForReply( unsigned timeout, WaitFunc_t pfnWait )
 
 	} while ( bInDebugger && ( timeout == TT_INFINITE && result == WAIT_TIMEOUT ) );
 
-	if ( result != WAIT_OBJECT_0 + 1 )
+	if ( result != 1 )
 	{
 		if (result == WAIT_TIMEOUT)
 			m_ReturnVal = WTCR_TIMEOUT;
-		else if (result == WAIT_OBJECT_0)
+		else if (result == 1)
 		{
 			DevMsg( 2, "Thread failed to respond, probably exited\n");
 			m_EventSend.Reset();

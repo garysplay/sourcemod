@@ -537,7 +537,7 @@ int CThreadPool::NumIdleThreads()
 
 void CThreadPool::ExecuteHighPriorityFunctor( CFunctor *pFunctor )
 {
-	int i;
+	/*int i;
 	for ( i = 0; i < m_Threads.Count(); i++ )
 	{
 		m_Threads[i]->CallWorker( TPM_RUNFUNCTOR, 0, false, pFunctor );
@@ -546,7 +546,7 @@ void CThreadPool::ExecuteHighPriorityFunctor( CFunctor *pFunctor )
 	for ( i = 0; i < m_Threads.Count(); i++ )
 	{
 		m_Threads[i]->WaitForReply();
-	}
+	}*/
 }
 
 //---------------------------------------------------------

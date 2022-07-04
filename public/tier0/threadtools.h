@@ -326,8 +326,8 @@ PLATFORM_INTERFACE void ThreadNotifySyncReleasing(void *p);
 #pragma intrinsic( _InterlockedCompareExchange64 )
 #pragma intrinsic( _InterlockedExchange64 )
 #pragma intrinsic( _InterlockedExchangeAdd64 ) 
-inline int64 ThreadInterlockedIncrement64(int64 volatile* p) { Assert((size_t)p % 8 == 0); return _InterlockedIncrement64((volatile int64*)p); }
-inline int64 ThreadInterlockedDecrement64(int64 volatile* p) { Assert((size_t)p % 8 == 0); return _InterlockedDecrement64((volatile int64*)p); }
+inline int64 ThreadInterlockedIncrement64(int64 volatile *p)										{ Assert((size_t)p % 8 == 0); return _InterlockedIncrement64((volatile int64*)p); }
+inline int64 ThreadInterlockedDecrement64(int64 volatile *p)										{ Assert((size_t)p % 8 == 0); return _InterlockedDecrement64((volatile int64*)p); }
 #endif
 
 #ifndef __AFXTLS_H__ // not compatible with some Windows headers
@@ -379,9 +379,9 @@ private:
 
 	//---------------------------------------------------------
 
-template <class T = intp>
-	class CThreadLocalInt : public CThreadLocal<T>
-	{
+template <class T = int32>
+class CThreadLocalInt : public CThreadLocal<T>
+{
 	public:
 	CThreadLocalInt()
 	{
@@ -396,7 +396,7 @@ template <class T = intp>
 
 	int operator--()					{ T i = this->Get(); this->Set( --i ); return (int)i; }
 	int operator--(int)				{ T i = this->Get(); this->Set( i - 1 ); return (int)i; }
-	};
+};
 
 
 	//---------------------------------------------------------
@@ -1163,11 +1163,15 @@ public:
 	void UnlockWrite() const { const_cast<CThreadSpinRWLock *>(this)->UnlockWrite(); }
 
 private:
-	struct LockInfo_t
+	union LockInfo_t
+	{
+		struct
 		{
 			uint32	m_writerId;
 			int		m_nReaders;
 		};
+		int64 m_i64;
+	};
 
 	bool AssignIf( const LockInfo_t &newValue, const LockInfo_t &comperand );
 	bool TryLockForWrite( const uint32 threadId );
@@ -1432,7 +1436,7 @@ protected:
 #define __stdcall
 #endif
 	typedef uint32 (__stdcall *WaitFunc_t)( int nEvents, CThreadEvent * const *pEvents, int bWaitAll, uint32 timeout );
-	
+
 	int Call( unsigned, unsigned timeout, bool fBoost, WaitFunc_t = NULL, CFunctor *pParamFunctor = NULL );
 	int WaitForReply( unsigned timeout, WaitFunc_t );
 
@@ -1703,7 +1707,7 @@ inline void CThreadRWLock::UnlockRead()
 
 inline bool CThreadSpinRWLock::AssignIf( const LockInfo_t &newValue, const LockInfo_t &comperand )
 {
-	return ThreadInterlockedAssignIf64( (int64 *)&m_lockInfo, *((int64 *)&newValue), *((int64 *)&comperand) );
+	return ThreadInterlockedAssignIf64( &m_lockInfo.m_i64, newValue.m_i64, comperand.m_i64 );
 }
 
 inline bool CThreadSpinRWLock::TryLockForWrite( const uint32 threadId )
