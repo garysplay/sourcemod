@@ -114,7 +114,7 @@ static void Matrix3x4Offset( matrix3x4_t& dest, const matrix3x4_t& matrixIn, con
 
 // This does the necessary casting / extract to grab a pointer to a member function as a void *
 // UNDONE: Cast to BASEPTR or something else here?
-#define EXTRACT_INPUTFUNC_FUNCTIONPTR(x)		(*(inputfunc_t **)(&(x)))
+//#define EXTRACT_INPUTFUNC_FUNCTIONPTR(x)		(*(inputfunc_t **)(&(x)))
 
 //-----------------------------------------------------------------------------
 // Purpose: Search this datamap for the name of this member function
@@ -122,7 +122,7 @@ static void Matrix3x4Offset( matrix3x4_t& dest, const matrix3x4_t& matrixIn, con
 // Input  : *function - pointer to member function
 // Output : const char * - function name
 //-----------------------------------------------------------------------------
-const char *UTIL_FunctionToName( datamap_t *pMap, inputfunc_t *function )
+const char *UTIL_FunctionToName( datamap_t *pMap, inputfunc_t function )
 {
 	while ( pMap )
 	{
@@ -137,7 +137,7 @@ const char *UTIL_FunctionToName( datamap_t *pMap, inputfunc_t *function )
 #else
 #error
 #endif
-				inputfunc_t *pTest = EXTRACT_INPUTFUNC_FUNCTIONPTR(pMap->dataDesc[i].inputFunc);
+				inputfunc_t pTest = pMap->dataDesc[i].inputFunc;
 
 				if ( pTest == function )
 					return pMap->dataDesc[i].fieldName;
@@ -154,7 +154,7 @@ const char *UTIL_FunctionToName( datamap_t *pMap, inputfunc_t *function )
 //			This is used to save/restore function pointers (convert text back to pointer)
 // Input  : *pName - name of the member function
 //-----------------------------------------------------------------------------
-inputfunc_t *UTIL_FunctionFromName( datamap_t *pMap, const char *pName )
+inputfunc_t UTIL_FunctionFromName( datamap_t *pMap, const char *pName )
 {
 	while ( pMap )
 	{
@@ -172,7 +172,7 @@ inputfunc_t *UTIL_FunctionFromName( datamap_t *pMap, const char *pName )
 			{
 				if ( FStrEq( pName, pMap->dataDesc[i].fieldName ) )
 				{
-					return EXTRACT_INPUTFUNC_FUNCTIONPTR(pMap->dataDesc[i].inputFunc);
+					return pMap->dataDesc[i].inputFunc;
 				}
 			}
 		}
@@ -295,6 +295,14 @@ void CSave::Log( const char *pName, fieldtype_t fieldType, void *value, int coun
 				int *pValue = ( int* )( value );
 				int nValue = pValue[iCount];
 				Q_snprintf( szTempBuf, sizeof( szTempBuf ), "%d", nValue );
+				Q_strncat( szBuf, szTempBuf, sizeof( szTempBuf ), COPY_ALL_CHARACTERS );
+				break;
+			}
+		case FIELD_INTEGER64:
+		    {
+				uint64 *pValue = ( uint64* )( value );
+				uint64 nValue = pValue[iCount];
+				Q_snprintf( szTempBuf, sizeof( szTempBuf ), "%llx", nValue );
 				Q_strncat( szBuf, szTempBuf, sizeof( szTempBuf ), COPY_ALL_CHARACTERS );
 				break;
 			}
@@ -738,6 +746,10 @@ bool CSave::WriteBasicField( const char *pname, void *pData, datamap_t *pRootMap
 			WriteInt( pField->fieldName, (int *)pData, pField->fieldSize );
 			break;
 
+		case FIELD_INTEGER64:
+			Assert( 0 );
+			break;
+
 		case FIELD_BOOLEAN:
 			WriteBool( pField->fieldName, (bool *)pData, pField->fieldSize );
 			break;
@@ -1126,9 +1138,7 @@ void CSave::WritePositionVector( const char *pname, const Vector *value, int cou
 
 void CSave::WritePositionVector( const Vector *value, int count )
 {
-	int i;
-	Vector tmp;
-	for ( i = 0; i < count; i++ )
+	for ( int i = 0; i < count; i++ )
 	{
 		Vector tmp = value[i];
 
@@ -1144,7 +1154,7 @@ void CSave::WritePositionVector( const Vector *value, int count )
 void CSave::WriteFunction( datamap_t *pRootMap, const char *pname, inputfunc_t **data, int count )
 {
 	AssertMsg( count == 1, "Arrays of functions not presently supported" );
-	const char *functionName = UTIL_FunctionToName( pRootMap, *data );
+	const char *functionName = UTIL_FunctionToName( pRootMap, *(inputfunc_t*)data );
 	if ( !functionName )
 	{
 		Warning( "Invalid function pointer in entity!\n" );
@@ -1400,6 +1410,12 @@ void CRestore::ReadBasicField( const SaveRestoreRecordHeader_t &header, void *pD
 		case FIELD_INTEGER:
 		{
 			ReadInt( (int *)pDest, pField->fieldSize, header.size );
+			break;
+		}
+
+		case FIELD_INTEGER64:
+		{
+			Assert( 0 );
 			break;
 		}
 
@@ -2252,7 +2268,7 @@ int CRestore::ReadFunction( datamap_t *pMap, inputfunc_t **pValue, int count, in
 	if ( *pszFunctionName == 0 )
 		*pValue = NULL;
 	else
-		*pValue = UTIL_FunctionFromName( pMap, pszFunctionName );
+		inputfunc_t func = UTIL_FunctionFromName( pMap, pszFunctionName );
 
 	return 0;
 }
