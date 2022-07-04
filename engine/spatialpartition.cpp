@@ -312,7 +312,7 @@ private:
 	CVoxelHash*							m_pVoxelHash;
 	CLeafList							m_aLeafList;								// Pool - Linked list(multilist) of leaves per entity.
 	int									m_TreeId;
-	CPartitionVisits *                  m_pVisits;
+	CPartitionVisits *                  m_pVisits[MAX_THREADS_SUPPORTED];
 	CSpatialPartition *					m_pOwner;
 	CUtlVector<unsigned short>			m_AvailableVisitBits;
 	unsigned short						m_nNextVisitBit;
@@ -437,12 +437,14 @@ inline int CVoxelTree::GetTreeId() const
 
 inline CPartitionVisits *CVoxelTree::GetVisits()
 {
-	return m_pVisits;
+	int nThread = g_nThreadID;
+	return m_pVisits[nThread];
 }
 
 inline CPartitionVisits *CVoxelTree::BeginVisit()
 {
-	CPartitionVisits *pPrev = m_pVisits;
+	int nThread = g_nThreadID;
+	CPartitionVisits *pPrev = m_pVisits[nThread];
 	CPartitionVisits *pVisits = m_FreeVisits.GetObject();
 	if ( pVisits->GetNumBits() < m_nNextVisitBit )
 	{
@@ -452,14 +454,15 @@ inline CPartitionVisits *CVoxelTree::BeginVisit()
 	{
 		pVisits->ClearAll();
 	}
-	m_pVisits = pVisits;
+	m_pVisits[g_nThreadID] = pVisits;
 	return pPrev;
 }
 
 inline void CVoxelTree::EndVisit( CPartitionVisits *pPrev )
 {
-	m_FreeVisits.PutObject( m_pVisits );
-	m_pVisits = pPrev;
+	int nThread = g_nThreadID;
+	m_FreeVisits.PutObject( m_pVisits[nThread] );
+	m_pVisits[nThread] = pPrev;
 }
 
 inline CVoxelTree *CSpatialPartition::VoxelTree( SpatialPartitionListMask_t listMask )
@@ -1948,11 +1951,11 @@ void ClampVector( Vector &out, const Vector &mins, const Vector &maxs )
 //-----------------------------------------------------------------------------
 void CVoxelTree::Init( CSpatialPartition *pOwner, int iTree, const Vector &worldmin, const Vector &worldmax )
 {
-    m_pOwner = pOwner;
+	m_pOwner = pOwner;
 	m_TreeId = iTree;
 
 	// Reset the enumeration id.
-	m_pVisits = NULL;
+	memset( m_pVisits, 0, sizeof( m_pVisits ) );
 
 	for ( int i = 0; i < m_nLevelCount; ++i )
 	{
@@ -2029,7 +2032,7 @@ void CVoxelTree::InsertIntoTree( SpatialPartitionHandle_t hPartition, const Vect
 
 	if ( bDoInsert )
 	{
-		bool bWasReading = ( m_pVisits != NULL );
+		bool bWasReading = ( m_pVisits[g_nThreadID] != NULL );
 		if ( bWasReading )
 		{
 			// If we're recursing in this thread, need to release our read lock to allow ourselves to write
@@ -2069,7 +2072,7 @@ void CVoxelTree::RemoveFromTree( SpatialPartitionHandle_t hPartition )
 	int nLevel = info.m_nLevel[GetTreeId()];
 	if ( nLevel >= 0 )
 	{
-		bool bWasReading = ( m_pVisits != NULL );
+		bool bWasReading = ( m_pVisits[g_nThreadID] != NULL );
 		if ( bWasReading )
 		{
 			// If we're recursing in this thread, need to release our read lock to allow ourselves to write

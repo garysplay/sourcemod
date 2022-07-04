@@ -18,6 +18,7 @@
 #if defined( _WIN32 ) && !defined( _X360 )
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <winbase.h>
 #endif
 #include "tier0/vcrmode.h"
 #include "tier1/convar.h"
@@ -122,11 +123,11 @@ public:
 		Q_strncpy( szFixedName, pszFilename, sizeof( szFixedName ) );
 		Q_FixSlashes( szFixedName );
 
-		Assert( (intp)FS_INVALID_ASYNC_FILE == m_map.InvalidIndex());
+		Assert( (int)FS_INVALID_ASYNC_FILE == m_map.InvalidIndex());
 
-		AUTO_LOCK( m_mutex );
+		AUTO_LOCK_FM( m_mutex );
 
-		intp iEntry = m_map.Find( szFixedName );
+		int iEntry = m_map.Find( szFixedName );
 		if ( iEntry == m_map.InvalidIndex() )
 		{
 			iEntry = m_map.Insert( strdup( szFixedName ), new AsyncOpenedFile_t );
@@ -135,7 +136,7 @@ public:
 		{
 			m_map[iEntry]->AddRef();
 		}
-		return (FSAsyncFile_t)iEntry;
+		return (FSAsyncFile_t)(intp)iEntry;
 	}
 
 	FSAsyncFile_t Find( const char *pszFilename )
@@ -144,15 +145,15 @@ public:
 		Q_strncpy( szFixedName, pszFilename, sizeof( szFixedName ) );
 		Q_FixSlashes( szFixedName );
 
-		AUTO_LOCK( m_mutex );
+		AUTO_LOCK_FM( m_mutex );
 
-		intp iEntry = m_map.Find( szFixedName );
+		int iEntry = m_map.Find( szFixedName );
 		if ( iEntry != m_map.InvalidIndex() )
 		{
 			m_map[iEntry]->AddRef();
 		}
 
-		return (FSAsyncFile_t)iEntry;
+		return (FSAsyncFile_t)(intp)iEntry;
 	}
 
 	AsyncOpenedFile_t *Get( FSAsyncFile_t item )
@@ -162,9 +163,9 @@ public:
 			return NULL;
 		}
 
-		AUTO_LOCK( m_mutex );
+		AUTO_LOCK_FM( m_mutex );
 
-		int iEntry = (CUtlMap<CUtlString, AsyncOpenedFile_t>::IndexType_t)(intp)item;
+		int iEntry = (CUtlMap<CUtlString, AsyncOpenedFile_t>::IndexType_t)size_cast<int>( (intp) item );
 		Assert( m_map.IsValidIndex( iEntry ) );
 		m_map[iEntry]->AddRef();
 		return m_map[iEntry];
@@ -177,9 +178,9 @@ public:
 			return;
 		}
 
-		AUTO_LOCK( m_mutex );
+		AUTO_LOCK_FM( m_mutex );
 
-		int iEntry = (CUtlMap<CUtlString, AsyncOpenedFile_t>::IndexType_t)(intp)item;
+		int iEntry = (CUtlMap<CUtlString, AsyncOpenedFile_t>::IndexType_t)size_cast<int>( (intp) item );
 		Assert( m_map.IsValidIndex( iEntry ) );
 		m_map[iEntry]->AddRef();
 	}
@@ -191,9 +192,9 @@ public:
 			return;
 		}
 
-		AUTO_LOCK( m_mutex );
+		AUTO_LOCK_FM( m_mutex );
 
-		int iEntry = (CUtlMap<CUtlString, AsyncOpenedFile_t>::IndexType_t)(intp)item;
+		int iEntry = (CUtlMap<CUtlString, AsyncOpenedFile_t>::IndexType_t)size_cast<int>( (intp) item );
 		Assert( m_map.IsValidIndex( iEntry ) );
 		if ( m_map[iEntry]->Release() == 0 )
 		{
@@ -231,11 +232,11 @@ enum FSAsyncMode_t
 
 // Cast to int in order to indicate that we are intentionally comparing different
 // enum types, to suppress gcc warnings.
-ASSERT_INVARIANT( FSASYNC_OK == (int)JOB_OK );
-ASSERT_INVARIANT( FSASYNC_STATUS_PENDING == (int)JOB_STATUS_PENDING );
-ASSERT_INVARIANT( FSASYNC_STATUS_INPROGRESS == (int)JOB_STATUS_INPROGRESS );
-ASSERT_INVARIANT( FSASYNC_STATUS_ABORTED == (int)JOB_STATUS_ABORTED );
-ASSERT_INVARIANT( FSASYNC_STATUS_UNSERVICED == (int)JOB_STATUS_UNSERVICED );
+ASSERT_INVARIANT((int)FSASYNC_OK == (int)JOB_OK );
+ASSERT_INVARIANT((int)FSASYNC_STATUS_PENDING == (int)JOB_STATUS_PENDING );
+ASSERT_INVARIANT((int)FSASYNC_STATUS_INPROGRESS == (int)JOB_STATUS_INPROGRESS );
+ASSERT_INVARIANT((int)FSASYNC_STATUS_ABORTED == (int)JOB_STATUS_ABORTED );
+ASSERT_INVARIANT((int)FSASYNC_STATUS_UNSERVICED == (int)JOB_STATUS_UNSERVICED );
 
 //---------------------------------------------------------
 // A standard filesystem job
@@ -685,7 +686,7 @@ void CBaseFileSystem::InitAsync()
 			params.nThreads = 1;
 		}
 
-		if ( !m_pThreadPool->Start( params, "IOJob" ) )
+		if (!m_pThreadPool->Start(params, "FsAsyncIO"))
 		{
 			SafeRelease( m_pThreadPool );
 		}
@@ -1162,7 +1163,7 @@ FSAsyncStatus_t CBaseFileSystem::AsyncGetResult( FSAsyncControl_t hControl, void
 //-----------------------------------------------------------------------------
 FSAsyncStatus_t CBaseFileSystem::AsyncAbort( FSAsyncControl_t hControl )
 {
-	CFileAsyncJob *pJob = (CFileAsyncJob *)hControl;
+	CFileAsyncJob *pJob = (CFileAsyncJob*)hControl;
 	if ( !pJob )
 	{
 		return FSASYNC_ERR_FAILURE;

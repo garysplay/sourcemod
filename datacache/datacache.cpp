@@ -77,6 +77,7 @@ CDataCacheSection::CDataCacheSection( CDataCache *pSharedCache, IDataCacheClient
 	m_nFrameUnlockCounter( 0 ),
 	m_options( 0 )
 {
+	memset( m_FrameLocks, 0, sizeof( m_FrameLocks ) );
 	memset( &m_status, 0, sizeof(m_status) );
 	AssertMsg1( strlen(pszName) <= DC_MAX_CLIENT_NAME, "Cache client name too long \"%s\"", pszName );
 	Q_strncpy( szName, pszName, sizeof(szName) );
@@ -470,7 +471,8 @@ void *CDataCacheSection::GetNoTouch( DataCacheHandle_t handle, bool bFrameLock )
 //-----------------------------------------------------------------------------
 int CDataCacheSection::BeginFrameLocking()
 {
-	FrameLock_t *pFrameLock = m_ThreadFrameLock.Get();
+	int nThreadID = g_nThreadID;
+	FrameLock_t* pFrameLock = m_FrameLocks[nThreadID];
 	if ( pFrameLock )
 	{
 		pFrameLock->m_iLock++;
@@ -484,7 +486,7 @@ int CDataCacheSection::BeginFrameLocking()
 		}
 		pFrameLock->m_iLock = 1;
 		pFrameLock->m_pFirst = NULL;
-		m_ThreadFrameLock.Set( pFrameLock );
+		m_FrameLocks[nThreadID] = pFrameLock;
 	}
 	return pFrameLock->m_iLock;
 }
@@ -495,7 +497,7 @@ int CDataCacheSection::BeginFrameLocking()
 //-----------------------------------------------------------------------------
 bool CDataCacheSection::IsFrameLocking()
 {
-	FrameLock_t *pFrameLock = m_ThreadFrameLock.Get();
+	FrameLock_t *pFrameLock = m_FrameLocks[g_nThreadID];
 	return ( pFrameLock != NULL );
 }
 
@@ -511,7 +513,7 @@ void *CDataCacheSection::FrameLock( DataCacheHandle_t handle )
 		Flush();
 
 	void *pResult = NULL;
-	FrameLock_t *pFrameLock = m_ThreadFrameLock.Get();
+	FrameLock_t *pFrameLock = m_FrameLocks[g_nThreadID];
 	if ( pFrameLock )
 	{
 		DataCacheItem_t *pItem = m_LRU.LockResource( (memhandle_t)handle );
@@ -540,7 +542,8 @@ void *CDataCacheSection::FrameLock( DataCacheHandle_t handle )
 //-----------------------------------------------------------------------------
 int CDataCacheSection::EndFrameLocking()
 {
-	FrameLock_t* pFrameLock = m_ThreadFrameLock.Get();
+	int nThread = g_nThreadID;
+	FrameLock_t *pFrameLock = m_FrameLocks[nThread];
 	Assert(pFrameLock->m_iLock > 0);
 
 	if (pFrameLock->m_iLock == 1)
@@ -564,6 +567,7 @@ int CDataCacheSection::EndFrameLocking()
 		}
 
 		m_FreeFrameLocks.Push(pFrameLock);
+		m_FrameLocks[nThread] = NULL;
 		return 0;
 	}
 	else
@@ -839,7 +843,7 @@ bool CDataCacheSection::DiscardItem( memhandle_t hItem, DataCacheNotificationTyp
 			NoteUnlock( pItem->size );
 		}
 
-		FrameLock_t *pFrameLock = m_ThreadFrameLock.Get();
+		FrameLock_t *pFrameLock = m_FrameLocks[g_nThreadID];
 		if ( pFrameLock )
 		{
 			int iThread = pFrameLock->m_iThread;
@@ -976,7 +980,7 @@ void DataCacheSize_f( IConVar *pConVar, const char *pOldString, float flOldValue
 		g_DataCache.SetSize( var.GetInt() * 1024 * 1024 );
 	}
 }
-ConVar datacachesize( "datacachesize", "64", FCVAR_DEVELOPMENTONLY, "Size in MB.", true, 32, true, 512, DataCacheSize_f );
+ConVar datacachesize( "datacachesize", "32", FCVAR_DEVELOPMENTONLY, "Size in MB.", true, 32, true, 512, DataCacheSize_f );
 
 //-----------------------------------------------------------------------------
 // Connect, disconnect

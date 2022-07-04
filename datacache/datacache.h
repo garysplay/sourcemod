@@ -40,7 +40,7 @@ struct DataCacheItemData_t
 //-------------------------------------
 
 #define DC_NO_NEXT_LOCKED ((DataCacheItem_t *)-1)
-#define DC_MAX_THREADS_FRAMELOCKED 4
+#define DC_MAX_THREADS_FRAMELOCKED 6
 
 struct DataCacheItem_t : DataCacheItemData_t
 {
@@ -175,16 +175,14 @@ private:
 
 	struct FrameLock_t
 	{
-		//$ WARNING: This needs a TSLNodeBase_t as the first item in here.
-		TSLNodeBase_t	base;
 		int				m_iLock;
-		DataCacheItem_t* m_pFirst;
+		DataCacheItem_t *m_pFirst;
 		int				m_iThread;
 	};
-	typedef CThreadLocal<FrameLock_t*> CThreadFrameLock;
+	//typedef CThreadLocal<FrameLock_t *> CThreadFrameLock;
 
-	CDataCacheLRU& m_LRU;
-	CThreadFrameLock	m_ThreadFrameLock;
+	CDataCacheLRU &		m_LRU;
+	FrameLock_t *       m_FrameLocks[MAX_THREADS_SUPPORTED];
 	DataCacheStatus_t	m_status;
 	DataCacheLimits_t	m_limits;
 	IDataCacheClient* m_pClient;
