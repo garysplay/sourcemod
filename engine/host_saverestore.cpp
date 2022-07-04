@@ -806,7 +806,7 @@ int CSaveRestore::SaveGameSlot( const char *pSaveName, const char *pSaveComment,
 	m_bWaitingForSafeDangerousSave = bIsAutosaveDangerous;
 
 	int iHeaderBufferSize = 64 + tokenSize + pSaveData->GetCurPos();
-	void *pMem = malloc(iHeaderBufferSize);
+	void *pMem = new char[iHeaderBufferSize];
 	CUtlBuffer saveHeader( pMem, iHeaderBufferSize );
 
 	// Write the header -- THIS SHOULD NEVER CHANGE STRUCTURE, USE SAVE_HEADER FOR NEW HEADER INFORMATION
@@ -2128,7 +2128,7 @@ int CSaveRestore::SaveReadNameAndComment( FileHandle_t f, OUT_Z_CAP(nameSize) ch
 	int nNumberOfFields;
 
 	char *pData;
-	int nFieldSize;
+	short nFieldSize;
 	
 	pData = pSaveData;
 
@@ -2147,10 +2147,12 @@ int CSaveRestore::SaveReadNameAndComment( FileHandle_t f, OUT_Z_CAP(nameSize) ch
 	else
 		pTokenList = NULL;
 
-	// short, short (size, index of field name)
-	nFieldSize = *(short *)pData;
+	// short, short (size, index of field name)	
+	Q_memcpy( &nFieldSize, pData, sizeof(short) );
 	pData += sizeof(short);
-	pFieldName = pTokenList[ *(short *)pData ];
+	short index = 0;
+	Q_memcpy( &index, pData, sizeof(short) );
+	pFieldName = pTokenList[index];
 
 	if ( !pFieldName || Q_stricmp( pFieldName, "GameHeader" ) )
 	{
@@ -2161,7 +2163,7 @@ int CSaveRestore::SaveReadNameAndComment( FileHandle_t f, OUT_Z_CAP(nameSize) ch
 
 	// int (fieldcount)
 	pData += sizeof(short);
-	nNumberOfFields = *(int*)pData;
+	Q_memcpy( &nNumberOfFields, pData, sizeof(int) );
 	pData += nFieldSize;
 
 	// Each field is a short (size), short (index of name), binary string of "size" bytes (data)
@@ -2172,10 +2174,15 @@ int CSaveRestore::SaveReadNameAndComment( FileHandle_t f, OUT_Z_CAP(nameSize) ch
 		// szName
 		// Actual Data
 
-		nFieldSize = *(short *)pData;
+		Q_memcpy( &nFieldSize, pData, sizeof(short) );
 		pData += sizeof(short);
 
-		pFieldName = pTokenList[ *(short *)pData ];
+		Q_memcpy( &index, pData, sizeof(short) );
+		pFieldName = pTokenList[index];
+		pData += sizeof(short);
+
+        Q_memcpy( &index, pData, sizeof(short) );
+		pFieldName = pTokenList[index];
 		pData += sizeof(short);
 
 		if ( !Q_stricmp( pFieldName, "comment" ) )

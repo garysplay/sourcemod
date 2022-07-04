@@ -614,7 +614,7 @@ inline void CUtlBuffer::GetObject( T *dest )
 	}
 	else
 	{
-		Q_memset( dest, 0, sizeof(T) );
+		Q_memset( &dest, 0, sizeof(T) );
 	}
 }
 
@@ -667,7 +667,7 @@ inline void CUtlBuffer::GetTypeBin< float >( float &dest )
 		else
 		{
 			// aligned read
-			Q_memcmp( &dest, (void*)pData, sizeof(float) );
+			dest = *(float *)pData;
 		}
 		if ( m_Byteswap.IsSwappingBytes() )
 		{

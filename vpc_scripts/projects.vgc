@@ -441,10 +441,12 @@ $Project "ivp_physics"
 {
 	"ivp\ivp_physics\ivp_physics.vpc" [$WINDOWS||$X360||$POSIX]
 }
+
 $Project "vaudio_minimp3"
 {
 	"engine\voice_codecs\minimp3\vaudio_minimp3.vpc" [$WINDOWS||$POSIX]
 }
+
 $Project "ServerBrowser"
 {
 	"ServerBrowser\ServerBrowser.vpc" [$WINDOWS||$POSIX]

@@ -1234,7 +1234,7 @@ bool CUtlBuffer::ParseToken( const char *pStartingDelim, const char *pEndingDeli
 		goto parseFailed;
 
 	nCurrentGet = TellGet();
-	nCharsToCopy = (int)(nCurrentGet - nEndingDelimLen) - nTokenStart;
+	nCharsToCopy = (int)( (nCurrentGet - nEndingDelimLen) - nTokenStart );
 	if ( nCharsToCopy >= nMaxLen )
 	{
 		nCharsToCopy = nMaxLen - 1;
