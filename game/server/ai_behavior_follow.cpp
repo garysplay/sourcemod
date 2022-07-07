@@ -2561,7 +2561,7 @@ bool CAI_FollowManager::AddFollower( CBaseEntity *pTarget, CAI_BaseNPC *pFollowe
 
 		AI_FollowSlot_t *pSlot 		= &pGroup->pFormation->pSlots[slot];
 
-		int i = pGroup->followers.AddToTail( );
+		intp i = pGroup->followers.AddToTail( );
 
 		AI_Follower_t *iterNode = &pGroup->followers[i];
 		iterNode->hFollower 	= pFollower;

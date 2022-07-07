@@ -543,7 +543,7 @@ struct AsyncCaptionData_t
 		data->m_nBlockNum = params.blocktoload;
 		data->m_nFileIndex = params.fileindex;
 		data->m_nBlockSize = params.blocksize;
-		data->m_pBlockData = new byte[ data->m_nBlockSize ];
+		data->m_pBlockData = new byte[ data->m_nBlockSize * sizeof(ucs2) ];
 		return data;
 	}
 
