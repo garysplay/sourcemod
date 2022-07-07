@@ -12,7 +12,7 @@ $Configuration
 		//$PlatformToolset "v110_xp" [$VS2012 && !$ANALYZE] // VS 2012 targeting Windows XP - //http://msdn.microsoft.com/en-us/library/vstudio/jj851139.aspx
 		//$PlatformToolset "v110" [$VS2012 && $ANALYZE] // VS 2012 for /analyze
 		//$PlatformToolset "v120_xp" [$VS2013 && !$ANALYZE] // VS 2013 targeting Windows XP - //http://msdn.microsoft.com/en-us/library/vstudio/jj851139.aspx
-		$PlatformToolset "v143" // VS 2019
+		$PlatformToolset "v143" // VS 2022
 	}
 
 	$General
@@ -44,7 +44,7 @@ $Configuration
 		$TreatWarningsAsErrors				"No (/WX-)"
 
 		// Defines to differentiate 32 from 64 bit builds
-		$PreprocessorDefinitions			"$BASE;PLATFORM_64BITS;WIN64;_WIN64;COMPILER_MSVC64" [$WIN64]
+		$PreprocessorDefinitions			"$BASE;PLATFORM_64BITS;WIN64;_WIN64;COMPILER_MSVC64;MSVC;RAD_TELEMETRY_DISABLED" [$WIN64]
 		$PreprocessorDefinitions			"$BASE;COMPILER_MSVC32" [$WIN32]
 
 		// /Gw is a VS 2013 option that puts global and static variables in individual sections so that the
