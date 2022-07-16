@@ -14,7 +14,7 @@ $Configuration
 	$Compiler
 	{
 		$AdditionalIncludeDirectories		"$BASE,..\common"
-		$PreprocessorDefinitions			"$BASE;ZIP_SUPPORT_LZMA_ENCODE"
+		$PreprocessorDefinitions			"$BASE;ZIP_SUPPORT_LZMA_ENCODE;MSVC"
 	}
 
 	$Linker [$WIN32]

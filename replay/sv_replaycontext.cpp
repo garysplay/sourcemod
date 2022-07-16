@@ -11,9 +11,9 @@
 #include "replaysystem.h"
 #include "icommandline.h"
 
-#if BUILD_CURL
-#include "curl/curl.h"
-#endif
+//#if BUILD_CURL
+//#include "curl/curl.h"
+//#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -40,10 +40,10 @@ CServerReplayContext::~CServerReplayContext()
 
 bool CServerReplayContext::Init( CreateInterfaceFn fnFactory )
 {
-#if BUILD_CURL
-	// Initialize cURL - in windows, this will init the winsock stuff.
-	curl_global_init( CURL_GLOBAL_ALL );
-#endif
+//#if BUILD_CURL
+//	// Initialize cURL - in windows, this will init the winsock stuff.
+//	curl_global_init( CURL_GLOBAL_ALL );
+//#endif
 
 	m_pShared = new CSharedReplayContext( this );
 
@@ -107,10 +107,10 @@ void CServerReplayContext::Shutdown()
 {
 	m_pShared->Shutdown();
 
-#if BUILD_CURL
-	// Shutdown cURL
-	curl_global_cleanup();
-#endif
+//#if BUILD_CURL
+//	// Shutdown cURL
+//	curl_global_cleanup();
+//#endif
 }
 
 void CServerReplayContext::Think()

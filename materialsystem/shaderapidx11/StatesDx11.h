@@ -522,6 +522,12 @@ namespace StatesDx11
 
 			morph.m_bMorphChanged = true;
 		}
+		
+		//enderzip: idk what am doing (fixme)
+		bool operator=(const ShaderState& src) const
+		{
+			return memcmp(this, &src, sizeof(ShaderState)) != 0;
+		}
 
 		ShaderState()
 		{

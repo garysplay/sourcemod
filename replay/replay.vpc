@@ -207,7 +207,7 @@ $Project "replay"
 		$ImpLib	"$LIBCOMMON\curl"	  [$OSXALL]
 
 		$Lib	"$LIBCOMMON\libcurl" [$WIN32&&!$VS2015]
-		$Lib   "libz" [$WIN32]
+		$Lib   "ZLib" [$WINDOWS]
 
 		$Libexternal	libz [$LINUXALL]
 	}

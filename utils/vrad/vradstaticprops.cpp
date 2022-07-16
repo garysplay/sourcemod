@@ -298,6 +298,11 @@ private:
 		CUtlVector<Vector>	m_VertexColors;
 		CUtlMemory<byte>	m_TexelsEncoded;
 		int					m_nLod;
+
+		bool operator = (const MeshData_t& t) const
+		{
+			return false;
+		}
 	};
 
 	// A static prop instance
@@ -501,8 +506,8 @@ bool LoadStudioModel( char const* pModelName, CUtlBuffer& buf )
 	}
 
 	// ensure reset
-	pHdr->pVertexBase = NULL;
-	pHdr->pIndexBase  = NULL;
+	pHdr->SetVertexBase(NULL);
+	pHdr->SetIndexBase(NULL);
 
 	return true;
 }
@@ -1122,9 +1127,9 @@ void CVradStaticPropMgr::Shutdown()
 		studiohdr_t *pStudioHdr = m_StaticPropDict[i].m_pStudioHdr;
 		if ( pStudioHdr )
 		{
-			if ( pStudioHdr->pVertexBase )
+			if ( pStudioHdr->VertexBase() )
 			{
-				free( pStudioHdr->pVertexBase );
+				free( pStudioHdr->VertexBase());
 			}
 			free( pStudioHdr );
 		}
@@ -2184,9 +2189,9 @@ const vertexFileHeader_t * mstudiomodel_t::CacheVertexData( void *pModelData )
 	studiohdr_t *pActiveStudioHdr = static_cast<studiohdr_t *>(pModelData);
 	Assert( pActiveStudioHdr );
 
-	if ( pActiveStudioHdr->pVertexBase )
+	if ( pActiveStudioHdr->VertexBase() )
 	{
-		return (vertexFileHeader_t *)pActiveStudioHdr->pVertexBase;
+		return (vertexFileHeader_t *)pActiveStudioHdr->VertexBase();
 	}
 
 	// mandatory callback to make requested data resident
@@ -2245,7 +2250,7 @@ const vertexFileHeader_t * mstudiomodel_t::CacheVertexData( void *pModelData )
 	free( pVvdHdr );
 	pVvdHdr = pNewVvdHdr;
 
-	pActiveStudioHdr->pVertexBase = (void*)pVvdHdr;
+	pActiveStudioHdr->SetVertexBase( (void*)pVvdHdr );
 	return pVvdHdr;
 }
 

@@ -72,7 +72,7 @@ $Project "shaderapidx11"
 			{
 				$Compiler
 				{
-					$PreprocessorDefinitions	"DX11"
+					$PreprocessorDefinitions	"DX11;COMPILER_MSVC64;MSVC;COMPILER_MSVC"
 				}
 			}
 		}

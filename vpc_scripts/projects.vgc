@@ -447,14 +447,21 @@ $Project "vaudio_minimp3"
 	"engine\voice_codecs\minimp3\vaudio_minimp3.vpc" [$WINDOWS||$POSIX]
 }
 
+$Project "vaudio_opus"
+{
+	"engine\voice_codecs\vaudio_opus\vaudio_opus.vpc" [$WINDOWS]
+}
+
 $Project "ServerBrowser"
 {
 	"ServerBrowser\ServerBrowser.vpc" [$WINDOWS||$POSIX]
 }
+
 $Project "SoundEmitterSystem"
 {
 	"soundemittersystem\soundemittersystem.vpc" [$WINDOWS]
 }
+
 $Project "lzma"
 {
 	"utils\lzma\lzma.vpc" [$WINDOWS]

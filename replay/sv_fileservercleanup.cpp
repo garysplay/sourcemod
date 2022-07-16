@@ -7,9 +7,9 @@
 #include "sv_recordingsession.h"
 #include "spew.h"
 
-#if BUILD_CURL
-#include "curl/curl.h"
-#endif
+//#if BUILD_CURL
+//#include "curl/curl.h"
+//#endif
 
 #undef AddJob
 
