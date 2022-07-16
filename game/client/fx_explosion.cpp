@@ -481,7 +481,7 @@ void C_BaseExplosionEffect::CreateCore( void )
 			
 			pParticle->m_uchStartSize	= random->RandomInt( 8, 16 ) * vDev;
 
-			pParticle->m_uchStartSize	= clamp( pParticle->m_uchStartSize, (uint8) 4, (uint8) 32 );
+			pParticle->m_uchStartSize   = clamp (pParticle->m_uchStartSize, 4, 32 );
 
 			pParticle->m_uchEndSize		= pParticle->m_uchStartSize;
 			
@@ -542,7 +542,7 @@ void C_BaseExplosionEffect::CreateCore( void )
 			
 			pParticle->m_uchStartSize	= random->RandomInt( 32, 85 ) * vDev;
 
-			pParticle->m_uchStartSize	= clamp( pParticle->m_uchStartSize, (uint8) 32, (uint8) 85 );
+            pParticle->m_uchStartSize	= clamp( pParticle->m_uchStartSize, 32, 85 );
 
 			pParticle->m_uchEndSize		= (int)((float)pParticle->m_uchStartSize * 1.5f);
 			
@@ -1393,7 +1393,7 @@ void C_MegaBombExplosionEffect::CreateCore( void )
 			
 			pParticle->m_uchStartSize	= random->RandomInt( 32, 85 ) * vDev;
 
-			pParticle->m_uchStartSize	= clamp( pParticle->m_uchStartSize, (uint8) 32, (uint8) 85 );
+            pParticle->m_uchStartSize	= clamp( pParticle->m_uchStartSize, 32, 85 );
 
 			pParticle->m_uchEndSize		= (int)((float)pParticle->m_uchStartSize * 1.5f);
 			

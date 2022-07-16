@@ -72,8 +72,8 @@ void TE_DynamicLight( IRecipientFilter& filter, float delay,
 	const Vector* org, int r, int g, int b, int exponent, float radius, float time, float decay, int nLightIndex = LIGHT_INDEX_TE_DYNAMIC );
 void TE_DynamicLight( IRecipientFilter& filter, float delay, KeyValues *pKeyValues );
 void TE_Explosion( IRecipientFilter& filter, float delay,
-	const Vector* pos, int modelindex, float scale, int framerate, int flags, int radius, int magnitude, 
-	const Vector* normal = NULL, unsigned char materialType = 'C', bool bShouldAffectRagdolls = true );
+	const Vector& pos, int modelindex, float scale, int framerate, int flags, int radius, int magnitude, 
+	const Vector& normal, unsigned char materialType = 'C', bool bShouldAffectRagdolls = true );
 void TE_Explosion( IRecipientFilter& filter, float delay, KeyValues *pKeyValues );
 void TE_ShatterSurface( IRecipientFilter& filter, float delay,
 	const Vector* pos, const QAngle* angle, const Vector* vForce, const Vector* vForcePos, 
@@ -333,10 +333,10 @@ public:
 		}
 	}
 	virtual void Explosion( IRecipientFilter& filter, float delay,
-		const Vector* pos, int modelindex, float scale, int framerate, int flags, int radius, int magnitude, const Vector* normal = NULL, unsigned char materialType = 'C' )
-	{
+        const Vector& pos, int modelindex, float scale, int framerate, int flags, int radius, int magnitude, const Vector* pNormal = NULL, unsigned char materialType = 'C' )	{
 		if ( !SuppressTE( filter ) )
 		{
+			Vector normal = pNormal ? *pNormal : Vector(0, 0, 1);
 			TE_Explosion( filter, delay, pos, modelindex, scale, framerate, flags, radius, magnitude, 
 				normal, materialType );
 		}

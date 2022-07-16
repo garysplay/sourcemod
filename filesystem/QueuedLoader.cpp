@@ -482,7 +482,7 @@ void IOComputationJob( FileJob_t *pFileJob, void *pData, int nSize, LoaderError_
 		{
 			char szFilename[MAX_PATH];
 			g_QueuedLoader.GetFilename( pFileJob->m_hFilename, szFilename, sizeof( szFilename ) );
-			Msg( "QueuedLoader: Computation:%8.8x, Size:%7d %s%s\n", ThreadGetCurrentId(), nSize, pLateString, szFilename );
+			Msg( "QueuedLoader: Computation:%8.8x, Size:%7d %s%s\n", (unsigned long long)ThreadGetCurrentId(), nSize, pLateString, szFilename );
 		}
 	}
 
@@ -965,7 +965,7 @@ bool CQueuedLoader::AddJob( const LoaderJob_t *pLoaderJob )
 	if ( !pLoaderJob->m_pCallback )
 	{
 		// track anonymous jobs
-		AUTO_LOCK( m_Mutex );
+		AUTO_LOCK_FM( m_Mutex );
 		char szFixedName[MAX_PATH];
 		V_strncpy( szFixedName, pLoaderJob->m_pFilename, sizeof( szFixedName ) );
 		V_FixSlashes( szFixedName );
@@ -1915,7 +1915,7 @@ void CQueuedLoader::DynamicLoadMapResource( const char *pFilename, DynamicResour
 
 void CQueuedLoader::QueueDynamicLoadFunctor( CFunctor* pFunctor )
 {
-	AUTO_LOCK( m_FunctorQueueMutex );
+	AUTO_LOCK_FM( m_FunctorQueueMutex );
 	m_FunctorQueue.AddToTail( pFunctor );
 }
 
@@ -1927,7 +1927,7 @@ bool CQueuedLoader::CompleteDynamicLoad()
 	{
 		CUtlVector< CFunctor* > functors;
 		{
-			AUTO_LOCK( m_FunctorQueueMutex );
+			AUTO_LOCK_FM( m_FunctorQueueMutex );
 			functors.Swap( m_FunctorQueue );
 		}
 		FOR_EACH_VEC( functors, i )
@@ -1937,7 +1937,7 @@ bool CQueuedLoader::CompleteDynamicLoad()
 		}
 
 		{
-			AUTO_LOCK( m_FunctorQueueMutex );
+			AUTO_LOCK_FM( m_FunctorQueueMutex );
 			bDone = m_FunctorQueue.Count() == 0 && g_nQueuedJobs == 0 && g_nActiveJobs == 0;
 		}
 

@@ -431,7 +431,7 @@ void CPropAPC::Event_Killed( const CTakeDamageInfo &info )
 	for (int i = 0; i < 5; i++)
 	{
 		CollisionProp()->RandomPointInBounds( vecNormalizedMins, vecNormalizedMaxs, &vecAbsPoint );
-		te->Explosion( filter, random->RandomFloat( 0.0, 1.0 ),	&vecAbsPoint, 
+		te->Explosion( filter, random->RandomFloat( 0.0, 1.0 ),	vecAbsPoint, 
 			g_sModelIndexFireball, random->RandomInt( 4, 10 ), 
 			random->RandomInt( 8, 15 ), 
 			( i < 2 ) ? TE_EXPLFLAG_NODLIGHTS : TE_EXPLFLAG_NOPARTICLES | TE_EXPLFLAG_NOFIREBALLSMOKE | TE_EXPLFLAG_NODLIGHTS,

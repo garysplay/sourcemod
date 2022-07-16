@@ -1158,11 +1158,10 @@ inline uintp FunctorExecuteThread( void *pParam )
 inline ThreadHandle_t ThreadExecuteSoloImpl( CFunctor *pFunctor, const char *pszName = NULL )
 {
 	ThreadHandle_t hThread;
-	ThreadId_t threadId;
-	hThread = CreateSimpleThread( FunctorExecuteThread, pFunctor, &threadId );
+	hThread = CreateSimpleThread( FunctorExecuteThread, pFunctor );
 	if ( pszName )
 	{
-		ThreadSetDebugName((ThreadHandle_t)threadId, pszName );
+		ThreadSetDebugName( hThread, pszName );
 	}
 	return hThread;
 }

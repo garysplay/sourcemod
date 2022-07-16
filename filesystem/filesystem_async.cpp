@@ -635,7 +635,7 @@ void CBaseFileSystem::InitAsync()
 			{
 				for (;;)
 				{
-					Sleep(1000);
+					ThreadSleep(1000);
 					static int wakeCount;
 					wakeCount++;
 					volatile static int bForceResume = false;
@@ -686,7 +686,7 @@ void CBaseFileSystem::InitAsync()
 			params.nThreads = 1;
 		}
 
-		if (!m_pThreadPool->Start(params, "FsAsyncIO"))
+		if (!m_pThreadPool->Start(params, "IOJob"))
 		{
 			SafeRelease( m_pThreadPool );
 		}
@@ -1532,7 +1532,7 @@ void CBaseFileSystem::DoAsyncCallback( const FileAsyncRequest_t &request, void *
 		// The ugly delete[] (void*) method generates a compile warning on osx, as it should.
 		free( pDataToFree );
 #else
-		delete [] pDataToFree;
+		free( pDataToFree );
 #endif
 	}
 }

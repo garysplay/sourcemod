@@ -1820,7 +1820,7 @@ const char *CBaseFileSystem::GetWritePath( const char *pFilename, const char *pa
 //-----------------------------------------------------------------------------
 // Reads/writes files to utlbuffers.  Attempts alignment fixups for optimal read
 //-----------------------------------------------------------------------------
-CThreadLocal<char *> g_pszReadFilename;
+CTHREADLOCALPTR(char) g_pszReadFilename;
 bool CBaseFileSystem::ReadToBuffer( FileHandle_t fp, CUtlBuffer &buf, int nMaxBytes, FSAllocFunc_t pfnAlloc )
 {
 	SetBufferSize( fp, 0 );  // TODO: what if it's a pack file? restore buffer size?
@@ -1878,7 +1878,7 @@ bool CBaseFileSystem::ReadToBuffer( FileHandle_t fp, CUtlBuffer &buf, int nMaxBy
 		else
 		{
 			// caller provided allocator
-			void *pMemory = (*pfnAlloc)( g_pszReadFilename.Get(), nBytesDestBuffer );
+			void *pMemory = (*pfnAlloc)( g_pszReadFilename, nBytesDestBuffer );
 			buf.SetExternalBuffer( pMemory, nBytesDestBuffer, 0, buf.GetFlags() & ~CUtlBuffer::EXTERNAL_GROWABLE );
 		}
 
@@ -1932,7 +1932,7 @@ bool CBaseFileSystem::ReadFile( const char *pFileName, const char *pPath, CUtlBu
 
 	if ( pfnAlloc )
 	{
-		g_pszReadFilename.Set( (char *)pFileName );
+		g_pszReadFilename = (char *)pFileName;
 	}
 
 	bool bSuccess = ReadToBuffer( fp, buf, nMaxBytes, pfnAlloc );
@@ -5060,8 +5060,8 @@ CSysModule *CBaseFileSystem::LoadModule( const char *pFileName, const char *pPat
 			continue;
 
 		Q_snprintf( tempPathID, sizeof(tempPathID), "%s%s", m_SearchPaths[i].GetPathString(), pFileName ); // append the path to this dir.
-		CSysModule *pModule = Sys_LoadModule( tempPathID );
-		if ( pModule ) 
+		CSysModule* pModule = Sys_LoadModule(tempPathID);
+	    if ( pModule ) 
 		{
 			// we found the binary in one of our search paths
 			return pModule;
