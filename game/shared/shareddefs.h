@@ -784,7 +784,7 @@ struct ModelScale
 #include "soundflags.h"
 
 struct CSoundParameters;
-typedef short HSOUNDSCRIPTHANDLE;
+typedef unsigned int HSOUNDSCRIPTHANDLE;
 //-----------------------------------------------------------------------------
 // Purpose: Aggregates and sets default parameters for EmitSound function calls
 //-----------------------------------------------------------------------------

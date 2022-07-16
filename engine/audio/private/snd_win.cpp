@@ -69,7 +69,7 @@ IAudioDevice *IAudioDevice::AutoDetectInit( bool waveOnly )
 	if ( IsPC() )
 	{
 #if defined( WIN32 ) && !defined( USE_SDL )
-		if ( waveOnly )
+		/*if ( waveOnly )
 		{
 			pDevice = Audio_CreateWaveDevice();
 			if ( !pDevice )
@@ -82,14 +82,14 @@ IAudioDevice *IAudioDevice::AutoDetectInit( bool waveOnly )
 			{
 				pDevice = Audio_CreateDirectSoundDevice();
 			}
-		}
+		}*/
 
 		// if DirectSound didn't succeed in initializing, try to initialize
 		// waveOut sound, unless DirectSound failed because the hardware is
 		// already allocated (in which case the user has already chosen not
 		// to have sound)
 		// UNDONE: JAY: This doesn't test for the hardware being in use anymore, REVISIT
-		if ( !pDevice )
+		if (snd_firsttime)
 		{
 			pDevice = Audio_CreateWaveDevice();
 		}

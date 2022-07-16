@@ -278,27 +278,12 @@ int CAudioMixerWave::SkipSamples( channel_t *pChannel, int sampleCount, int outp
 }
 
 // wrapper routine to append without overflowing the temp buffer
-static uint AppendToBuffer( char *pBuffer, const char *pSampleData, size_t nBytes, const char *pBufferEnd )
+static uint AppendToBuffer( char *pBuffer, const char *pSampleData, int nBytes, const char *pBufferEnd )
 {
-#if defined(_WIN32) && !defined(_X360)
-	// FIXME: Some clients are crashing here. Let's try to detect why.
-	if ( nBytes > 0 && ( (size_t)pBuffer <= 0xFFF || (size_t)pSampleData <= 0xFFF ) )
-	{
-		Warning( "AppendToBuffer received potentially bad values (%p, %p, %u, %p)\n", pBuffer, pSampleData, (int)nBytes, pBufferEnd );
-	}
-#endif
-
-	if ( pBufferEnd > pBuffer )
-	{
-		size_t nAvail = pBufferEnd - pBuffer;
-		size_t nCopy = MIN( nBytes, nAvail );
-		Q_memcpy( pBuffer, pSampleData, nCopy );
-		return nCopy;
-	}
-	else
-	{
-		return 0;
-	}
+	int nAvail = pBufferEnd - pBuffer;
+	int nCopy = MIN( nBytes, nAvail );
+	Q_memcpy( pBuffer, pSampleData, nCopy );
+	return nCopy;
 }
 
 // Load a static copy buffer (g_temppaintbuffer) with the requested number of samples, 
@@ -320,7 +305,7 @@ char *CAudioMixerWave::LoadMixBuffer( channel_t *pChannel, int sample_load_reque
 	int cCopySamps = 0;
 
 	// save index of last sample loaded (updated in GetOutputData)
-	int sample_loaded_index = m_sample_loaded_index;
+	int64 sample_loaded_index = m_sample_loaded_index;
 
 	// get data from source (copyBuf is expected to be available for use)
 	samples_loaded = GetOutputData( (void **)&pData, sample_load_request, copyBuf );
@@ -547,7 +532,7 @@ extern double MIX_GetMaxRate( double rate, int sampleCount );
 int CAudioMixerWave::GetSampleLoadRequest( double rate, int sampleCountOut, bool bInterpolated_pitch )
 {
 	double fsample_index_end;		// index of last sample we'll need
-	int sample_index_high;			// rounded up last sample index
+	int64 sample_index_high;			// rounded up last sample index
 	int sample_load_request;		// number of samples to load
 
 	// NOTE: we must use fixed point math here, identical to math in mixers, to make sure
@@ -556,7 +541,7 @@ int CAudioMixerWave::GetSampleLoadRequest( double rate, int sampleCountOut, bool
 	fsample_index_end = m_fsample_index + RoundToFixedPoint( rate, sampleCountOut-1, bInterpolated_pitch );				
 
 	// always round up to ensure we'll have that n+1 sample for interpolation	
-	sample_index_high = (int)( ceil( fsample_index_end ) );															
+	sample_index_high = (int64)( ceil( fsample_index_end ) );															
 	
 	// make sure we always round the floating point index up by at least 1 sample,
 	// ie: make sure integer sample_index_high is greater than floating point sample index

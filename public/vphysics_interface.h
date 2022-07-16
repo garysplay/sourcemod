@@ -17,7 +17,7 @@
 #include "mathlib/vector.h"
 #include "mathlib/vector4d.h"
 #include "vcollide.h"
-
+#include "../public/SoundEmitterSystem/isoundemittersystembase.h"
 
 // ------------------------------------------------------------------------------------
 // UNITS:
@@ -922,20 +922,20 @@ struct surfacesoundnames_t
 
 struct surfacesoundhandles_t
 {
-	short	stepleft;
-	short	stepright;
+	HSOUNDSCRIPTHANDLE	stepleft;
+	HSOUNDSCRIPTHANDLE	stepright;
 
-	short	impactSoft;
-	short	impactHard;
+	HSOUNDSCRIPTHANDLE	impactSoft;
+	HSOUNDSCRIPTHANDLE	impactHard;
 
-	short	scrapeSmooth;
-	short	scrapeRough;
+	HSOUNDSCRIPTHANDLE	scrapeSmooth;
+	HSOUNDSCRIPTHANDLE	scrapeRough;
 
-	short	bulletImpact;
-	short	rolling;
+	HSOUNDSCRIPTHANDLE	bulletImpact;
+	HSOUNDSCRIPTHANDLE	rolling;
 
-	short	breakSound;
-	short	strainSound;
+	HSOUNDSCRIPTHANDLE	breakSound;
+	HSOUNDSCRIPTHANDLE	strainSound;
 };
 
 struct surfacegameprops_t

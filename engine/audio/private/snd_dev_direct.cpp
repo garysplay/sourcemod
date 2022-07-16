@@ -733,22 +733,22 @@ sndinitstat CAudioDirectSound::SNDDMA_InitDirect( void )
 	
 	if (!m_hInstDS)
 	{
-		m_hInstDS = LoadLibrary("dsound.dll");
-		if (m_hInstDS == NULL)
+        m_hInstDS = LoadLibraryExA( "dsound.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32 );
+        if (m_hInstDS == NULL)
 		{
 			Warning( "Couldn't load dsound.dll\n");
 			return SIS_FAILURE;
 		}
 
 		pDirectSoundCreate = (long (__stdcall *)(struct _GUID *,struct IDirectSound ** ,struct IUnknown *))GetProcAddress(m_hInstDS,"DirectSoundCreate");
-		if (!pDirectSoundCreate)
+        if (!pDirectSoundCreate)
 		{
 			Warning( "Couldn't get DS proc addr\n");
 			return SIS_FAILURE;
 		}
 	}
 
-	while ((hresult = pDirectSoundCreate(NULL, &pDS, NULL)) != DS_OK)
+	if ((hresult = pDirectSoundCreate(NULL, &pDS, NULL)) != DS_OK)
 	{
 		if (hresult != DSERR_ALLOCATED)
 		{

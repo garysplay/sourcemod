@@ -998,7 +998,7 @@ CAudioSourceMemWave::CAudioSourceMemWave( CSfxTable *pSfx ) :
 {
 	m_hCache = 0;
 	m_hStream = INVALID_STREAM_HANDLE;
-
+	DevMsg("CAudioSourceMemWave was called.\n");
 	if ( IsX360() )
 	{
 		bool bValid = GetXboxAudioStartupData();
@@ -1360,14 +1360,17 @@ int CAudioSourceMemWave::GetCacheStatus( void )
 	if ( IsPC() || !IsX360() )
 	{
 		// NOTE: This will start the load if it isn't started
-		bool bCacheValid;
+		bool bCacheValid, bIsMissing;
 		bool bCompleted = wavedatacache->IsDataLoadCompleted( m_hCache, &bCacheValid );
 		if ( !bCacheValid )
 		{
+			char nameBuf[MAX_PATH];
 			wavedatacache->RestartDataLoad( &m_hCache, m_pSfx->GetFileName(), m_dataSize, m_dataStart );
 		}
 		if ( bCompleted )
 			return AUDIO_IS_LOADED;
+		if ( bIsMissing )
+			return AUDIO_ERROR_LOADING;
 		if ( wavedatacache->IsDataLoadInProgress( m_hCache ) )
 			return AUDIO_LOADING;
 	}

@@ -248,7 +248,7 @@ void CAudioSourceMP3::GetCacheData( CAudioSourceCachedInfo *info )
 	}
 	else
 	{
-		m_dataSize = (int)g_pSndIO->size( file );
+		m_dataSize = g_pSndIO->size( file );
 	}
 
 	Assert( m_dataSize > 0 );

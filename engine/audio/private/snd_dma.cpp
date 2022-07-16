@@ -161,8 +161,8 @@ bool IsSoundSourceLocalPlayer( int soundsource )
 }
 
 CThreadMutex g_SndMutex;
-
 #define THREAD_LOCK_SOUND() AUTO_LOCK( g_SndMutex )
+CThreadFastMutex g_ActiveSoundListMutex;
 
 const int MASK_BLOCK_AUDIO = CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW;
 
@@ -637,7 +637,7 @@ void S_Startup( void )
 
 	if ( !g_AudioDevice || g_AudioDevice == Audio_GetNullDevice() )
 	{
-		g_AudioDevice = IAudioDevice::AutoDetectInit( CommandLine()->CheckParm( "-wavonly" ) != 0 );
+		g_AudioDevice = IAudioDevice::AutoDetectInit( false /*CommandLine()->CheckParm("-wavonly") != 0*/);
 		if ( !g_AudioDevice )
 		{
 			Error( "Unable to init audio" );
@@ -902,6 +902,12 @@ CAudioSource *S_LoadSound( CSfxTable *pSfx, channel_t *ch )
 	tmZone( TELEMETRY_LEVEL0, TMZF_NONE, "%s", __FUNCTION__ );
 
 	VPROF("S_LoadSound");
+	const char* pSndName = pSfx->getname();
+	if (!pSndName)
+	{
+		return NULL;
+	}
+	const char* pSndFilename = PSkipSoundChars(pSndName);
 	if ( !pSfx->pSource )
 	{
 		if ( IsX360() )
@@ -914,7 +920,7 @@ CAudioSource *S_LoadSound( CSfxTable *pSfx, channel_t *ch )
 				bool bFound = false;
 				if ( !pSfx->m_bIsLateLoad )
 				{
-					if ( pSfx->getname() != PSkipSoundChars( pSfx->getname() ) )
+					if ( pSfx->getname() != PSkipSoundChars(pSndFilename) )
 					{
 						// the sound might already exist as an undecorated audio source
 						FileNameHandle_t fnHandle = g_pFileSystem->FindOrAddFileName( pSfx->GetFileName() );
@@ -937,7 +943,7 @@ CAudioSource *S_LoadSound( CSfxTable *pSfx, channel_t *ch )
 					if ( !bFound )
 					{
 						// warn once
-						DevWarning( "S_LoadSound: Late load '%s', skipping.\n", pSfx->getname() ); 
+						DevWarning( "S_LoadSound: Late load '%s', skipping.\n", pSndFilename);
 						pSfx->m_bIsLateLoad = true;
 					}
 				}
@@ -1036,8 +1042,8 @@ CAudioSource *S_LoadSound( CSfxTable *pSfx, channel_t *ch )
 	// first time to load?  Create the mixer
 	if ( ch && !ch->pMixer )
 	{
-		ch->pMixer = pSfx->pSource->CreateMixer( ch->initialStreamPosition );
-		if ( !ch->pMixer )
+		pSfx->pSource->CreateMixer(ch->initialStreamPosition);
+        if ( !ch->pMixer )
 		{
 			return NULL;
 		}
@@ -5177,6 +5183,10 @@ int S_StartDynamicSound( StartSoundParams_t& params )
 	{
 		// regular or streamed sound fx
 		pSource = S_LoadSound( params.pSfx, target_chan );
+		if (pSource == NULL)
+		{
+			Warning("damn yo ass pSource is null! sound is still broken :(\n");
+		}
 		if ( pSource && !IsValidSampleRate( pSource->SampleRate() ) )
 		{
 			Warning( "*** Invalid sample rate (%d) for sound '%s'.\n", pSource->SampleRate(), sndname );

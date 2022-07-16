@@ -84,7 +84,7 @@ struct SoundInfo_t
 	int				nSpecialDSP;
 	Vector			vListenerOrigin;
 	int				nFlags;
-	int 			nSoundNum;
+	unsigned int 	nSoundNum;
 	float			fDelay;
 	bool			bIsSentence;
 	bool			bIsAmbient;

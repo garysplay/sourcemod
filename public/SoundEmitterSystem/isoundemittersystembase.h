@@ -23,7 +23,7 @@
 #define SOUNDGENDER_MACRO "$gender"
 #define SOUNDGENDER_MACRO_LENGTH 7		// Length of above including $
 
-typedef short HSOUNDSCRIPTHANDLE;
+typedef unsigned int HSOUNDSCRIPTHANDLE;
 #define SOUNDEMITTER_INVALID_HANDLE	(HSOUNDSCRIPTHANDLE)-1
 
 class IFileList;
@@ -147,9 +147,9 @@ struct CSoundParametersInternal
 	bool		ShouldPreload() const						{ return m_bShouldPreload; }
 
 	void		SetChannel( int newChannel )				{ channel = newChannel; }
-	void		SetVolume( float start, float range = 0.0 )	{ volume.start = start; volume.range = range; }
-	void		SetPitch( float start, float range = 0.0 )	{ pitch.start = start; pitch.range = range; }
-	void		SetSoundLevel( float start, float range = 0.0 )	{ soundlevel.start = start; soundlevel.range = range; }
+	void		SetVolume(float start, float range = 0.0) { volume.start = (uint8)start; volume.range = (uint8)range; }
+	void		SetPitch(float start, float range = 0.0) { pitch.start = (uint8)start; pitch.range = (uint8)range; }
+	void		SetSoundLevel(float start, float range = 0.0) { soundlevel.start = (uint16)start; soundlevel.range = (uint16)range; }
 	void		SetDelayMsec( int delay )					{ delay_msec = delay; }
 	void		SetShouldPreload( bool bShouldPreload )		{ m_bShouldPreload = bShouldPreload;	}
 	void		SetOnlyPlayToOwner( bool b )				{ play_to_owner_only = b; }

@@ -106,7 +106,7 @@ public:
 	int					m_nDataSize;		// bytes requested
 	int					m_nReadSize;		// bytes actually read
 	void				*m_pvData;			// target buffer
-	byte				*m_pAlloc;			// memory of buffer (base may not match)
+	void				*m_pAlloc;			// memory of buffer (base may not match)
 	FileAsyncRequest_t	m_async;
 	FSAsyncControl_t	m_hAsyncControl;
 	float				m_start;			// time at request invocation
@@ -266,8 +266,7 @@ CAsyncWaveData *CAsyncWaveData::CreateResource( const asyncwaveparams_t &params 
 		{
 			// create buffer now for re-use during streaming process
 			pData->m_nBufferBytes = AlignValue( params.datasize, params.alignment );
-			pData->m_pAlloc = new byte[pData->m_nBufferBytes];
-			pData->m_pvData = pData->m_pAlloc;
+			pData->m_pAlloc = pData->m_pvData = new byte[pData->m_nBufferBytes];	
 		}
 		pData->StartAsyncLoading( params );
 	}
@@ -341,7 +340,7 @@ void CAsyncWaveData::OnAsyncCompleted( const FileAsyncRequest_t *asyncFilePtr, i
 			m_arrival = ( float )Plat_FloatTime();
 
 			// Take over ptr
-			m_pAlloc = ( byte * )asyncFilePtr->pData;
+			m_pAlloc = asyncFilePtr->pData;
 			if ( SndAlignReads() )
 			{
 				m_async.nOffset = ( m_async.nBytes - m_nDataSize );
@@ -2069,26 +2068,31 @@ char const *CWaveDataStreamAsync::GetFileName()
 //-----------------------------------------------------------------------------
 bool CWaveDataStreamAsync::IsReadyToMix()
 {
-	if ( IsPC() )
+	if ( !m_source.IsAsyncLoad() && !snd_async_fullyasync.GetBool() )
 	{
-		// If not async loaded, start mixing right away
-		if ( !m_source.IsAsyncLoad() && !snd_async_fullyasync.GetBool() )
+		// Wait until we're pending at least
+		if ( m_source.GetCacheStatus() == CAudioSource::AUDIO_NOT_LOADED || m_source.GetCacheStatus() == CAudioSource::AUDIO_ERROR_LOADING )
 		{
-			return true;
+			return false;
 		}
-
-		bool bCacheValid;
-		bool bLoaded = wavedatacache->IsDataLoadCompleted( m_hCache, &bCacheValid );
-		if ( !bCacheValid )
-		{
-			wavedatacache->RestartDataLoad( &m_hCache, GetFileName(), m_dataSize, m_dataStart );
-		}
-		return bLoaded;
+		return true;
 	}
 
-	if ( IsX360() )
+	if ( m_source.IsCached() )
 	{
-		return wavedatacache->IsStreamedDataReady( m_hStream );
+		return true;
+	}
+
+	if ( IsPC() )
+	{
+		// Msg( "Waiting for data '%s'\n", m_source.GetFileName() );
+		m_source.CacheLoad();
+	}
+
+	if ( IsGameConsole() )
+	{
+		// expected to be resident and valid, otherwise being called prior to load
+		Assert( 0 );
 	}
 
 	return false;

@@ -65,7 +65,7 @@ void ComputeModFilename( const char *pContentFileName, char *pBuf, size_t nBufLe
 	char pRelativePath[ MAX_PATH ];
 	if ( !g_pFullFileSystem->FullPathToRelativePathEx( pContentFileName, "CONTENTROOT", pRelativePath, sizeof(pRelativePath) ) )
 	{
-		Q_strncpy( pBuf, pContentFileName, (int)nBufLen );
+		Q_strncpy( pBuf, pContentFileName, nBufLen );
 		return;
 	}
 
@@ -77,7 +77,7 @@ void ComputeModFilename( const char *pContentFileName, char *pBuf, size_t nBufLe
 		*pSemi = 0;
 	}
 
-	Q_ComposeFileName( pGameRoot, pRelativePath, pBuf, (int)nBufLen );
+	Q_ComposeFileName( pGameRoot, pRelativePath, pBuf, nBufLen );
 }
 
 
@@ -89,7 +89,7 @@ void ComputeModContentFilename( const char *pGameFileName, char *pBuf, size_t nB
 	char pRelativePath[ MAX_PATH ];
 	if ( !g_pFullFileSystem->FullPathToRelativePathEx( pGameFileName, "GAMEROOT", pRelativePath, sizeof(pRelativePath) ) )
 	{
-		Q_strncpy( pBuf, pGameFileName, (int)nBufLen );
+		Q_strncpy( pBuf, pGameFileName, nBufLen );
 		return;
 	}
 
@@ -101,7 +101,7 @@ void ComputeModContentFilename( const char *pGameFileName, char *pBuf, size_t nB
 		*pSemi = 0;
 	}
 
-	Q_ComposeFileName( pContentRoot, pRelativePath, pBuf, (int)nBufLen );
+	Q_ComposeFileName( pContentRoot, pRelativePath, pBuf, nBufLen );
 }
 
 
@@ -252,8 +252,9 @@ void AddFilesToList( CUtlVector< CUtlString > &list, const char *pDirectory, con
 		}
 
 		// Check the extension matches
-		const char *pExt = Q_GetFileExtension( pFoundFile );
-		if ( !pExt || Q_stricmp( pExt, pExtension ) != 0 )
+		//const char *pExt = Q_GetFileExtension( pFoundFile );
+		//if ( !pExt || Q_stricmp( pExt, pExtension ) != 0 )
+		if ( Q_stricmp( Q_GetFileExtension( pFoundFile ), pExtension ) )
 			continue;
 
 		char pFullPathBuf[MAX_PATH];

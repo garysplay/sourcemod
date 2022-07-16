@@ -446,8 +446,9 @@ public:
 	enum
 	{
 		AUDIO_NOT_LOADED = 0,
-		AUDIO_IS_LOADED = 1,
-		AUDIO_LOADING = 2,
+		AUDIO_IS_LOADED,
+		AUDIO_LOADING,
+		AUDIO_ERROR_LOADING,
 	};
 
 	virtual ~CAudioSource( void ) {}

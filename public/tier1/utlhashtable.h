@@ -202,12 +202,12 @@ public:
 	
 	// Key insertion or lookup, always returns a valid handle
 	handle_t Insert( KeyArg_t k ) { return DoInsert<KeyArg_t>( k, m_hash(k) ); }
-	handle_t Insert( KeyArg_t k, ValueArg_t v, bool *pDidInsert = NULL ) { return DoInsert<KeyArg_t>( k, v, m_hash(k), pDidInsert ); }
-	handle_t Insert( KeyArg_t k, ValueArg_t v, unsigned int hash, bool *pDidInsert = NULL ) { Assert( hash == m_hash(k) ); return DoInsert<KeyArg_t>( k, v, hash, pDidInsert ); }
+	handle_t Insert( KeyArg_t k, ValueArg_t v, bool* pDidInsert = nullptr ) { return DoInsert<KeyArg_t>(k, v, m_hash(k), pDidInsert); }
+	handle_t Insert( KeyArg_t k, ValueArg_t v, unsigned int hash, bool *pDidInsert = nullptr) { Assert( hash == m_hash(k) ); return DoInsert<KeyArg_t>( k, v, hash, pDidInsert ); }
 	// Alternate-type key insertion or lookup, always returns a valid handle
 	handle_t Insert( KeyAlt_t k ) { return DoInsert<KeyAlt_t>( k, m_hash(k) ); }
-	handle_t Insert( KeyAlt_t k, ValueArg_t v, bool *pDidInsert = NULL ) { return DoInsert<KeyAlt_t>( k, v, m_hash(k), pDidInsert ); }
-	handle_t Insert( KeyAlt_t k, ValueArg_t v, unsigned int hash, bool *pDidInsert = NULL ) { Assert( hash == m_hash(k) ); return DoInsert<KeyAlt_t>( k, v, hash, pDidInsert ); }
+	handle_t Insert( KeyAlt_t k, ValueArg_t v, bool *pDidInsert = nullptr) { return DoInsert<KeyAlt_t>( k, v, m_hash(k), pDidInsert ); }
+	handle_t Insert( KeyAlt_t k, ValueArg_t v, unsigned int hash, bool *pDidInsert = nullptr) { Assert( hash == m_hash(k) ); return DoInsert<KeyAlt_t>( k, v, hash, pDidInsert ); }
 
 	// Key removal, returns false if not found
 	bool Remove( KeyArg_t k ) { return DoRemove<KeyArg_t>( k, m_hash(k) ) >= 0; }
@@ -270,7 +270,7 @@ private:
 template <typename KeyT, typename ValueT, typename KeyHashT, typename KeyIsEqualT, typename AltKeyT>
 void CUtlHashtable<KeyT, ValueT, KeyHashT, KeyIsEqualT, AltKeyT>::SetExternalBuffer( byte* pRawBuffer, unsigned int nBytes, bool bAssumeOwnership, bool bGrowable )
 {
-	Assert( ((uintptr_t)pRawBuffer % __alignof(int)) == 0 );
+	Assert( ((uintptr_t)pRawBuffer % VALIGNOF(int)) == 0 );
 	uint32 bestSize = LargestPowerOfTwoLessThanOrEqual( nBytes / sizeof(entry_t) );
 	Assert( bestSize != 0 && bestSize*sizeof(entry_t) <= nBytes );
 
@@ -494,7 +494,7 @@ UtlHashHandle_t CUtlHashtable<KeyT, ValueT, KeyHashT, KeyIsEqualT, AltKeyT>::DoI
 	if ( idx == (handle_t) -1 )
 	{
 		idx = (handle_t) DoInsertUnconstructed( h, true );
-		ConstructOneArg( m_table[ idx ].Raw(), k );
+		Construct( m_table[ idx ].Raw(), k );
 	}
 	return idx;
 }
@@ -508,7 +508,7 @@ UtlHashHandle_t CUtlHashtable<KeyT, ValueT, KeyHashT, KeyIsEqualT, AltKeyT>::DoI
 	if ( idx == (handle_t) -1 )
 	{
 		idx = (handle_t) DoInsertUnconstructed( h, true );
-		ConstructTwoArg( m_table[ idx ].Raw(), k, v );
+		Construct( m_table[ idx ].Raw(), k, v );
 		if ( pDidInsert ) *pDidInsert = true;
 	}
 	else
@@ -525,7 +525,7 @@ UtlHashHandle_t CUtlHashtable<KeyT, ValueT, KeyHashT, KeyIsEqualT, AltKeyT>::DoI
 {
 	Assert( DoLookup<KeyParamT>( k, h, NULL ) == (handle_t) -1 );
 	handle_t idx = (handle_t) DoInsertUnconstructed( h, true );
-	ConstructTwoArg( m_table[ idx ].Raw(), k, v );
+	Construct( m_table[ idx ].Raw(), k, v );
 	return idx;
 }
 
@@ -614,7 +614,7 @@ CUtlHashtable<K,V,H,E,A> &CUtlHashtable<K,V,H,E,A>::operator=( CUtlHashtable<K,V
 				// have the same hash function pointers or hash functor state!
 				Assert( m_hash(srcTable[i]->m_key) == src.m_hash(srcTable[i]->m_key) );
 				int newIdx = DoInsertUnconstructed( srcTable[i].flags_and_hash , false );
-				CopyConstruct( m_table[newIdx].Raw(), *srcTable[i].Raw() ); // copy construct KVPair
+				Construct( m_table[newIdx].Raw(), *srcTable[i].Raw() ); // copy construct KVPair
 			}
 		}
 	}
@@ -921,7 +921,7 @@ inline UtlHashHandle_t CUtlStableHashtable<K,V,H,E,S,A>::DoInsert( KeyArgumentT 
 		return m_table[ h ].m_index;
 
 	int idx = m_data.AddToTailUnconstructed();
-	ConstructOneArg( &m_data[idx], k );
+	Construct( &m_data[idx], k );
 	m_table.template DoInsertNoCheck<IndirectIndex>( IndirectIndex( idx ), empty_t(), hash );
 	return idx;
 }
@@ -936,7 +936,7 @@ inline UtlHashHandle_t CUtlStableHashtable<K,V,H,E,S,A>::DoInsert( KeyArgumentT 
 		return m_table[ h ].m_index;
 
 	int idx = m_data.AddToTailUnconstructed();
-	ConstructTwoArg( &m_data[idx], k, v );
+	Construct( &m_data[idx], k, v );
 	m_table.template DoInsertNoCheck<IndirectIndex>( IndirectIndex( idx ), empty_t(), hash );
 	return idx;
 }

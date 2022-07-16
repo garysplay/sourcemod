@@ -451,3 +451,7 @@ $Project "ServerBrowser"
 {
 	"ServerBrowser\ServerBrowser.vpc" [$WINDOWS||$POSIX]
 }
+$Project "SoundEmitterSystem"
+{
+	"soundemittersystem\soundemittersystem.vpc" [$WINDOWS]
+}
