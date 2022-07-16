@@ -455,3 +455,7 @@ $Project "SoundEmitterSystem"
 {
 	"soundemittersystem\soundemittersystem.vpc" [$WINDOWS]
 }
+$Project "lzma"
+{
+	"utils\lzma\lzma.vpc" [$WINDOWS]
+}
