@@ -252,21 +252,21 @@ private:
 inline ID3D11VertexShader* CShaderDeviceDx11::GetVertexShader( VertexShaderHandle_t hShader ) const
 {
 	if ( hShader != VERTEX_SHADER_HANDLE_INVALID )
-		return m_VertexShaderDict[ (VertexShaderIndex_t)hShader ].m_pShader;
+		return m_VertexShaderDict[ (VertexShaderIndex_t)(uintp)hShader ].m_pShader;
 	return NULL;
 }
 
 inline ID3D11GeometryShader* CShaderDeviceDx11::GetGeometryShader( GeometryShaderHandle_t hShader ) const
 {
 	if ( hShader != GEOMETRY_SHADER_HANDLE_INVALID )
-		return m_GeometryShaderDict[ (GeometryShaderIndex_t)hShader ].m_pShader;
+		return m_GeometryShaderDict[ (GeometryShaderIndex_t)(uintp)hShader ].m_pShader;
 	return NULL;
 }
 
 inline ID3D11PixelShader* CShaderDeviceDx11::GetPixelShader( PixelShaderHandle_t hShader ) const
 {
 	if ( hShader != PIXEL_SHADER_HANDLE_INVALID )
-		return m_PixelShaderDict[ (PixelShaderIndex_t)hShader ].m_pShader;
+		return m_PixelShaderDict[ (PixelShaderIndex_t)(uintp)hShader ].m_pShader;
 	return NULL;
 }
 

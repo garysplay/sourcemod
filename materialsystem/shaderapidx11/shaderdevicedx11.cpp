@@ -884,7 +884,7 @@ void CShaderDeviceDx11::DestroyVertexShader( VertexShaderHandle_t hShader )
 
 	g_pShaderAPIDx11->Unbind( hShader );
 
-	VertexShaderIndex_t i = (VertexShaderIndex_t)hShader;
+	VertexShaderIndex_t i = (VertexShaderIndex_t)(uintp)hShader;
 	VertexShader_t &dict = m_VertexShaderDict[i];
 	VerifyEquals( dict.m_pShader->Release(), 0 );
 	VerifyEquals( dict.m_pInfo->Release(), 0 );
@@ -934,7 +934,7 @@ void CShaderDeviceDx11::DestroyGeometryShader( GeometryShaderHandle_t hShader )
 
 	g_pShaderAPIDx11->Unbind( hShader );
 
-	GeometryShaderIndex_t i = (GeometryShaderIndex_t)hShader;
+	GeometryShaderIndex_t i = (GeometryShaderIndex_t)(uintp)hShader;
 	VerifyEquals( m_GeometryShaderDict[ i ].m_pShader->Release(), 0 );
 	VerifyEquals( m_GeometryShaderDict[ i ].m_pInfo->Release(), 0 );
 	m_GeometryShaderDict.Remove( i );
@@ -981,7 +981,7 @@ void CShaderDeviceDx11::DestroyPixelShader( PixelShaderHandle_t hShader )
 
 	g_pShaderAPIDx11->Unbind( hShader );
 
-	PixelShaderIndex_t i = (PixelShaderIndex_t)hShader;
+	PixelShaderIndex_t i = (PixelShaderIndex_t)(uintp)hShader;
 	VerifyEquals( m_PixelShaderDict[ i ].m_pShader->Release(), 0 );
 	VerifyEquals( m_PixelShaderDict[ i ].m_pInfo->Release(), 0 );
 	m_PixelShaderDict.Remove( i );
@@ -1005,7 +1005,7 @@ ID3D11InputLayout* CShaderDeviceDx11::GetInputLayout( VertexShaderHandle_t hShad
 	insert.m_bUsingFlex = bUsingFlex;
 	insert.m_bUsingMorph = bUsingMorph;
 
-	VertexShaderIndex_t i = (VertexShaderIndex_t)hShader;
+	VertexShaderIndex_t i = (VertexShaderIndex_t)(uintp)hShader;
 	InputLayoutDict_t &dict = m_VertexShaderDict[i].m_InputLayouts;
 	unsigned short hIndex = dict.Find( insert );
 	if ( hIndex != dict.InvalidIndex() )
