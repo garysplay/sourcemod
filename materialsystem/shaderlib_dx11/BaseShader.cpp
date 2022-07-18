@@ -33,6 +33,7 @@ IMaterialVar **CBaseShader::s_ppParams;
 IShaderShadowDX11 *CBaseShader::s_pShaderShadow;
 IShaderAPIDX11 *CBaseShader::s_pShaderAPI;
 IShaderInit *CBaseShader::s_pShaderInit;
+IShaderDevice* CBaseShader::s_pShaderDevice;
 int CBaseShader::s_nModulationFlags;
 CMeshBuilder *CBaseShader::s_pMeshBuilder;
 static ConVar mat_fullbright( "mat_fullbright","0", FCVAR_CHEAT );
@@ -44,9 +45,20 @@ bool g_shaderConfigDumpEnable = false; //true;		//DO NOT CHECK IN ENABLED FIXME
 //-----------------------------------------------------------------------------
 CBaseShader::CBaseShader()
 {
+	m_bInitialized = false;
 	GetShaderDLL()->InsertShader( this );
 }
 
+void CBaseShader::InitShader( IShaderDevice *pShaderDevice )
+{
+	if ( !m_bInitialized )
+	{
+		s_pShaderDevice = pShaderDevice;
+		OnInitShader( pShaderDevice );
+		m_bInitialized = true;
+	}
+	s_pShaderDevice = NULL;
+}
 
 //-----------------------------------------------------------------------------
 // Shader parameter info
@@ -123,11 +135,6 @@ void CBaseShader::InitShaderParams( IMaterialVar** ppParams, const char *pMateri
 	OnInitShaderParams( ppParams, pMaterialName );
 
 	s_ppParams = NULL;
-}
-
-void CBaseShader::InitShader(IShaderDevice* pShaderDevice)
-{
-	OnInitShader(pShaderDevice);
 }
 
 void CBaseShader::InitShaderInstance( IMaterialVar** ppParams, IShaderInit *pShaderInit, const char *pMaterialName, const char *pTextureGroupName )
@@ -1796,57 +1803,177 @@ bool CBaseShader::IsHDREnabled( void )
 	return false;
 }
 
+void CBaseShader::StoreVertexShaderTextureScaledTransform( Vector4D *transformation, int transformVar, int scaleVar )
+{
+	IMaterialVar *pTransformationVar = s_ppParams[transformVar];
+	if ( pTransformationVar && ( pTransformationVar->GetType() == MATERIAL_VAR_TYPE_MATRIX ) )
+	{
+		const VMatrix &mat = pTransformationVar->GetMatrixValue();
+		transformation[0].Init( mat[0][0], mat[0][1], mat[0][2], mat[0][3] );
+		transformation[1].Init( mat[1][0], mat[1][1], mat[1][2], mat[1][3] );
+	}
+	else
+	{
+		transformation[0].Init( 1.0f, 0.0f, 0.0f, 0.0f );
+		transformation[1].Init( 0.0f, 1.0f, 0.0f, 0.0f );
+	}
+
+	Vector2D scale( 1, 1 );
+	IMaterialVar *pScaleVar = s_ppParams[scaleVar];
+	if ( pScaleVar )
+	{
+		if ( pScaleVar->GetType() == MATERIAL_VAR_TYPE_VECTOR )
+			pScaleVar->GetVecValue( scale.Base(), 2 );
+		else if ( pScaleVar->IsDefined() )
+			scale[0] = scale[1] = pScaleVar->GetFloatValue();
+	}
+
+	// Apply the scaling
+	transformation[0][0] *= scale[0];
+	transformation[0][1] *= scale[1];
+	transformation[1][0] *= scale[0];
+	transformation[1][1] *= scale[1];
+	transformation[0][3] *= scale[0];
+	transformation[1][3] *= scale[1];
+}
+
+void CBaseShader::StoreEnvmapTint( Vector4D &out, int param )
+{
+	if ( g_pConfig->bShowSpecular && mat_fullbright.GetInt() != 2 )
+	{
+		out = s_ppParams[param]->GetVecValue();
+	}
+	else
+	{
+		out.Init( 0, 0, 0, 0 );
+	}
+}
+
+void CBaseShader::StoreEnvmapTintGammaToLinear( Vector4D &out, int param )
+{
+	if ( g_pConfig->bShowSpecular && mat_fullbright.GetInt() != 2 )
+	{
+		float color[4];
+		color[3] = 1.0;
+		s_ppParams[param]->GetLinearVecValue( color, 3 );
+		out.Init( color[0], color[1], color[2], color[3] );
+	}
+	else
+	{
+		out.Init( 0.0, 0.0, 0.0, 0.0 );
+	}
+}
+
+void CBaseShader::StoreVertexShaderTextureTransform( Vector4D *pOut, int param )
+{
+	IMaterialVar *pTransform = s_ppParams[param];
+	if ( pTransform->GetType() == MATERIAL_VAR_TYPE_MATRIX )
+	{
+		const VMatrix &mat = pTransform->GetMatrixValue();
+		pOut[0].Init(
+			mat[0][0], mat[0][1], mat[0][2], mat[0][3] );
+		pOut[1].Init(
+			mat[1][0], mat[1][1], mat[1][2], mat[1][3] );
+	}
+	else
+	{
+		pOut[0].Init(
+			1, 0, 0, 0 );
+		pOut[1].Init(
+			0, 1, 0, 0 );
+	}
+}
+
+void CBaseShader::StoreConstantGammaToLinear( float *pOut, int param )
+{
+	if ( param == -1 )
+	{
+		return;
+	}
+
+	IMaterialVar *pVar = s_ppParams[param];
+	if ( !pVar->IsDefined() )
+	{
+		return;
+	}
+
+	pVar->GetVecValue( pOut, 3 );
+
+	pOut[0] = pOut[0] > 1.0f ? pOut[0] : GammaToLinear( pOut[0] );
+	pOut[1] = pOut[1] > 1.0f ? pOut[1] : GammaToLinear( pOut[1] );
+	pOut[2] = pOut[2] > 1.0f ? pOut[2] : GammaToLinear( pOut[2] );
+	pOut[3] = 1.0;
+}
+
 //
 // Called from SHADOW_STATE
 // 
 
 void CBaseShader::SetInternalVertexShaderConstantBuffers()
 {
-	SetVertexShaderConstantBuffer(0, SHADER_CONSTANTBUFFER_PERMODEL);
-	SetVertexShaderConstantBuffer(1, SHADER_CONSTANTBUFFER_PERFRAME);
-	SetVertexShaderConstantBuffer(2, SHADER_CONSTANTBUFFER_PERSCENE);
-	SetVertexShaderConstantBuffer(3, SHADER_CONSTANTBUFFER_SKINNING);
+	SetVertexShaderConstantBuffer( 0, SHADER_CONSTANTBUFFER_PERMODEL );
+	SetVertexShaderConstantBuffer( 1, SHADER_CONSTANTBUFFER_PERFRAME );
+	SetVertexShaderConstantBuffer( 2, SHADER_CONSTANTBUFFER_PERSCENE );
+	SetVertexShaderConstantBuffer( 3, SHADER_CONSTANTBUFFER_SKINNING );
 }
 
 void CBaseShader::SetInternalVertexShaderConstantBuffersNoSkinning()
 {
-	SetVertexShaderConstantBuffer(0, SHADER_CONSTANTBUFFER_PERMODEL);
-	SetVertexShaderConstantBuffer(1, SHADER_CONSTANTBUFFER_PERFRAME);
-	SetVertexShaderConstantBuffer(2, SHADER_CONSTANTBUFFER_PERSCENE);
+	SetVertexShaderConstantBuffer( 0, SHADER_CONSTANTBUFFER_PERMODEL );
+	SetVertexShaderConstantBuffer( 1, SHADER_CONSTANTBUFFER_PERFRAME );
+	SetVertexShaderConstantBuffer( 2, SHADER_CONSTANTBUFFER_PERSCENE );
 }
 
 void CBaseShader::SetInternalPixelShaderConstantBuffers()
 {
-	SetPixelShaderConstantBuffer(0, SHADER_CONSTANTBUFFER_PERMODEL);
-	SetPixelShaderConstantBuffer(1, SHADER_CONSTANTBUFFER_PERFRAME);
-	SetPixelShaderConstantBuffer(2, SHADER_CONSTANTBUFFER_PERSCENE);
+	SetPixelShaderConstantBuffer( 0, SHADER_CONSTANTBUFFER_PERMODEL );
+	SetPixelShaderConstantBuffer( 1, SHADER_CONSTANTBUFFER_PERFRAME );
+	SetPixelShaderConstantBuffer( 2, SHADER_CONSTANTBUFFER_PERSCENE );
 }
 
-void CBaseShader::SetPixelShaderConstantBuffer(int slot, ConstantBufferHandle_t cbuffer)
+void CBaseShader::SetInternalGeometryShaderConstantBuffers()
 {
-	Assert(s_pShaderShadow);
-	s_pShaderShadow->SetPixelShaderConstantBuffer(slot, cbuffer);
+	SetGeometryShaderConstantBuffer( 0, SHADER_CONSTANTBUFFER_PERMODEL );
+	SetGeometryShaderConstantBuffer( 1, SHADER_CONSTANTBUFFER_PERFRAME );
+	SetGeometryShaderConstantBuffer( 2, SHADER_CONSTANTBUFFER_PERSCENE );
 }
 
-void CBaseShader::SetVertexShaderConstantBuffer(int slot, ConstantBufferHandle_t cbuffer)
+void CBaseShader::SetPixelShaderConstantBuffer( int slot, ConstantBufferHandle_t cbuffer )
 {
-	Assert(s_pShaderShadow);
-	s_pShaderShadow->SetVertexShaderConstantBuffer(slot, cbuffer);
+	Assert( s_pShaderShadow );
+	s_pShaderShadow->SetPixelShaderConstantBuffer( slot, cbuffer );
 }
 
-void CBaseShader::SetPixelShaderConstantBuffer(int slot, ShaderInternalConstantBuffer_t cbuffer)
+void CBaseShader::SetVertexShaderConstantBuffer( int slot, ConstantBufferHandle_t cbuffer )
 {
-	s_pShaderShadow->SetPixelShaderConstantBuffer(slot, cbuffer);
+	Assert( s_pShaderShadow );
+	s_pShaderShadow->SetVertexShaderConstantBuffer( slot, cbuffer );
 }
 
-void CBaseShader::SetVertexShaderConstantBuffer(int slot, ShaderInternalConstantBuffer_t cbuffer)
+void CBaseShader::SetGeometryShaderConstantBuffer( int slot, ConstantBufferHandle_t cbuffer )
 {
-	s_pShaderShadow->SetVertexShaderConstantBuffer(slot, cbuffer);
+	Assert( s_pShaderShadow );
+	s_pShaderShadow->SetGeometryShaderConstantBuffer( slot, cbuffer );
+}
+
+void CBaseShader::SetPixelShaderConstantBuffer( int slot, ShaderInternalConstantBuffer_t cbuffer )
+{
+	s_pShaderShadow->SetPixelShaderConstantBuffer( slot, cbuffer );
+}
+
+void CBaseShader::SetVertexShaderConstantBuffer( int slot, ShaderInternalConstantBuffer_t cbuffer )
+{
+	s_pShaderShadow->SetVertexShaderConstantBuffer( slot, cbuffer );
+}
+
+void CBaseShader::SetGeometryShaderConstantBuffer( int slot, ShaderInternalConstantBuffer_t cbuffer )
+{
+	s_pShaderShadow->SetGeometryShaderConstantBuffer( slot, cbuffer );
 }
 
 // Called from DYNAMIC_STATE
-void CBaseShader::UpdateConstantBuffer(ConstantBufferHandle_t cbuffer, void* pNewData)
+void CBaseShader::UpdateConstantBuffer( ConstantBufferHandle_t cbuffer, void *pNewData )
 {
-	Assert(s_pShaderAPI);
-	s_pShaderAPI->UpdateConstantBuffer(cbuffer, pNewData);
+	Assert( s_pShaderAPI );
+	s_pShaderAPI->UpdateConstantBuffer( cbuffer, pNewData );
 }

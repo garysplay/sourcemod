@@ -7,16 +7,9 @@
 //===========================================================================//
 
 #include "BaseVSShader.h"
-
-#include "fxctmp9/unlitgeneric_ps40.inc"
-#include "fxctmp9/unlitgeneric_vs40.inc"
+#include "vertexlitgeneric_dx11_helper.h"
 
 //extern ConVar r_flashlight_version2;
-
-// HACKHACK
-DEFINE_FALLBACK_SHADER(Vertexlitgeneric, UnlitGeneric)
-DEFINE_FALLBACK_SHADER(Lightmappedgeneric, UnlitGeneric)
-DEFINE_FALLBACK_SHADER(WorldVertexTransition, UnlitGeneric)
 
 BEGIN_VS_SHADER( UnlitGeneric, "Help for UnlitGeneric" )
 
@@ -86,134 +79,119 @@ BEGIN_VS_SHADER( UnlitGeneric, "Help for UnlitGeneric" )
 
 	END_SHADER_PARAMS
 
+	void SetupVars( VertexLitGeneric_DX11_Vars_t& info )
+	{
+		info.m_nBaseTexture = BASETEXTURE;
+		info.m_nBaseTextureFrame = FRAME;
+		info.m_nBaseTextureTransform = BASETEXTURETRANSFORM;
+		info.m_nAlbedo = ALBEDO;
+		info.m_nSelfIllumTint = -1;
+		info.m_nDetail = DETAIL;
+		info.m_nDetailFrame = DETAILFRAME;
+		info.m_nDetailScale = DETAILSCALE;
+		info.m_nDetailTextureCombineMode = DETAILBLENDMODE;
+		info.m_nDetailTextureBlendFactor = DETAILBLENDFACTOR;
+		info.m_nEnvmap = ENVMAP;
+		info.m_nEnvmapFrame = ENVMAPFRAME;
+		info.m_nEnvmapMask = ENVMAPMASK;
+		info.m_nEnvmapMaskFrame = ENVMAPMASKFRAME;
+		info.m_nEnvmapMaskTransform = ENVMAPMASKTRANSFORM;
+		info.m_nEnvmapTint = ENVMAPTINT;
+		info.m_nBumpmap = -1;
+		info.m_nBumpFrame = -1;
+		info.m_nBumpTransform = -1;
+		info.m_nEnvmapContrast = ENVMAPCONTRAST;
+		info.m_nEnvmapSaturation = ENVMAPSATURATION;
+		info.m_nAlphaTestReference = ALPHATESTREFERENCE;
+		info.m_nVertexAlphaTest = VERTEXALPHATEST;
+		info.m_nFlashlightTexture = FLASHLIGHTTEXTURE;
+		info.m_nFlashlightTextureFrame = FLASHLIGHTTEXTUREFRAME;
+		info.m_nHDRColorScale = HDRCOLORSCALE;
+		info.m_nPhongExponent = -1;
+		info.m_nPhongExponentTexture = -1;
+		info.m_nDiffuseWarpTexture = -1;
+		info.m_nPhongWarpTexture = -1;
+		info.m_nPhongBoost = -1;
+		info.m_nPhongFresnelRanges = -1;
+		info.m_nPhong = -1;
+		info.m_nPhongTint = -1;
+		info.m_nPhongAlbedoTint = -1;
+		info.m_nSelfIllumEnvMapMask_Alpha = -1;
+		info.m_nAmbientOnly = -1;
+		info.m_nBaseMapAlphaPhongMask = -1;
+		info.m_nEnvmapFresnel = -1;
+		info.m_nSelfIllumMask = -1;
+
+		info.m_nDistanceAlpha = DISTANCEALPHA;
+		info.m_nDistanceAlphaFromDetail = DISTANCEALPHAFROMDETAIL;
+		info.m_nSoftEdges = SOFTEDGES;
+		info.m_nEdgeSoftnessStart = EDGESOFTNESSSTART;
+		info.m_nEdgeSoftnessEnd = EDGESOFTNESSEND;
+		info.m_nScaleEdgeSoftnessBasedOnScreenRes = SCALEEDGESOFTNESSBASEDONSCREENRES;
+
+		info.m_nGlow = GLOW;
+		info.m_nGlowColor = GLOWCOLOR;
+		info.m_nGlowAlpha = GLOWALPHA;
+		info.m_nGlowStart = GLOWSTART;
+		info.m_nGlowEnd = GLOWEND;
+		info.m_nGlowX = GLOWX;
+		info.m_nGlowY = GLOWY;
+
+		info.m_nOutline = OUTLINE;
+		info.m_nOutlineColor = OUTLINECOLOR;
+		info.m_nOutlineAlpha = OUTLINEALPHA;
+		info.m_nOutlineStart0 = OUTLINESTART0;
+		info.m_nOutlineStart1 = OUTLINESTART1;
+		info.m_nOutlineEnd0 = OUTLINEEND0;
+		info.m_nOutlineEnd1 = OUTLINEEND1;
+		info.m_nScaleOutlineSoftnessBasedOnScreenRes = SCALEOUTLINESOFTNESSBASEDONSCREENRES;
+
+		info.m_nSeparateDetailUVs = SEPARATEDETAILUVS;
+
+		info.m_nLinearWrite = LINEARWRITE;
+		info.m_nGammaColorRead = GAMMACOLORREAD;
+
+		info.m_nDepthBlend = DEPTHBLEND;
+		info.m_nDepthBlendScale = DEPTHBLENDSCALE;
+		info.m_nReceiveFlashlight = RECEIVEFLASHLIGHT;
+	}
+
 	SHADER_INIT_PARAMS()
 	{
+		VertexLitGeneric_DX11_Vars_t vars;
+		SetupVars( vars );
+		InitParamsVertexLitGeneric_DX11( this, params, pMaterialName, false, vars );
 	}
 
 	SHADER_FALLBACK
 	{
 		if( g_pHardwareConfig->GetDXSupportLevel() < 90 )
 		{
-			return "Wireframe";
+			return "UnlitGeneric_DX8";
 		}
 		return 0;
 	}
 
 	SHADER_INIT
 	{
-		if (params[BASETEXTURE]->IsDefined())
-		{
-			LoadTexture(BASETEXTURE);
-		}
+		VertexLitGeneric_DX11_Vars_t vars;
+		SetupVars( vars );
+		InitVertexLitGeneric_DX11( this, params, false, vars );
 	}
 
-		SHADER_DRAW
+	SHADER_DRAW
 	{
-		bool bDrawStandardPass = true;
+		VertexLitGeneric_DX11_Vars_t vars;
+		SetupVars( vars );
 
-		bool bHasVertexColor = IS_FLAG_SET(MATERIAL_VAR_VERTEXCOLOR);
-		bool bHasVertexAlpha = IS_FLAG_SET(MATERIAL_VAR_VERTEXALPHA);
-
-		if (bDrawStandardPass)
+		//bool bNewFlashlightPath = IsX360() || ( r_flashlight_version2.GetInt() != 0 );
+		//if ( ( pShaderShadow == NULL ) && ( pShaderAPI != NULL ) && !bNewFlashlightPath && pShaderAPI->InFlashlightMode() ) // Not snapshotting && flashlight pass
+		//{
+		//	Draw( false );
+		//}
+		//else
 		{
-			BlendType_t nBlendType = EvaluateBlendRequirements(BASETEXTURE, true);
-			bool bFullyOpaque = (nBlendType != BT_BLENDADD) && (nBlendType != BT_BLEND) && !IS_FLAG_SET(MATERIAL_VAR_ALPHATEST); //dest alpha is free for special use
-
-			SHADOW_STATE
-			{
-				// Either we've got a constant modulation
-				bool isTranslucent = IsAlphaModulating();
-
-			// Or we've got a texture alpha on either texture
-			isTranslucent = isTranslucent || TextureIsTranslucent(BASETEXTURE, true);
-
-			if (isTranslucent)
-			{
-				if (IS_FLAG_SET(MATERIAL_VAR_ADDITIVE))
-				{
-					EnableAlphaBlending(SHADER_BLEND_SRC_ALPHA, SHADER_BLEND_ONE);
-				}
-				else
-				{
-					EnableAlphaBlending(SHADER_BLEND_SRC_ALPHA, SHADER_BLEND_ONE_MINUS_SRC_ALPHA);
-				}
-			}
-			else
-			{
-				if (IS_FLAG_SET(MATERIAL_VAR_ADDITIVE))
-				{
-					EnableAlphaBlending(SHADER_BLEND_ONE, SHADER_BLEND_ONE);
-				}
-				else
-				{
-					DisableAlphaBlending();
-				}
-			}
-
-
-			// Set stream format (note that this shader supports compression)
-			unsigned int flags = VERTEX_POSITION | VERTEX_NORMAL | VERTEX_FORMAT_COMPRESSED;
-			if (bHasVertexColor || bHasVertexAlpha)
-			{
-				flags |= VERTEX_COLOR;
-			}
-			int nTexCoordCount = 1;
-			int userDataSize = 0;
-			if (IS_FLAG_SET(MATERIAL_VAR_VERTEXCOLOR))
-			{
-				flags |= VERTEX_COLOR;
-			}
-			int pTexCoordDim[1] = { 4 };
-			pShaderShadow->VertexShaderVertexFormat(flags, nTexCoordCount, pTexCoordDim, userDataSize);
-
-			SetVertexShaderConstantBuffer(0, SHADER_CONSTANTBUFFER_SKINNING);
-			SetVertexShaderConstantBuffer(1, SHADER_CONSTANTBUFFER_PERFRAME);
-			SetVertexShaderConstantBuffer(2, SHADER_CONSTANTBUFFER_PERSCENE);
-
-			SetPixelShaderConstantBuffer(0, SHADER_CONSTANTBUFFER_PERFRAME);
-			SetPixelShaderConstantBuffer(1, SHADER_CONSTANTBUFFER_PERSCENE);
-
-			DECLARE_STATIC_VERTEX_SHADER(unlitgeneric_vs40);
-			SET_STATIC_VERTEX_SHADER_COMBO(VERTEXCOLOR, bHasVertexColor || bHasVertexAlpha);
-			SET_STATIC_VERTEX_SHADER_COMBO(MODEL, 1);
-			SET_STATIC_VERTEX_SHADER(unlitgeneric_vs40);
-
-			DECLARE_STATIC_PIXEL_SHADER(unlitgeneric_ps40);
-			SET_STATIC_PIXEL_SHADER(unlitgeneric_ps40);
-
-			DefaultFog();
-
-			pShaderShadow->EnableAlphaWrites(bFullyOpaque);
-		}
-		DYNAMIC_STATE
-		{
-			BindTexture(SHADER_SAMPLER0, BASETEXTURE, FRAME);
-
-			//pShaderAPI->GetFogParamsAndColor(consts.FogParams.Base(), consts.FogColor.Base());
-
-			//StoreVertexShaderTextureTransform(consts.BaseTextureTransform, BASETEXTURETRANSFORM);
-			//StoreVertexShaderTextureTransform(consts.BaseTexture2Transform, TEXTURE2TRANSFORM);
-
-			//SetModulationDynamicState_LinearColorSpace(consts.ModulationColor);
-
-			//UPDATE_CONSTANT_BUFFER(UnlitTwoTexture, consts);
-
-			//MaterialFogMode_t fogType = pShaderAPI->GetSceneFogMode();
-			//int fogIndex = (fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z) ? 1 : 0;
-			//int numBones = pShaderAPI->GetCurrentNumBones();
-
-			DECLARE_DYNAMIC_VERTEX_SHADER(unlitgeneric_vs40);
-			SET_DYNAMIC_VERTEX_SHADER(unlitgeneric_vs40);
-
-			DECLARE_DYNAMIC_PIXEL_SHADER(unlitgeneric_ps40);
-			SET_DYNAMIC_PIXEL_SHADER(unlitgeneric_ps40);
-		}
-		Draw();
-	}
-	else
-	{
-			// Skip this pass!
-			Draw(false);
+			DrawVertexLitGeneric_DX11( this, params, pShaderAPI, pShaderShadow, false, vars, vertexCompression, pContextDataPtr );
 		}
 	}
 END_SHADER

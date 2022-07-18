@@ -25,10 +25,12 @@
 #include "vertexshaderdx11.h"
 #include "VertexBufferDx11.h"
 #include "IndexBufferDx11.h"
+#include "tier0/vprof.h"
 #include "materialsystem/IShader.h"
 #include "../stdshaders/cpp_shader_constant_register_map.h"
 #include "Dx11Global.h"
 #include "ITextureInternal.h"
+
 
 // NOTE: This has to be the last file included!
 #include "tier0/memdbgon.h"
@@ -281,7 +283,7 @@ void CShaderAPIDx11::IssueStateChanges( bool bForce )
 		return;
 
 	m_ShadowState = g_pShaderShadowDx11->GetShadowState( m_CurrentSnapshot );
-	//const StatesDx11::ShadowState *shadow = m_ShadowState;
+	const StatesDx11::ShadowState *shadow = m_ShadowState;
 	StatesDx11::DynamicState &dynamic = m_DynamicState;
 
 	DoIssueShaderState( bForce );
@@ -1456,12 +1458,6 @@ void CShaderAPIDx11::SetDefaultState()
 	m_DynamicState.m_pPixelShader = 0;
 }
 
-// Returns the snapshot id for the current shadow state
-StateSnapshot_t CShaderAPIDx11::TakeSnapshot()
-{
-	return g_pShaderShadowDx11->FindOrCreateSnapshot();
-}
-
 void CShaderAPIDx11::OverrideAlphaWriteEnable(bool bOverrideEnable, bool bAlphaWriteEnable)
 {
 	LOCK_SHADERAPI();
@@ -1472,6 +1468,12 @@ void CShaderAPIDx11::OverrideColorWriteEnable(bool bOverrideEnable, bool bColorW
 {
 	LOCK_SHADERAPI();
 	// NOT IMPLEMENTED
+}
+
+// Returns the snapshot id for the current shadow state
+StateSnapshot_t CShaderAPIDx11::TakeSnapshot()
+{
+	return g_pShaderShadowDx11->FindOrCreateSnapshot();
 }
 
 // Returns true if the state snapshot is transparent
@@ -2354,7 +2356,7 @@ void CShaderAPIDx11::FogColor3ubv( unsigned char const *rgb )
 
 void CShaderAPIDx11::GetFogColor( float *rgb )
 {
-	//const StatesDx11::ShadowState *state = g_pShaderShadowDx11->GetShadowState( m_CurrentSnapshot );
+	const StatesDx11::ShadowState *state = g_pShaderShadowDx11->GetShadowState( m_CurrentSnapshot );
 }
 
 void CShaderAPIDx11::GetFogParamsAndColor( float *fogParams, float *rgba )
@@ -2485,7 +2487,7 @@ void CShaderAPIDx11::SetPixelShaderIndex( ShaderIndex_t pshIndex )
 }
 
 // Returns the nearest supported format
-ImageFormat CShaderAPIDx11::GetNearestSupportedFormat( ImageFormat fmt, bool bFilteringRequired /* = true */ ) const
+ImageFormat CShaderAPIDx11::GetNearestSupportedFormat( ImageFormat fmt , bool filtering ) const
 {
 	return CTextureDx11::GetClosestSupportedImageFormatForD3D11( fmt );
 }
@@ -3176,9 +3178,6 @@ CMeshBuilder *CShaderAPIDx11::GetVertexModifyBuilder()
 	return &m_ModifyBuilder;
 }
 
-// Board-independent calls, here to unify how shaders set state
-// Implementations should chain back to IShaderUtil->BindTexture(), etc.
-
 void CShaderAPIDx11::CopyRenderTargetToScratchTexture(ShaderAPITextureHandle_t srcRt, ShaderAPITextureHandle_t dstTex, Rect_t* pSrcRect, Rect_t* pDstRect)
 {
 }
@@ -3194,6 +3193,9 @@ void CShaderAPIDx11::LockRect(void** pOutBits, int* pOutPitch, ShaderAPITextureH
 void CShaderAPIDx11::UnlockRect(ShaderAPITextureHandle_t texHandle, int mipmap)
 {
 }
+
+// Board-independent calls, here to unify how shaders set state
+// Implementations should chain back to IShaderUtil->BindTexture(), etc.
 
 // Use this to begin and end the frame
 void CShaderAPIDx11::BeginFrame()
@@ -3770,7 +3772,7 @@ void CShaderAPIDx11::CopyRenderTargetToTextureEx( ShaderAPITextureHandle_t textu
 	// LOCK_SHADERAPI();
 	//VPROF_BUDGET( "CShaderAPIDx11::CopyRenderTargetToTexture", "Refraction overhead" );
 
-	/*if ( !TextureIsAllocated( textureHandle ) )
+	if ( !TextureIsAllocated( textureHandle ) )
 		return;
 
 	CTextureDx11 *pTexture = &GetTexture( textureHandle );
@@ -3793,7 +3795,7 @@ void CShaderAPIDx11::CopyRenderTargetToTextureEx( ShaderAPITextureHandle_t textu
 	}
 
 	ID3D11Resource *pD3DTextureRT = pTextureRT->GetTexture();
-	Assert( pD3DTextureRT );*/
+	Assert( pD3DTextureRT );
 	
 	// need to draw a quad with the texture and downscale it
 }
@@ -3808,14 +3810,11 @@ void CShaderAPIDx11::CopyTextureToRenderTargetEx(int nRenderTargetID, ShaderAPIT
 
 	/*if (!TextureIsAllocated(textureHandle))
 		return;
-
 	CTextureDx11* pTexture = &GetTexture(textureHandle);
 	Assert(pTexture);
 	ID3D11Resource* pD3DTexture = pTexture->GetTexture();
 	Assert(pD3DTexture);
-
 	ITexture* rt = g_pShaderUtil->GetRenderTargetEx(nRenderTargetID);
-
 	CTextureDx11* pTextureRT;
 	if (rt == NULL)
 	{
@@ -3827,7 +3826,6 @@ void CShaderAPIDx11::CopyTextureToRenderTargetEx(int nRenderTargetID, ShaderAPIT
 		ShaderAPITextureHandle_t texHandle = texInt->GetTextureHandle(0);
 		pTextureRT = &GetTexture(texHandle);
 	}
-
 	ID3D11Resource* pD3DTextureRT = pTextureRT->GetTexture();
 	Assert(pD3DTextureRT);*/
 

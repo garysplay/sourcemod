@@ -1073,10 +1073,10 @@ void CShaderDeviceDx11::DestroyIndexBuffer( IIndexBuffer *pIndexBuffer )
 	}
 }
 
-ConstantBufferHandle_t CShaderDeviceDx11::CreateConstantBuffer( size_t nBufLen )
+ConstantBufferHandle_t CShaderDeviceDx11::CreateConstantBuffer(size_t nBufLen)
 {
-	CShaderConstantBufferDx11 *pBuf = new CShaderConstantBufferDx11;
-	pBuf->Create( nBufLen );
+	CShaderConstantBufferDx11* pBuf = new CShaderConstantBufferDx11;
+	pBuf->Create(nBufLen);
 	return (ConstantBufferHandle_t)pBuf;
 }
 
@@ -1104,6 +1104,7 @@ void CShaderDeviceDx11::DestroyConstantBuffer( ConstantBufferHandle_t hBuffer )
 	{
 		IShaderConstantBuffer *pBuffer = (IShaderConstantBuffer *)hBuffer;
 		pBuffer->Destroy();
+		delete pBuffer;
 	}
 }
 

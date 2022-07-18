@@ -79,6 +79,7 @@ public:
 
 	// These functions must be implemented by the shader
 	virtual void InitShaderParams( IMaterialVar** ppParams, const char *pMaterialName ) = 0;
+	virtual void InitShader(IShaderDevice* pShaderDevice) = 0;
 	virtual void InitShaderInstance( IMaterialVar** ppParams, IShaderInit *pShaderInit, const char *pMaterialName, const char *pTextureGroupName ) = 0;
 	virtual void DrawElements( IMaterialVar **params, int nModulationFlags,
 		IShaderShadow* pShaderShadow, IShaderDynamicAPI* pShaderAPI, VertexCompressionType_t vertexCompression, CBasePerMaterialContextData **pContextDataPtr ) = 0;
@@ -98,6 +99,22 @@ public:
 
 	virtual int GetFlags() const = 0;
 
+	virtual void StoreConstantGammaToLinear( float *pOut, int param ) = 0;
+	virtual void StoreEnvmapTint( Vector4D &out, int param ) = 0;
+	virtual void StoreEnvmapTintGammaToLinear( Vector4D &out, int param ) = 0;
+	virtual void StoreVertexShaderTextureScaledTransform( Vector4D *pOut, int transformVar, int scaleVar ) = 0;
+	virtual void StoreVertexShaderTextureTransform( Vector4D *pOut, int param ) = 0;
+	virtual void SetInternalVertexShaderConstantBuffers() = 0;
+	virtual void SetInternalVertexShaderConstantBuffersNoSkinning() = 0;
+	virtual void SetInternalPixelShaderConstantBuffers() = 0;
+	virtual void SetInternalGeometryShaderConstantBuffers() = 0;
+	virtual void SetPixelShaderConstantBuffer( int slot, ConstantBufferHandle_t cbuffer ) = 0;
+	virtual void SetVertexShaderConstantBuffer( int slot, ConstantBufferHandle_t cbuffer ) = 0;
+	virtual void SetGeometryShaderConstantBuffer( int slot, ConstantBufferHandle_t cbuffer ) = 0;
+	virtual void SetPixelShaderConstantBuffer( int slot, ShaderInternalConstantBuffer_t cbuffer ) = 0;
+	virtual void SetVertexShaderConstantBuffer( int slot, ShaderInternalConstantBuffer_t cbuffer ) = 0;
+	virtual void SetGeometryShaderConstantBuffer( int slot, ShaderInternalConstantBuffer_t cbuffer ) = 0;
+	virtual void UpdateConstantBuffer( ConstantBufferHandle_t cbuffer, void *pNewData ) = 0;
 	// FIXME: Remove GetParamName, etc. above
 //	virtual const ShaderParamInfo_t& GetParamInfo( int paramIndex ) const = 0;
 };
@@ -106,6 +123,7 @@ abstract_class IShaderDX11 : public IShader
 {
 public:
 		virtual void InitShader(IShaderDevice* pShaderDevice) = 0;
+
 };
 
 #endif // ISHADER_H

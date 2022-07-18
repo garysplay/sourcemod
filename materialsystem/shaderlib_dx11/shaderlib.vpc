@@ -12,7 +12,7 @@ $Configuration
 	$Compiler
 	{
 		$AdditionalIncludeDirectories	"$BASE;..\"
-		$PreprocessorDefinitions		"$BASE;FAST_MATERIALVAR_ACCESS"
+		$PreprocessorDefinitions		"$BASE;FAST_MATERIALVAR_ACCESS;DX11"
 		$PreprocessorDefinitions		"$BASE;fopen=dont_use_fopen" [$WINDOWS]
 	}
 }

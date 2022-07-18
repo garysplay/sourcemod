@@ -138,7 +138,6 @@ public:
 	void GetMatrix( MaterialMatrixMode_t matrixMode, DirectX::XMMATRIX &dst );
 	D3D11_CULL_MODE GetCullMode() const;
 
-private:
 	// Returns a d3d texture associated with a texture handle
 	virtual IDirect3DBaseTexture *GetD3DTexture( ShaderAPITextureHandle_t hTexture );
 

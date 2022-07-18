@@ -294,6 +294,9 @@ inline bool CShader_IsFlag2Set( IMaterialVar **params, MaterialVarFlags2_t _flag
 #define SHADER_DRAW \
 	void OnDrawElements( IMaterialVar **params, IShaderShadow* pShaderShadow, IShaderDynamicAPI* pShaderAPI, VertexCompressionType_t vertexCompression, CBasePerMaterialContextData **pContextDataPtr )
 
+#define SHADER_INIT_GLOBAL \
+	virtual void OnInitShader( IShaderDevice *pShaderDevice )
+
 #define SHADOW_STATE if (pShaderShadow)
 #define DYNAMIC_STATE if (pShaderAPI)
 

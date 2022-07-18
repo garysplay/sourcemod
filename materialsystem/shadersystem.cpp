@@ -67,6 +67,7 @@ public:
 	virtual bool		LoadShaderDLL( const char *pFullPath );
 	virtual bool		LoadShaderDLL( const char *pFullPath, const char *pPathID, bool bModShaderDLL );
 	virtual void		UnloadShaderDLL( const char *pFullPath );
+	virtual void		InitShaders();
 
 	virtual IShader*	FindShader( char const* pShaderName );
 	virtual void		CreateDebugMaterials();
@@ -363,6 +364,24 @@ void CShaderSystem::LoadAllShaderDLLs( )
 		LoadShaderDLL( "shader_test" DLL_EXT_STRING );
 	}
 #endif
+}
+
+//-----------------------------------------------------------------------------
+// One-time initializes all shaders (called after the mode is set and device is
+// created.
+//-----------------------------------------------------------------------------
+void CShaderSystem::InitShaders()
+{
+	for (int i = 0; i < m_ShaderDLLs.Count(); i++)
+	{
+		ShaderDLLInfo_t& info = m_ShaderDLLs[i];
+		int shaderCount = info.m_pShaderDLL->ShaderCount();
+		for (int j = 0; j < shaderCount; j++)
+		{
+			IShader* pShader = info.m_pShaderDLL->GetShader(j);
+			pShader->InitShader(g_pShaderDevice);
+		}
+	}
 }
 
 const char *COM_GetModDirectory()
