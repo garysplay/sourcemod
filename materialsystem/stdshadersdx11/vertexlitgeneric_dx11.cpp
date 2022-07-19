@@ -420,9 +420,10 @@ SHADER_INIT
 	}
 #endif
 }
+
 SHADER_INIT_GLOBAL
 {
-	g_hVertexLitGeneric_CBuffer = pShaderDevice->CreateConstantBuffer(sizeof(VertexLitGeneric_CBuffer_t));
+	g_hVertexLitGeneric_CBuffer = pShaderDevice->CreateConstantBuffer( sizeof( VertexLitGeneric_CBuffer_t ) );
 }
 
 SHADER_DRAW

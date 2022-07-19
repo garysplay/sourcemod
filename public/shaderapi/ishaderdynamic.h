@@ -20,7 +20,6 @@
 
 
 typedef intp ShaderAPITextureHandle_t;
-FORWARD_DECLARE_HANDLE(ConstantBufferHandle_t);
 
 //-----------------------------------------------------------------------------
 // forward declarations
@@ -338,11 +337,6 @@ public:
 	virtual void SetPSNearAndFarZ( int pshReg ) = 0;
 
 	virtual void SetDepthFeatheringPixelShaderConstant( int iConstant, float fDepthBlendScale ) = 0;
-
-	virtual void GetFogParamsAndColor(float* params, float* rgba) = 0;
-	virtual void GetFogColor(float* rgb) = 0;
-	virtual void UpdateConstantBuffer(ConstantBufferHandle_t cbuffer, void* pNewData) = 0;
-	virtual ConstantBufferHandle_t GetInternalConstantBuffer(int type) = 0;
 };
 // end class IShaderDynamicAPI
 

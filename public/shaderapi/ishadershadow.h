@@ -370,14 +370,6 @@ public:
 	// More alpha blending state
 	virtual void BlendOp( ShaderBlendOp_t blendOp ) = 0;
 	virtual void BlendOpSeparateAlpha( ShaderBlendOp_t blendOp ) = 0;
-
-	virtual void SetVertexShaderConstantBuffer(int slot, ConstantBufferHandle_t cbuffer) = 0;
-	virtual void SetGeometryShaderConstantBuffer(int slot, ConstantBufferHandle_t cbuffer) = 0;
-	virtual void SetPixelShaderConstantBuffer(int slot, ConstantBufferHandle_t cbuffer) = 0;
-
-	virtual void SetVertexShaderConstantBuffer(int slot, ShaderInternalConstantBuffer_t cbuffer) = 0;
-	virtual void SetGeometryShaderConstantBuffer(int slot, ShaderInternalConstantBuffer_t cbuffer) = 0;
-	virtual void SetPixelShaderConstantBuffer(int slot, ShaderInternalConstantBuffer_t cbuffer) = 0;
 };
 // end class IShaderShadow
 

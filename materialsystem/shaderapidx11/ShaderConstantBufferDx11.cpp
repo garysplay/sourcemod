@@ -57,7 +57,7 @@ void CShaderConstantBufferDx11::Create( size_t nBufferSize, bool bDynamic )
 	m_nBufSize = nBufferSize;
 	m_bDynamic = bDynamic;
 
-	Log( "Creating constant buffer of size %u\n", nBufferSize );
+	//Log( "Creating constant buffer of size %u\n", nBufferSize );
 
 	D3D11_BUFFER_DESC cbDesc;
 	cbDesc.ByteWidth = m_nBufSize;
@@ -83,7 +83,7 @@ void CShaderConstantBufferDx11::Create( size_t nBufferSize, bool bDynamic )
 	initialData.SysMemPitch = 0;
 	initialData.SysMemSlicePitch = 0;
 
-	Log( "Creating D3D constant buffer: size: %i\n", m_nBufSize );
+	//Log( "Creating D3D constant buffer: size: %i\n", m_nBufSize );
 
 	HRESULT hr = D3D11Device()->CreateBuffer( &cbDesc, &initialData, &m_pCBuffer );
 	if ( FAILED( hr ) )

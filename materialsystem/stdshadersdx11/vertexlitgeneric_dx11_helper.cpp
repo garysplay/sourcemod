@@ -597,7 +597,7 @@ static void DrawVertexLitGeneric_DX11_Internal( CBaseVSShader *pShader, IMateria
 					bOutline = IsBoolSet( info.m_nOutline, params );
 				}
 
-				//const bool bTwoSidedLighting = info.m_nTwoSidedLighting >= 0 && params[info.m_nTwoSidedLighting]->GetIntValue() > 0;
+				const bool bTwoSidedLighting = info.m_nTwoSidedLighting >= 0 && params[info.m_nTwoSidedLighting]->GetIntValue() > 0;
 
 				pShader->SetInternalVertexShaderConstantBuffers();
 				pShader->SetVertexShaderConstantBuffer( USER_CBUFFER_REG_0, g_hVertexLitGeneric_CBuffer );
@@ -1102,7 +1102,7 @@ static void DrawVertexLitGeneric_DX11_Internal( CBaseVSShader *pShader, IMateria
 			if ( bAmbientOnly )	// Override selected light combo to be ambient only
 			{
 				lightState.m_bAmbientLight = true;
-				lightState.m_bStaticLightVertex = false;
+				lightState.m_bStaticLight = false;
 				lightState.m_nNumLights = 0;
 			}
 
@@ -1114,7 +1114,7 @@ static void DrawVertexLitGeneric_DX11_Internal( CBaseVSShader *pShader, IMateria
 
 			DECLARE_DYNAMIC_VERTEX_SHADER( vertexlit_and_unlit_generic_vs40 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( DYNAMIC_LIGHT, lightState.HasDynamicLight() );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( STATIC_LIGHT, lightState.m_bStaticLightVertex ? 1 : 0 );
+			SET_DYNAMIC_VERTEX_SHADER_COMBO( STATIC_LIGHT, lightState.m_bStaticLight ? 1 : 0 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, fogIndex );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, numBones > 0 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( LIGHTING_PREVIEW,
