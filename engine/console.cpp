@@ -1276,7 +1276,7 @@ void CConPanel::PaintBackground()
 	int wide = GetWide();
 	char ver[ 100 ];
 #ifdef WIN64
-	Q_snprintf(ver, sizeof(ver), "CoolSource Engine %i (%s)(win64)(build %d)", PROTOCOL_VERSION, __DATE__, build_number());
+	Q_snprintf(ver, sizeof(ver), "CoolSource Engine %i (%s)(win64-dx11)(build %d)", PROTOCOL_VERSION, __DATE__, build_number());
 #else
 	Q_snprintf(ver, sizeof(ver), "CoolSource Engine %i (%s)(win32)(build %d)", PROTOCOL_VERSION, __DATE__, build_number());
 #endif
