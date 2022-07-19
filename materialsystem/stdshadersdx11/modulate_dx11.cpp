@@ -3,7 +3,7 @@
 // Purpose: 
 //
 //=====================================================================================//
-#if 0
+#if 1
 #include "BaseVSShader.h"
 
 #include "modulate_vs40.inc"
@@ -43,7 +43,10 @@ BEGIN_VS_SHADER( Modulate_DX11,
 	END_SHADER_PARAMS
 
 	DECLARE_CONSTANT_BUFFER( Modulate )
-
+    SHADER_INIT_GLOBAL
+    {
+	    INIT_CONSTANT_BUFFER( Modulate );
+    }
 	SHADER_FALLBACK
 	{
 		return 0;
@@ -217,13 +220,13 @@ BEGIN_VS_SHADER( Modulate_DX11,
 			{
 				ALIGN16 CONSTANT_BUFFER_TYPE( Modulate ) consts;
 
-				/*if( params[BASETEXTURE]->IsTexture() )
+				if( params[BASETEXTURE]->IsTexture() )
 				{
 					BindTexture( SHADER_SAMPLER0, BASETEXTURE, FRAME );
 					StoreVertexShaderTextureTransform( consts.BaseTextureTransform, BASETEXTURETRANSFORM );
-				}*/
+				}
 
-				//pShaderAPI->GetFogParamsAndColor( consts.FogParams.Base(), consts.FogColor.Base() );
+				pShaderAPI->GetFogParamsAndColor( consts.FogParams.Base(), consts.FogColor.Base() );
 
 				// set constant color for modulation
 				SetModulationDynamicState( consts.ModulationColor );

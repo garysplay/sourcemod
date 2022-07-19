@@ -447,6 +447,7 @@ void CShaderDeviceMgrDx11::GetCurrentModeInfo( ShaderDisplayMode_t* pInfo, int n
 {
 	// FIXME: Implement!
 	Assert( 0 );
+	GetModeInfo(pInfo, g_pShaderDeviceDx11->m_nAdapter, nAdapter);
 }
 
 

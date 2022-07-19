@@ -56,9 +56,14 @@ ImageFormat CTextureDx11::GetClosestSupportedImageFormatForD3D11( ImageFormat sr
 	{
 	case IMAGE_FORMAT_BGR888:
 		return IMAGE_FORMAT_BGRA8888;
-
+	case IMAGE_FORMAT_BGR888_SRGB:
+	case IMAGE_FORMAT_BGR888_BLUESCREEN:
+		return IMAGE_FORMAT_BGRA8888_SRGB;
 	case IMAGE_FORMAT_RGB888:
 		return IMAGE_FORMAT_RGBA8888;
+	case IMAGE_FORMAT_RGB888_SRGB:
+	case IMAGE_FORMAT_RGB888_BLUESCREEN:
+		return IMAGE_FORMAT_RGBA8888_SRGB;
 	default:
 		return srcFormat;
 	}
@@ -93,18 +98,18 @@ DXGI_FORMAT GetD3DFormat( ImageFormat format )
 	case IMAGE_FORMAT_DXT1:
 	case IMAGE_FORMAT_DXT1_ONEBITALPHA:
 		return DXGI_FORMAT_BC1_UNORM;
-	//case IMAGE_FORMAT_DXT1_SRGB:
-	//case IMAGE_FORMAT_DXT1_ONEBITALPHA_SRGB:
+	case IMAGE_FORMAT_DXT1_SRGB:
+	case IMAGE_FORMAT_DXT1_ONEBITALPHA_SRGB:
 		return DXGI_FORMAT_BC1_UNORM_SRGB;
 
 	case IMAGE_FORMAT_DXT3:
 		return DXGI_FORMAT_BC2_UNORM;
-	//case IMAGE_FORMAT_DXT3_SRGB:
+	case IMAGE_FORMAT_DXT3_SRGB:
 		return DXGI_FORMAT_BC2_UNORM_SRGB;
 
 	case IMAGE_FORMAT_DXT5:
 		return DXGI_FORMAT_BC3_UNORM;
-	//case IMAGE_FORMAT_DXT5_SRGB:
+	case IMAGE_FORMAT_DXT5_SRGB:
 		return DXGI_FORMAT_BC3_UNORM_SRGB;
 
 	case IMAGE_FORMAT_BGRA4444:
@@ -116,7 +121,7 @@ DXGI_FORMAT GetD3DFormat( ImageFormat format )
 
 	case IMAGE_FORMAT_BGRX8888:
 		return DXGI_FORMAT_B8G8R8X8_UNORM;
-	//case IMAGE_FORMAT_BGRX8888_SRGB:
+	case IMAGE_FORMAT_BGRX8888_SRGB:
 		return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
 
 	case IMAGE_FORMAT_ARGB8888: // unsupported?
@@ -124,7 +129,7 @@ DXGI_FORMAT GetD3DFormat( ImageFormat format )
 
 	case IMAGE_FORMAT_BGRA8888:
 		return DXGI_FORMAT_B8G8R8A8_UNORM;
-	//case IMAGE_FORMAT_BGRA8888_SRGB:
+	case IMAGE_FORMAT_BGRA8888_SRGB:
 		return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
 
 	case IMAGE_FORMAT_RGBA16161616F:
@@ -138,7 +143,7 @@ DXGI_FORMAT GetD3DFormat( ImageFormat format )
 
 	case IMAGE_FORMAT_RGBA8888:
 		return DXGI_FORMAT_R8G8B8A8_UNORM;
-	//case IMAGE_FORMAT_RGBA8888_SRGB:
+	case IMAGE_FORMAT_RGBA8888_SRGB:
 		return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 
 	default:
@@ -163,21 +168,21 @@ ImageFormat CTextureDx11::GetImageFormat( DXGI_FORMAT d3dFormat )
 	case DXGI_FORMAT_R8G8B8A8_UNORM:
 		return IMAGE_FORMAT_RGBA8888;
 	case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
-		return IMAGE_FORMAT_RGBA8888;// _SRGB;
+		return IMAGE_FORMAT_RGBA8888_SRGB;
 	case DXGI_FORMAT_A8_UNORM:
 		return IMAGE_FORMAT_A8;
 	case DXGI_FORMAT_BC1_UNORM:
 		return IMAGE_FORMAT_DXT1;
 	case DXGI_FORMAT_BC1_UNORM_SRGB:
-		return IMAGE_FORMAT_DXT1;// _SRGB;
+		return IMAGE_FORMAT_DXT1_SRGB;
 	case DXGI_FORMAT_BC2_UNORM:
 		return IMAGE_FORMAT_DXT3;
 	case DXGI_FORMAT_BC2_UNORM_SRGB:
-		return IMAGE_FORMAT_DXT3;// _SRGB;
+		return IMAGE_FORMAT_DXT3_SRGB;
 	case DXGI_FORMAT_BC3_UNORM:
 		return IMAGE_FORMAT_DXT5;
 	case DXGI_FORMAT_BC3_UNORM_SRGB:
-		return IMAGE_FORMAT_DXT5;// _SRGB;
+		return IMAGE_FORMAT_DXT5_SRGB;
 	case DXGI_FORMAT_B4G4R4A4_UNORM:
 		return IMAGE_FORMAT_BGRA4444;
 	case DXGI_FORMAT_B5G6R5_UNORM:
@@ -185,11 +190,11 @@ ImageFormat CTextureDx11::GetImageFormat( DXGI_FORMAT d3dFormat )
 	case DXGI_FORMAT_B8G8R8X8_UNORM:
 		return IMAGE_FORMAT_BGRX8888;
 	case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
-		return IMAGE_FORMAT_BGRX8888;// _SRGB;
+		return IMAGE_FORMAT_BGRX8888_SRGB;
 	case DXGI_FORMAT_B8G8R8A8_UNORM:
 		return IMAGE_FORMAT_BGRA8888;
 	case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
-		return IMAGE_FORMAT_BGRA8888;// _SRGB;
+		return IMAGE_FORMAT_BGRA8888_SRGB;
 	case DXGI_FORMAT_R16G16B16A16_FLOAT:
 		return IMAGE_FORMAT_RGBA16161616F;
 	case DXGI_FORMAT_R16G16B16A16_UNORM:
@@ -249,15 +254,15 @@ ID3D11Resource *CTextureDx11::CreateD3DTexture( int width, int height, int nDept
 		nDepth = 6;
 
 	bool bIsRenderTarget = ( nCreationFlags & TEXTURE_CREATE_RENDERTARGET ) != 0;
-	//bool bManaged = ( nCreationFlags & TEXTURE_CREATE_MANAGED ) != 0;
+	bool bManaged = ( nCreationFlags & TEXTURE_CREATE_MANAGED ) != 0;
 	bool bIsDepthBuffer = ( nCreationFlags & TEXTURE_CREATE_DEPTHBUFFER ) != 0;
 	bool isDynamic = ( nCreationFlags & TEXTURE_CREATE_DYNAMIC ) != 0;
 	bool bAutoMipMap = ( nCreationFlags & TEXTURE_CREATE_AUTOMIPMAP ) != 0;
-	//bool bVertexTexture = ( nCreationFlags & TEXTURE_CREATE_VERTEXTEXTURE ) != 0;
-	//bool bAllowNonFilterable = ( nCreationFlags & TEXTURE_CREATE_UNFILTERABLE_OK ) != 0;
-	//bool bVolumeTexture = ( nDepth > 1 );
-	//bool bIsFallback = ( nCreationFlags & TEXTURE_CREATE_FALLBACK ) != 0;
-	//bool bNoD3DBits = ( nCreationFlags & TEXTURE_CREATE_NOD3DMEMORY ) != 0;
+	bool bVertexTexture = ( nCreationFlags & TEXTURE_CREATE_VERTEXTEXTURE ) != 0;
+	bool bAllowNonFilterable = ( nCreationFlags & TEXTURE_CREATE_UNFILTERABLE_OK ) != 0;
+	bool bVolumeTexture = ( nDepth > 1 );
+	bool bIsFallback = ( nCreationFlags & TEXTURE_CREATE_FALLBACK ) != 0;
+	bool bNoD3DBits = ( nCreationFlags & TEXTURE_CREATE_NOD3DMEMORY ) != 0;
 
 	// NOTE: This function shouldn't be used for creating depth buffers!
 	//Assert( !bIsDepthBuffer );
@@ -858,10 +863,10 @@ void CTextureDx11::BlitSurfaceBits( CTextureDx11::TextureLoadInfo_t &info, int x
 
 	int width = info.m_nWidth;
 	int height = info.m_nHeight;
-	if ( m_Format == IMAGE_FORMAT_DXT3 || //m_Format == IMAGE_FORMAT_DXT3_SRGB ||
-	     m_Format == IMAGE_FORMAT_DXT5 || //m_Format == IMAGE_FORMAT_DXT5_SRGB ||
-	     m_Format == IMAGE_FORMAT_DXT1 || //m_Format == IMAGE_FORMAT_DXT1_SRGB ||
-	     m_Format == IMAGE_FORMAT_DXT1_ONEBITALPHA )//|| m_Format == IMAGE_FORMAT_DXT1_ONEBITALPHA_SRGB )
+	if ( m_Format == IMAGE_FORMAT_DXT3 || m_Format == IMAGE_FORMAT_DXT3_SRGB ||
+	     m_Format == IMAGE_FORMAT_DXT5 || m_Format == IMAGE_FORMAT_DXT5_SRGB ||
+	     m_Format == IMAGE_FORMAT_DXT1 || m_Format == IMAGE_FORMAT_DXT1_SRGB ||
+	     m_Format == IMAGE_FORMAT_DXT1_ONEBITALPHA || m_Format == IMAGE_FORMAT_DXT1_ONEBITALPHA_SRGB )
 	{
 		width = ALIGN_VALUE( width, 4 );
 		height = ALIGN_VALUE( height, 4 );
@@ -879,13 +884,13 @@ void CTextureDx11::BlitSurfaceBits( CTextureDx11::TextureLoadInfo_t &info, int x
 	unsigned char *pNewImage = new unsigned char[mem];
 	int dstStride = ImageLoader::SizeInBytes( m_Format );
 	int pitch = dstStride * width;
-	if ( m_Format == IMAGE_FORMAT_DXT3 || //m_Format == IMAGE_FORMAT_DXT3_SRGB ||
-	     m_Format == IMAGE_FORMAT_DXT5 )//|| m_Format == IMAGE_FORMAT_DXT5_SRGB )
+	if ( m_Format == IMAGE_FORMAT_DXT3 || m_Format == IMAGE_FORMAT_DXT3_SRGB ||
+	     m_Format == IMAGE_FORMAT_DXT5 || m_Format == IMAGE_FORMAT_DXT5_SRGB )
 	{
 		pitch = 16 * ( width / 4 );
 	}
-	else if ( m_Format == IMAGE_FORMAT_DXT1 || //m_Format == IMAGE_FORMAT_DXT1_SRGB ||
-		  m_Format == IMAGE_FORMAT_DXT1_ONEBITALPHA )//|| m_Format == IMAGE_FORMAT_DXT1_ONEBITALPHA_SRGB )
+	else if ( m_Format == IMAGE_FORMAT_DXT1 || m_Format == IMAGE_FORMAT_DXT1_SRGB ||
+		  m_Format == IMAGE_FORMAT_DXT1_ONEBITALPHA || m_Format == IMAGE_FORMAT_DXT1_ONEBITALPHA_SRGB )
 	{
 		pitch = 8 * ( width / 4 );
 	}
