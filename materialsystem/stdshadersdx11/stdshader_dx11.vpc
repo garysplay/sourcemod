@@ -63,7 +63,7 @@ $Project "stdshader_dx11"
 	{
 		$File			"BaseVSShader.cpp" \
 		"bik_dx11.cpp"\
-		"decalmodulate_dx11.cpp"\
+		"decalmodulate_dx11.cpp"\/
 		"lightmappedgeneric_dx11.cpp"\
 		"lightmappedgeneric_dx11_helper.cpp"\
 		//enderzip: modulate shader is still broken becuz of constant buffer shit idk 
