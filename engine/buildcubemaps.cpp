@@ -326,6 +326,11 @@ static void BuildSingleCubemap( const char *pVTFName, const Vector &vecOrigin,
 		g_pFileSystem->FPrintf( fp, "\"pfm\" \"1\"\n" );
 		// HDRFIXME: Make sure that we can mip and lod and get rid of this.
 	}
+	//enderzip: idk why did i add this
+	else
+	{
+		g_pFileSystem->FPrintf(fp, "\"srgb\" \"1\"\n");
+	}
 	// don't let any dest alpha creep into the image
 	g_pFileSystem->FPrintf( fp, "\"stripalphachannel\" \"1\"\n" );
 	g_pFileSystem->Close( fp );

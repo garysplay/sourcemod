@@ -271,6 +271,8 @@ private:
 	// Unserialization
 	bool ReadHeader( CUtlBuffer &buf, VTFFileHeader_t &header );
 
+	ImageFormat GetMatchingSRGBFormat( ImageFormat format ) const;
+
 	void BlendCubeMapEdgePalettes(
 		int iFrame,
 		int iMipLevel,

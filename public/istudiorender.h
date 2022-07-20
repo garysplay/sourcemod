@@ -193,8 +193,6 @@ struct ColorMeshInfo_t
 	// A given color mesh can own a unique Mesh, or it can use a shared Mesh
 	// (in which case it uses a sub-range defined by m_nVertOffset and m_nNumVerts)
 	IMesh				*	m_pMesh;
-	IPooledVBAllocator	*	m_pPooledVBAllocator;
-	int						m_nVertOffsetInBytes;
 	int						m_nNumVerts;
 	ITexture			*   m_pLightmap;
 	ColorTexelsInfo_t   *   m_pLightmapData;

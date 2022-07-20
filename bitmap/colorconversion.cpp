@@ -96,12 +96,16 @@ namespace ImageLoader
 		switch (srcImageFormat)
 		{
 		case IMAGE_FORMAT_RGBA8888:
+		case IMAGE_FORMAT_RGBA8888_SRGB:
 			return RGBA8888ToRGBA8888;
 		case IMAGE_FORMAT_ABGR8888:
+		case IMAGE_FORMAT_ABGR8888_SRGB:
 			return ABGR8888ToRGBA8888;
 		case IMAGE_FORMAT_RGB888:
+		case IMAGE_FORMAT_RGB888_SRGB:
 			return RGB888ToRGBA8888;
 		case IMAGE_FORMAT_BGR888:
+		case IMAGE_FORMAT_BGR888_SRGB:
 			return BGR888ToRGBA8888;
 		case IMAGE_FORMAT_RGB565:
 			return NULL;
@@ -116,10 +120,13 @@ namespace ImageLoader
 		case IMAGE_FORMAT_BGR888_BLUESCREEN:
 			return BGR888_BLUESCREENToRGBA8888;
 		case IMAGE_FORMAT_ARGB8888:
+		case IMAGE_FORMAT_ARGB8888_SRGB:
 			return ARGB8888ToRGBA8888;
 		case IMAGE_FORMAT_BGRA8888:
+		case IMAGE_FORMAT_BGRA8888_SRGB:
 			return BGRA8888ToRGBA8888;
 		case IMAGE_FORMAT_BGRX8888:
+		case IMAGE_FORMAT_BGRX8888_SRGB:
 			return BGRX8888ToRGBA8888;
 		case IMAGE_FORMAT_BGR565:
 			return BGR565ToRGBA8888;
@@ -173,12 +180,16 @@ namespace ImageLoader
 		switch (dstImageFormat)
 		{
 		case IMAGE_FORMAT_RGBA8888:
+		case IMAGE_FORMAT_RGBA8888_SRGB:
 			return RGBA8888ToRGBA8888;
 		case IMAGE_FORMAT_ABGR8888:
+		case IMAGE_FORMAT_ABGR8888_SRGB:
 			return RGBA8888ToABGR8888;
 		case IMAGE_FORMAT_RGB888:
+		case IMAGE_FORMAT_RGB888_SRGB:
 			return RGBA8888ToRGB888;
 		case IMAGE_FORMAT_BGR888:
+		case IMAGE_FORMAT_BGR888_SRGB:
 			return RGBA8888ToBGR888;
 		case IMAGE_FORMAT_RGB565:
 			return NULL;
@@ -193,10 +204,13 @@ namespace ImageLoader
 		case IMAGE_FORMAT_BGR888_BLUESCREEN:
 			return RGBA8888ToBGR888_BLUESCREEN;
 		case IMAGE_FORMAT_ARGB8888:
+		case IMAGE_FORMAT_ARGB8888_SRGB:
 			return RGBA8888ToARGB8888;
 		case IMAGE_FORMAT_BGRA8888:
+		case IMAGE_FORMAT_BGRA8888_SRGB:
 			return RGBA8888ToBGRA8888;
 		case IMAGE_FORMAT_BGRX8888:
+		case IMAGE_FORMAT_BGRX8888_SRGB:
 			return RGBA8888ToBGRX8888;
 		case IMAGE_FORMAT_BGR565:
 			return RGBA8888ToBGR565;
@@ -812,12 +826,16 @@ namespace ImageLoader
 		switch (imageFormat)
 		{
 		case IMAGE_FORMAT_DXT1:
+		case IMAGE_FORMAT_DXT1_SRGB:
 			return S3TC_ENCODE_RGB_FULL;
 		case IMAGE_FORMAT_DXT1_ONEBITALPHA:
+		case IMAGE_FORMAT_DXT1_ONEBITALPHA_SRGB:
 			return S3TC_ENCODE_RGB_FULL | S3TC_ENCODE_RGB_ALPHA_COMPARE;
 		case IMAGE_FORMAT_DXT3:
+		case IMAGE_FORMAT_DXT3_SRGB:
 			return S3TC_ENCODE_RGB_FULL | S3TC_ENCODE_ALPHA_EXPLICIT;
 		case IMAGE_FORMAT_DXT5:
+		case IMAGE_FORMAT_DXT5_SRGB:
 			return S3TC_ENCODE_RGB_FULL | S3TC_ENCODE_ALPHA_INTERPOLATED;
 		default:
 			return 0;
@@ -878,7 +896,6 @@ bool ConvertToDXTLegacy(  const uint8 *src, ImageFormat srcImageFormat,
  						  uint8 *dst, ImageFormat dstImageFormat, 
 					      int width, int height, int srcStride, int dstStride )
 {
-#if !defined( _X360 ) && !defined( _LINUX ) && !defined( PLATFORM_64BITS )
 	// from rgb(a) to dxtN
 	if( srcStride != 0 || dstStride != 0 )
 		return false;
@@ -902,6 +919,7 @@ bool ConvertToDXTLegacy(  const uint8 *src, ImageFormat srcImageFormat,
 	switch ( srcImageFormat )
 	{
 	case IMAGE_FORMAT_RGBA8888:
+	case IMAGE_FORMAT_RGBA8888_SRGB:
 		descIn.ddpfPixelFormat.dwFlags = DDPF_RGB | DDPF_ALPHAPIXELS;
 		descIn.ddpfPixelFormat.dwRGBBitCount = 32;
 		descIn.ddpfPixelFormat.dwRBitMask = 0x0000ff;
@@ -911,6 +929,7 @@ bool ConvertToDXTLegacy(  const uint8 *src, ImageFormat srcImageFormat,
 		descIn.ddpfPixelFormat.dwRGBAlphaBitMask = 0xff000000;
 		break;
 	case IMAGE_FORMAT_BGRA8888:
+	case IMAGE_FORMAT_BGRA8888_SRGB:
 		descIn.ddpfPixelFormat.dwFlags = DDPF_RGB | DDPF_ALPHAPIXELS;
 		descIn.ddpfPixelFormat.dwRGBBitCount = 32;
 		descIn.ddpfPixelFormat.dwRBitMask = 0xFF0000;
@@ -920,6 +939,7 @@ bool ConvertToDXTLegacy(  const uint8 *src, ImageFormat srcImageFormat,
 		descIn.ddpfPixelFormat.dwRGBAlphaBitMask = 0xff000000;
 		break;
 	case IMAGE_FORMAT_BGRX8888:
+	case IMAGE_FORMAT_BGRX8888_SRGB:
 		descIn.ddpfPixelFormat.dwFlags = DDPF_RGB;
 		descIn.ddpfPixelFormat.dwRGBBitCount = 32;
 		descIn.ddpfPixelFormat.dwRBitMask = 0xFF0000;
@@ -929,6 +949,7 @@ bool ConvertToDXTLegacy(  const uint8 *src, ImageFormat srcImageFormat,
 		descIn.ddpfPixelFormat.dwRGBAlphaBitMask = 0xff000000;
 		break;
 	case IMAGE_FORMAT_RGB888:
+	case IMAGE_FORMAT_RGB888_SRGB:
 		descIn.ddpfPixelFormat.dwFlags = DDPF_RGB;
 		descIn.ddpfPixelFormat.dwRGBBitCount = 24;
 		descIn.ddpfPixelFormat.dwRBitMask = 0x0000ff;
@@ -946,10 +967,6 @@ bool ConvertToDXTLegacy(  const uint8 *src, ImageFormat srcImageFormat,
 	// Encode the texture
 	S3TCencode( &descIn, NULL, &descOut, dst, dwEncodeType, weight );
 	return true;
-#else
-	Assert( 0 );
-	return false;
-#endif
 }
 
 template < typename SrcPixel_t >
@@ -997,10 +1014,11 @@ inline ImageFormat GetTrueImageFormat( ImageFormat fmt )
 {
 	switch ( fmt )
 	{
+		//enderzip:
 	case IMAGE_FORMAT_DXT1_RUNTIME:
-		return IMAGE_FORMAT_DXT1;
+		return IMAGE_FORMAT_DXT1_SRGB;
 	case IMAGE_FORMAT_DXT5_RUNTIME:
-		return IMAGE_FORMAT_DXT5;
+		return IMAGE_FORMAT_DXT5_SRGB;
 	default: /* expected */
 		break;
 	}
@@ -1019,10 +1037,15 @@ bool ConvertToDXTRuntime( const uint8 *src, ImageFormat srcImageFormat,
 
 	switch ( srcImageFormat )
 	{
+		//enderzip:
 		case IMAGE_FORMAT_RGBA8888: CompressSTB<RGBA8888_t>( dst, dstImageFormat, src, width, height ); return true;
+		//case IMAGE_FORMAT_RGBA8888_SRGB: CompressSTB<RGBA8888_t>( dst, dstImageFormat, src, width, height ); return true;
 		case IMAGE_FORMAT_RGB888:   CompressSTB<RGB888_t>  ( dst, dstImageFormat, src, width, height ); return true;
+		//case IMAGE_FORMAT_RGB888_SRGB:   CompressSTB<RGB888_t>  ( dst, dstImageFormat, src, width, height ); return true;
 		case IMAGE_FORMAT_BGRA8888: CompressSTB<BGRA8888_t>( dst, dstImageFormat, src, width, height ); return true;
+		//case IMAGE_FORMAT_BGRA8888_SRGB: CompressSTB<BGRA8888_t>( dst, dstImageFormat, src, width, height ); return true;
 		case IMAGE_FORMAT_BGRX8888: CompressSTB<BGRX8888_t>( dst, dstImageFormat, src, width, height ); return true;
+		//case IMAGE_FORMAT_BGRX8888_SRGB: CompressSTB<BGRX8888_t>( dst, dstImageFormat, src, width, height ); return true;
 		default:
 			Assert( !"Unexpected format here, wtf." );
 			break;
@@ -1252,85 +1275,85 @@ void ConvertImageFormat_RGBA16161616F_To_RGBA16161616( float16 *pSrcImage, unsig
 	}
 }
 
-bool ConvertImageFormat( const uint8 *src, ImageFormat srcImageFormat,
- 					     uint8 *dst, ImageFormat dstImageFormat, 
-						 int width, int height, int srcStride, int dstStride )
+bool ConvertImageFormat(const uint8* src, ImageFormat srcImageFormat,
+	uint8* dst, ImageFormat dstImageFormat,
+	int width, int height, int srcStride, int dstStride)
 {
 	// HDRFIXME: WE NEED A BIGGER INTERMEDIATE FORMAT!!!!!
-	if ( srcImageFormat == IMAGE_FORMAT_RGBA16161616 )
+	if (srcImageFormat == IMAGE_FORMAT_RGBA16161616)
 	{
-		if ( dstImageFormat == IMAGE_FORMAT_RGB323232F )
+		if (dstImageFormat == IMAGE_FORMAT_RGB323232F)
 		{
-			Assert( srcStride == 0 && dstStride == 0 );
-			ConvertImageFormat_RGBA16161616_To_RGB323232F( ( unsigned short * )src, ( float * )dst, width, height );
+			Assert(srcStride == 0 && dstStride == 0);
+			ConvertImageFormat_RGBA16161616_To_RGB323232F((unsigned short*)src, (float*)dst, width, height);
 			return true;
 		}
-		if ( dstImageFormat == IMAGE_FORMAT_RGBA16161616F )
+		if (dstImageFormat == IMAGE_FORMAT_RGBA16161616F)
 		{
-			Assert( srcStride == 0 && dstStride == 0 );
-			ConvertImageFormat_RGBA16161616_To_RGBA16161616F( ( unsigned short * )src, ( float * )dst, width, height );
-			return true;
-		}
-	}
-	else if ( srcImageFormat == IMAGE_FORMAT_RGBA16161616F )
-	{	
-		if ( dstImageFormat == IMAGE_FORMAT_RGB323232F )
-		{
-			Assert( srcStride == 0 && dstStride == 0 );
-			ConvertImageFormat_RGBA16161616F_To_RGB323232F( ( float16 * )src, ( float * )dst, width, height );
-			return true;
-		}
-		if ( dstImageFormat == IMAGE_FORMAT_RGBA32323232F )
-		{
-			Assert( dstStride == 0 );
-			ConvertImageFormat_RGBA16161616F_To_RGBA323232F( ( float16 * )src, ( float * )dst, width, height, srcStride );
-			return true;
-		}
-		if ( dstImageFormat == IMAGE_FORMAT_RGBA16161616 )
-		{
-			Assert( srcStride == 0 && dstStride == 0 );
-			ConvertImageFormat_RGBA16161616F_To_RGBA16161616( ( float16 * )src, ( unsigned short * )dst, width, height );
+			Assert(srcStride == 0 && dstStride == 0);
+			ConvertImageFormat_RGBA16161616_To_RGBA16161616F((unsigned short*)src, (float*)dst, width, height);
 			return true;
 		}
 	}
-	else if ( srcImageFormat == IMAGE_FORMAT_RGB323232F )
+	else if (srcImageFormat == IMAGE_FORMAT_RGBA16161616F)
 	{
-		if ( dstImageFormat == IMAGE_FORMAT_RGBA16161616 )
+		if (dstImageFormat == IMAGE_FORMAT_RGB323232F)
 		{
-			Assert( srcStride == 0 && dstStride == 0 );
-			ConvertImageFormat_RGB323232F_To_RGBA16161616( ( float * )src, ( unsigned short * )dst, width, height );
+			Assert(srcStride == 0 && dstStride == 0);
+			ConvertImageFormat_RGBA16161616F_To_RGB323232F((float16*)src, (float*)dst, width, height);
 			return true;
 		}
-		if ( dstImageFormat == IMAGE_FORMAT_RGBA16161616F )
+		if (dstImageFormat == IMAGE_FORMAT_RGBA32323232F)
 		{
-			Assert( srcStride == 0 && dstStride == 0 );
-			ConvertImageFormat_RGB323232F_To_RGBA16161616F( ( float * )src, ( float16 * )dst, width, height );
+			Assert(dstStride == 0);
+			ConvertImageFormat_RGBA16161616F_To_RGBA323232F((float16*)src, (float*)dst, width, height, srcStride);
 			return true;
 		}
-		if ( dstImageFormat == IMAGE_FORMAT_RGBA8888 )
+		if (dstImageFormat == IMAGE_FORMAT_RGBA16161616)
 		{
-			Assert( srcStride == 0 );
-			ConvertImageFormat_RGB323232F_To_RGBA8888( ( float * )src, dst, width, height );
-			return true;
-		}
-		if ( dstImageFormat == IMAGE_FORMAT_BGRA8888 )
-		{
-			Assert( srcStride == 0 );
-			ConvertImageFormat_RGB323232F_To_BGRA8888( ( float * )src, dst, width, height );
+			Assert(srcStride == 0 && dstStride == 0);
+			ConvertImageFormat_RGBA16161616F_To_RGBA16161616((float16*)src, (unsigned short*)dst, width, height);
 			return true;
 		}
 	}
-	
+	else if (srcImageFormat == IMAGE_FORMAT_RGB323232F)
+	{
+		if (dstImageFormat == IMAGE_FORMAT_RGBA16161616)
+		{
+			Assert(srcStride == 0 && dstStride == 0);
+			ConvertImageFormat_RGB323232F_To_RGBA16161616((float*)src, (unsigned short*)dst, width, height);
+			return true;
+		}
+		if (dstImageFormat == IMAGE_FORMAT_RGBA16161616F)
+		{
+			Assert(srcStride == 0 && dstStride == 0);
+			ConvertImageFormat_RGB323232F_To_RGBA16161616F((float*)src, (float16*)dst, width, height);
+			return true;
+		}
+		if (dstImageFormat == IMAGE_FORMAT_RGBA8888)
+		{
+			Assert(srcStride == 0);
+			ConvertImageFormat_RGB323232F_To_RGBA8888((float*)src, dst, width, height);
+			return true;
+		}
+		if (dstImageFormat == IMAGE_FORMAT_BGRA8888)
+		{
+			Assert(srcStride == 0);
+			ConvertImageFormat_RGB323232F_To_BGRA8888((float*)src, dst, width, height);
+			return true;
+		}
+	}
+
 	// Fast path for just copying a compressed texture
-	if ( ( ( dstImageFormat == IMAGE_FORMAT_DXT1 || dstImageFormat == IMAGE_FORMAT_DXT1_RUNTIME ||
-		     dstImageFormat == IMAGE_FORMAT_DXT3 ||
-		     dstImageFormat == IMAGE_FORMAT_DXT5 || dstImageFormat == IMAGE_FORMAT_DXT5_RUNTIME ||
+	if ( ( ( dstImageFormat == IMAGE_FORMAT_DXT1 || dstImageFormat == IMAGE_FORMAT_DXT1_SRGB || dstImageFormat == IMAGE_FORMAT_DXT1_RUNTIME ||
+		     dstImageFormat == IMAGE_FORMAT_DXT3 || dstImageFormat == IMAGE_FORMAT_DXT3_SRGB ||
+		     dstImageFormat == IMAGE_FORMAT_DXT5 || dstImageFormat == IMAGE_FORMAT_DXT5_SRGB || dstImageFormat == IMAGE_FORMAT_DXT5_RUNTIME ||
 		     dstImageFormat == IMAGE_FORMAT_ATI1N ||
 		     dstImageFormat == IMAGE_FORMAT_ATI2N ) && ( srcImageFormat == dstImageFormat ) ) ||
 		 ( dstImageFormat == IMAGE_FORMAT_DXT5 && srcImageFormat == IMAGE_FORMAT_DXT5_RUNTIME ) ||
 		 ( dstImageFormat == IMAGE_FORMAT_DXT1 && srcImageFormat == IMAGE_FORMAT_DXT1_RUNTIME ) ||
 		 ( dstImageFormat == IMAGE_FORMAT_DXT5_RUNTIME && srcImageFormat == IMAGE_FORMAT_DXT5 ) ||
-		 ( dstImageFormat == IMAGE_FORMAT_DXT1_RUNTIME && srcImageFormat == IMAGE_FORMAT_DXT1 ) )
+		 ( dstImageFormat == IMAGE_FORMAT_DXT1_RUNTIME && srcImageFormat == IMAGE_FORMAT_DXT1 ) ) 
 	{
 		// Fast path for compressed textures . . stride doesn't make as much sense.
 //		Assert( srcStride == 0 && dstStride == 0 );
@@ -1340,35 +1363,50 @@ bool ConvertImageFormat( const uint8 *src, ImageFormat srcImageFormat,
 		memcpy( dst, src, memRequired );
 		return true;
 	}
-	else if ( ( srcImageFormat == IMAGE_FORMAT_RGBA8888 ||		
-			   srcImageFormat == IMAGE_FORMAT_RGB888    ||														// RGBA source
-			   srcImageFormat == IMAGE_FORMAT_BGRA8888  ||														//
-			   srcImageFormat == IMAGE_FORMAT_BGRX8888 ) &&	   													// and
-			 ( dstImageFormat == IMAGE_FORMAT_DXT1  ||															//
-			   dstImageFormat == IMAGE_FORMAT_DXT3  ||	   														// DXT compressed dest
-			   dstImageFormat == IMAGE_FORMAT_DXT5  ||
-			   dstImageFormat == IMAGE_FORMAT_DXT1_RUNTIME ||
+	else if ( ( srcImageFormat == IMAGE_FORMAT_RGBA8888      ||		
+		       srcImageFormat == IMAGE_FORMAT_RGBA8888_SRGB  ||
+			   srcImageFormat == IMAGE_FORMAT_RGB888         ||													// RGBA source
+			   srcImageFormat == IMAGE_FORMAT_RGB888_SRGB    ||													// 
+			   srcImageFormat == IMAGE_FORMAT_BGRA8888       ||												    //
+			   srcImageFormat == IMAGE_FORMAT_BGRA8888_SRGB  ||												    //
+			   srcImageFormat == IMAGE_FORMAT_BGRX8888_SRGB  || 												// 
+			   srcImageFormat == IMAGE_FORMAT_BGRX8888 )     &&	   													// and
+			   dstImageFormat == IMAGE_FORMAT_DXT1           ||															//
+			 ( dstImageFormat == IMAGE_FORMAT_DXT1_SRGB      ||															//
+			   dstImageFormat == IMAGE_FORMAT_DXT3           ||	   														// DXT compressed dest
+			   dstImageFormat == IMAGE_FORMAT_DXT3_SRGB      ||	   														// DXT compressed dest
+			   dstImageFormat == IMAGE_FORMAT_DXT5           ||
+			   dstImageFormat == IMAGE_FORMAT_DXT5_SRGB      ||
+			   dstImageFormat == IMAGE_FORMAT_DXT1_RUNTIME   ||
 			   dstImageFormat == IMAGE_FORMAT_DXT5_RUNTIME ) )
 	{
 		return ConvertToDXT( src, srcImageFormat, dst, dstImageFormat, width, height, srcStride, dstStride );
 	}
-	else if ( ( srcImageFormat == IMAGE_FORMAT_ARGB8888 ) &&									 				// RGBA source and
+	else if ( ( srcImageFormat == IMAGE_FORMAT_ARGB8888 || srcImageFormat == IMAGE_FORMAT_ARGB8888_SRGB ) &&									 				// RGBA source and
 			  ( dstImageFormat == IMAGE_FORMAT_ATI1N    || dstImageFormat == IMAGE_FORMAT_ATI2N ) )				// ATI compressed dest
 	{
 		return ConvertToATIxN( src, srcImageFormat, dst, dstImageFormat, width, height, srcStride, dstStride );
 	}
 	else if ( ( dstImageFormat == IMAGE_FORMAT_RGBA8888 ||
+		       dstImageFormat == IMAGE_FORMAT_RGBA8888_SRGB ||
 			   dstImageFormat == IMAGE_FORMAT_BGRX8888 ||
+			   dstImageFormat == IMAGE_FORMAT_BGRX8888_SRGB ||
 			   dstImageFormat == IMAGE_FORMAT_BGRA8888 ||
+			   dstImageFormat == IMAGE_FORMAT_BGRA8888_SRGB ||
 			   dstImageFormat == IMAGE_FORMAT_BGRA4444 ||
 			   dstImageFormat == IMAGE_FORMAT_BGRA5551 ||
 			   dstImageFormat == IMAGE_FORMAT_BGRX5551 ||
 			   dstImageFormat == IMAGE_FORMAT_BGR565 ||
 			   dstImageFormat == IMAGE_FORMAT_BGR888 ||
-			   dstImageFormat == IMAGE_FORMAT_RGB888 ) &&
+			   dstImageFormat == IMAGE_FORMAT_BGR888_SRGB ||
+			   dstImageFormat == IMAGE_FORMAT_RGB888 ||
+		       dstImageFormat == IMAGE_FORMAT_RGB888_SRGB) &&
 			 ( srcImageFormat == IMAGE_FORMAT_DXT1  ||
+			   srcImageFormat == IMAGE_FORMAT_DXT1_SRGB ||
 			   srcImageFormat == IMAGE_FORMAT_DXT3  ||
+			   srcImageFormat == IMAGE_FORMAT_DXT3_SRGB ||
 			   srcImageFormat == IMAGE_FORMAT_DXT5  ||
+			   srcImageFormat == IMAGE_FORMAT_DXT5_SRGB ||
 			   srcImageFormat == IMAGE_FORMAT_ATI1N ||
 			   srcImageFormat == IMAGE_FORMAT_ATI2N ) )
 	{
@@ -1377,25 +1415,27 @@ bool ConvertImageFormat( const uint8 *src, ImageFormat srcImageFormat,
 		{
 			return false;
 		}
-		if ( srcImageFormat == IMAGE_FORMAT_DXT1 )
+		if ( srcImageFormat == IMAGE_FORMAT_DXT1 || srcImageFormat == IMAGE_FORMAT_DXT1_SRGB )
 		{
-			if ( dstImageFormat == IMAGE_FORMAT_RGBA8888 )
+			if ( dstImageFormat == IMAGE_FORMAT_RGBA8888 || dstImageFormat == IMAGE_FORMAT_RGBA8888_SRGB )
 			{
 				ConvertFromDXT1( src, ( RGBA8888_t * )dst, width, height );
 				return true;
 			}
 			if ( dstImageFormat == IMAGE_FORMAT_BGRA8888 ||
-			    dstImageFormat == IMAGE_FORMAT_BGRX8888 )
+                 dstImageFormat == IMAGE_FORMAT_BGRA8888_SRGB ||
+			     dstImageFormat == IMAGE_FORMAT_BGRX8888 ||
+			     dstImageFormat == IMAGE_FORMAT_BGRX8888_SRGB )			
 			{
 				ConvertFromDXT1( src, ( BGRA8888_t * )dst, width, height );
 				return true;
 			}
-			if ( dstImageFormat == IMAGE_FORMAT_RGB888 )
+			if ( dstImageFormat == IMAGE_FORMAT_RGB888 || dstImageFormat == IMAGE_FORMAT_RGB888_SRGB )
 			{
 				ConvertFromDXT1( src, ( RGB888_t * )dst, width, height );
 				return true;
 			}
-			if ( dstImageFormat == IMAGE_FORMAT_BGR888 )
+			if ( dstImageFormat == IMAGE_FORMAT_BGR888 || dstImageFormat == IMAGE_FORMAT_BGR888_SRGB )
 			{
 				ConvertFromDXT1( src, ( BGR888_t * )dst, width, height );
 				return true;
@@ -1419,7 +1459,7 @@ bool ConvertImageFormat( const uint8 *src, ImageFormat srcImageFormat,
 		}
 		else if ( srcImageFormat == IMAGE_FORMAT_ATI2N )
 		{
-			if ( dstImageFormat == IMAGE_FORMAT_BGRA8888 )
+			if ( dstImageFormat == IMAGE_FORMAT_BGRA8888 || dstImageFormat == IMAGE_FORMAT_BGRA8888_SRGB )
 			{
 				ConvertFromATIxN( src, ( BGRA8888_t * )dst, width, height, true );
 				return true;
@@ -1427,31 +1467,33 @@ bool ConvertImageFormat( const uint8 *src, ImageFormat srcImageFormat,
 		}
 		else if ( srcImageFormat == IMAGE_FORMAT_ATI1N )
 		{
-			if ( dstImageFormat == IMAGE_FORMAT_BGRA8888 )
+			if ( dstImageFormat == IMAGE_FORMAT_BGRA8888 || dstImageFormat == IMAGE_FORMAT_BGRA8888_SRGB )
 			{
 				ConvertFromATIxN( src, ( BGRA8888_t * )dst, width, height, false );
 				return true;
 			}
 		}
-		else if ( srcImageFormat == IMAGE_FORMAT_DXT5 )
+		else if ( srcImageFormat == IMAGE_FORMAT_DXT5 || srcImageFormat == IMAGE_FORMAT_DXT5_SRGB )
 		{
-			if ( dstImageFormat == IMAGE_FORMAT_RGBA8888 )
+			if ( dstImageFormat == IMAGE_FORMAT_RGBA8888 || dstImageFormat == IMAGE_FORMAT_RGBA8888_SRGB )
 			{
 				ConvertFromDXT5( src, ( RGBA8888_t * )dst, width, height );
 				return true;
 			}
 			if ( dstImageFormat == IMAGE_FORMAT_BGRA8888 ||
-			    dstImageFormat == IMAGE_FORMAT_BGRX8888 )
+				dstImageFormat == IMAGE_FORMAT_BGRA8888_SRGB ||
+				dstImageFormat == IMAGE_FORMAT_BGRX8888 ||
+				dstImageFormat == IMAGE_FORMAT_BGRX8888_SRGB) 
 			{
 				ConvertFromDXT5( src, ( BGRA8888_t * )dst, width, height );
 				return true;
 			}
-			if ( dstImageFormat == IMAGE_FORMAT_RGB888 )
+			if ( dstImageFormat == IMAGE_FORMAT_RGB888 || dstImageFormat == IMAGE_FORMAT_RGB888_SRGB )
 			{
 				ConvertFromDXT5IgnoreAlpha( src, ( RGB888_t * )dst, width, height );
 				return true;
 			}
-			if ( dstImageFormat == IMAGE_FORMAT_BGR888 )
+			if ( dstImageFormat == IMAGE_FORMAT_BGR888 || dstImageFormat == IMAGE_FORMAT_BGR888_SRGB )
 			{
 				ConvertFromDXT5IgnoreAlpha( src, ( BGR888_t * )dst, width, height );
 				return true;
@@ -1476,12 +1518,18 @@ bool ConvertImageFormat( const uint8 *src, ImageFormat srcImageFormat,
 		return false;
 	}
 	else if ( dstImageFormat == IMAGE_FORMAT_DXT1  ||
+              dstImageFormat == IMAGE_FORMAT_DXT1_SRGB ||
 			  dstImageFormat == IMAGE_FORMAT_DXT3  ||
+			  dstImageFormat == IMAGE_FORMAT_DXT3_SRGB ||
 			  dstImageFormat == IMAGE_FORMAT_DXT5  ||
+			  dstImageFormat == IMAGE_FORMAT_DXT5_SRGB ||
 			  dstImageFormat == IMAGE_FORMAT_ATI1N ||
 			  dstImageFormat == IMAGE_FORMAT_ATI2N ||
+			  srcImageFormat == IMAGE_FORMAT_DXT1_SRGB ||
 			  srcImageFormat == IMAGE_FORMAT_DXT1  ||
+			  srcImageFormat == IMAGE_FORMAT_DXT3_SRGB ||
 			  srcImageFormat == IMAGE_FORMAT_DXT3  ||
+			  srcImageFormat == IMAGE_FORMAT_DXT5_SRGB ||
 			  srcImageFormat == IMAGE_FORMAT_DXT5  ||
 			  srcImageFormat == IMAGE_FORMAT_ATI1N ||
 			  srcImageFormat == IMAGE_FORMAT_ATI2N )
@@ -1507,8 +1555,9 @@ bool ConvertImageFormat( const uint8 *src, ImageFormat srcImageFormat,
 		}
 		
 		// Fast path...
-		if( ( srcImageFormat == dstImageFormat ) || 
-			((srcImageFormat == IMAGE_FORMAT_BGRA8888) && (dstImageFormat == IMAGE_FORMAT_BGRX8888)) )
+		if ( ( srcImageFormat == dstImageFormat ) ||
+			( ( srcImageFormat == IMAGE_FORMAT_BGRA8888 || srcImageFormat == IMAGE_FORMAT_BGRA8888_SRGB )
+			  && ( dstImageFormat == IMAGE_FORMAT_BGRX8888 || dstImageFormat == IMAGE_FORMAT_BGRX8888_SRGB ) ) )
 		{
 			if ( IsX360() && ( srcStride == dstStride ) && ( width*srcPixelSize == srcStride ) )
 			{

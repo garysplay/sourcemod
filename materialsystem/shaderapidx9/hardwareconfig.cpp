@@ -652,9 +652,9 @@ void CHardwareConfig::SetupHardwareCaps( int nDXLevel, const HardwareCaps_t &act
 #ifdef DX_TO_GL_ABSTRACTION
 	if ( nDXLevel >= 100 )
 #else
-	if ( !( IsPC() || IsPosix() ) || ( nDXLevel >= 100 ) )
+	//if ( !( IsPC() || IsPosix() ) || ( nDXLevel >= 100 ) )
 #endif
-		return;
+	//	return;
 
 	// Slam the support level to what we were requested
 	m_Caps.m_nDXSupportLevel = nDXLevel;
