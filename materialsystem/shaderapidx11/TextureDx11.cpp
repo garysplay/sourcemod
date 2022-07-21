@@ -452,11 +452,11 @@ void CTextureDx11::SetupTexture2D( int width, int height, int depth, int count, 
 	if ( bIsManaged )
 		bIsDynamic = false;
 
-	/*if ( bAutoMipMap && numMipLevels == 0 && !bIsDynamic )
+	if ( bAutoMipMap && numMipLevels == 0 && !bIsDynamic )
 	{
-		numMipLevels = CalcMipLevels(width, height);
+		numMipLevels = 1;/*CalcMipLevels(width, height);*/
 	}
-	else if ( bIsDynamic )*/
+	else if ( bIsDynamic )
 	{
 		// Dynamic textures can't have mipmaps
 		numMipLevels = 1;
