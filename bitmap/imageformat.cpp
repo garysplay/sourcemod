@@ -120,35 +120,17 @@ const ImageFormatInfo_t& ImageFormatInfo( ImageFormat fmt )
 	return g_ImageFormatInfo[ fmt + 1 ];
 }
 
-int GetMemRequired( int width, int height, int depth, ImageFormat imageFormat, bool mipmap )
+int GetMemRequired( int width, int height, int depth, int nMipmapCount, ImageFormat imageFormat, int *pAdjustedHeight )
 {
-	if ( depth <= 0 )
-	{
-		depth = 1;
-	}
+	depth = MAX( 1, depth );
 
-	if ( !mipmap )
+	int nRet = 0;
+	if ( nMipmapCount == 1 )
 	{
 		// Block compressed formats
-		
-        if ( imageFormat == IMAGE_FORMAT_DXT1 || imageFormat == IMAGE_FORMAT_DXT1_SRGB ||
-		     imageFormat == IMAGE_FORMAT_DXT3 || imageFormat == IMAGE_FORMAT_DXT3_SRGB ||
-			 imageFormat == IMAGE_FORMAT_DXT5 ||
-		         imageFormat == IMAGE_FORMAT_DXT5_SRGB || imageFormat == IMAGE_FORMAT_ATI2N ||
-			 imageFormat == IMAGE_FORMAT_ATI1N )	
-        {
-/*
-			DDSURFACEDESC desc;
-			memset( &desc, 0, sizeof(desc) );
-
-			DWORD dwEncodeType;
-			dwEncodeType = GetDXTCEncodeType( imageFormat );
-			desc.dwSize = sizeof( desc );
-			desc.dwFlags = DDSD_WIDTH | DDSD_HEIGHT;
-			desc.dwWidth = width;
-			desc.dwHeight = height;
-			return S3TCgetEncodeSize( &desc, dwEncodeType );
-*/
+		const ImageFormatInfo_t &fmt = ImageFormatInfo( imageFormat );
+		if ( fmt.m_IsCompressed )
+		{
 			Assert( ( width < 4 ) || !( width % 4 ) );
 			Assert( ( height < 4 ) || !( height % 4 ) );
 			Assert( ( depth < 4 ) || !( depth % 4 ) );
@@ -164,41 +146,54 @@ int GetMemRequired( int width, int height, int depth, ImageFormat imageFormat, b
 			{
 				depth = 4;
 			}
-			int numBlocks = ( width * height ) >> 4;
-			numBlocks *= depth;
+			width >>= 2;
+			height >>= 2;
+
+			int numBlocks = width * height * depth;
 			switch ( imageFormat )
 			{
-			case IMAGE_FORMAT_DXT1:
 			case IMAGE_FORMAT_DXT1_SRGB:
+			case IMAGE_FORMAT_DXT1:
 			case IMAGE_FORMAT_DXT1_RUNTIME:
 			case IMAGE_FORMAT_ATI1N:
-				return numBlocks * 8;
+				nRet = numBlocks * 8;
+				break;
 
-			case IMAGE_FORMAT_DXT3:
 			case IMAGE_FORMAT_DXT3_SRGB:
-			case IMAGE_FORMAT_DXT5:
+			case IMAGE_FORMAT_DXT3:
 			case IMAGE_FORMAT_DXT5_SRGB:
+			case IMAGE_FORMAT_DXT5:
 			case IMAGE_FORMAT_DXT5_RUNTIME:
 			case IMAGE_FORMAT_ATI2N:
-				return numBlocks * 16;
+				nRet = numBlocks * 16;
+				break;
 			}
-
-			Assert( 0 );
-			return 0;
 		}
-
-		return width * height * depth * SizeInBytes( imageFormat );
+		else
+		{
+			nRet = width * height * depth * fmt.m_NumBytes;
+		}
+		if ( pAdjustedHeight )
+		{
+			*pAdjustedHeight = height;
+		}
+		return nRet;
 	}
 
 	// Mipmap version
 	int memSize = 0;
-	while ( 1 )
+
+	// Not sensical for mip chains
+	if ( pAdjustedHeight )
+	{
+		*pAdjustedHeight = 0;
+	}
+	while ( true )
 	{
 		memSize += GetMemRequired( width, height, depth, imageFormat, false );
 		if ( width == 1 && height == 1 && depth == 1 )
-		{
 			break;
-		}
+
 		width >>= 1;
 		height >>= 1;
 		depth >>= 1;
@@ -214,9 +209,19 @@ int GetMemRequired( int width, int height, int depth, ImageFormat imageFormat, b
 		{
 			depth = 1;
 		}
+		if ( nMipmapCount )
+		{
+			if ( --nMipmapCount == 0 )
+				break;
+		}
 	}
 
 	return memSize;
+}
+
+int GetMemRequired(int width, int height, int depth, ImageFormat imageFormat, bool mipmap)
+{
+	return GetMemRequired(width, height, depth, mipmap ? 0 : 1, imageFormat, 0);
 }
 
 int GetMipMapLevelByteOffset( int width, int height, ImageFormat imageFormat, int skipMipLevels )

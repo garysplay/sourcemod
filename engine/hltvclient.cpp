@@ -167,7 +167,6 @@ CClientFrame *CHLTVClient::GetDeltaFrame( int nTick )
 	return m_pHLTV->GetDeltaFrame( nTick );
 }
 
-
 bool CHLTVClient::ExecuteStringCommand( const char *pCommandString )
 {
 	// first let the baseclass handle it

@@ -85,10 +85,7 @@ void Host_EndGame (bool bShowMainMenu, PRINTF_FORMAT_STRING const char *message,
 // user message
 #define MAX_USER_MSG_DATA 255
 
-// build info
-// day counter from Sep 30 2003
-extern int build_number( void );
-
+extern int build_number(void);
 
 // Choke local client's/server's packets?
 extern  ConVar		host_limitlocal;      

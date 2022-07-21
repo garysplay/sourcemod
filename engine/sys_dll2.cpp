@@ -124,12 +124,6 @@ const SteamInfVersionInfo_t& GetSteamInfIDVersionInfo()
 	return g_SteamInfIDVersionInfo;
 }
 
-// don't use this, it sucks
-int build_number( void )
-{
-     return GetSteamInfIDVersionInfo().ServerVersion;
-}
-
 //-----------------------------------------------------------------------------
 // Forward declarations
 //-----------------------------------------------------------------------------
@@ -1734,10 +1728,34 @@ bool CEngineAPI::ModInit( const char *pModName, const char *pGameDir )
 
 	// Create the game window now that we have a search path
 	// FIXME: Deal with initial window width + height better
-	if ( !videomode || !videomode->CreateGameWindow( g_pMaterialSystemConfig->m_VideoMode.m_Width, g_pMaterialSystemConfig->m_VideoMode.m_Height, bWindowed ) )
+	//enderzip: hack: until we figured out why the game keeps running at 480p
+	if (CommandLine()->CheckParm("-h") || CommandLine()->CheckParm("-w") )
 	{
-		return false;
+		int w = CommandLine()->ParmValue("-w", w);
+		int h = CommandLine()->ParmValue("-h", h);
+
+		if (!videomode || !videomode->CreateGameWindow(w, h, bWindowed))
+		{
+			return false;
+		}
 	}
+	else if (CommandLine()->CheckParm("-height") || CommandLine()->CheckParm("-width"))
+	{
+		int width = CommandLine()->ParmValue("-width", width);
+		int height = CommandLine()->ParmValue("-height", height);
+
+		if (!videomode || !videomode->CreateGameWindow(width, height, bWindowed))
+		{
+			return false;
+		}
+	}
+	else
+	{
+		if (!videomode || !videomode->CreateGameWindow( g_pMaterialSystemConfig->m_VideoMode.m_Width, g_pMaterialSystemConfig->m_VideoMode.m_Height, bWindowed))
+		{
+			return false;
+		}
+	}	
 
 	return true;
 }

@@ -237,7 +237,7 @@ bool CShaderDeviceMgrDx11::ComputeCapsFromD3D( HardwareCaps_t *pCaps, IDXGIAdapt
 	pCaps->m_MaxTextureAspectRatio = 1024;	// FIXME
 	pCaps->m_MaxPrimitiveCount = 65536;		// FIXME
 	pCaps->m_ZBiasAndSlopeScaledDepthBiasSupported = true;
-	pCaps->m_SupportsMipmapping = false; // FIXME
+	pCaps->m_SupportsMipmapping = true; // FIXME
 	pCaps->m_SupportsOverbright = true;
 	pCaps->m_SupportsCubeMaps = true;
 	pCaps->m_NumPixelShaderConstants = 1024;	// FIXME

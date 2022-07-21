@@ -4694,3 +4694,41 @@ void FlushLOD_f()
 		modelloader->Studio_ReloadModels( IModelLoader::RELOAD_EVERYTHING );
 	}
 }
+
+//-----------------------------------------------------------------------------
+// CreateLightmapsFromData
+//  - Creates Lightmap Textures from data that was squirreled away during ASYNC load.
+//  This is necessary because the material system doesn't like us creating things from ASYNC loaders.
+//-----------------------------------------------------------------------------
+static void CreateLightmapsFromData(CColorMeshData* _colorMeshData)
+{
+	Assert(_colorMeshData->m_bColorTextureValid);
+	Assert(!_colorMeshData->m_bColorTextureCreated);
+
+	for (int mesh = 0; mesh < _colorMeshData->m_nMeshes; ++mesh)
+	{
+		ColorMeshInfo_t* meshInfo = &_colorMeshData->m_pMeshInfos[mesh];
+
+		// Ensure that we haven't somehow already messed with these.
+		Assert(meshInfo->m_pLightmapData);
+		Assert(!meshInfo->m_pLightmap);
+
+		ColorTexelsInfo_t* cti = meshInfo->m_pLightmapData;
+
+		Assert(cti->m_pTexelData);
+
+		meshInfo->m_pLightmap = g_pMaterialSystem->CreateTextureFromBits(cti->m_nWidth, cti->m_nHeight, cti->m_nMipmapCount, cti->m_ImageFormat, cti->m_nByteCount, cti->m_pTexelData);
+
+		// If this triggers, we need to figure out if it's reasonable to fail. If it is, then we should figure out how to signal back
+		// that we shouldn't try to create this again (probably by clearing _colorMeshData->m_bColoTextureValid)
+		Assert(meshInfo->m_pLightmap);
+
+		// Cleanup after ourselves.
+		delete[] cti->m_pTexelData;
+		delete cti;
+
+		meshInfo->m_pLightmapData = NULL;
+	}
+
+	_colorMeshData->m_bColorTextureCreated = true;
+}

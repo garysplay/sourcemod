@@ -405,7 +405,7 @@ CTextureDx11::CTextureDx11()
 
 inline int CalcMipLevels( int w, int h )
 {
-	return /*ceil( log2( max( w, h ) ) ) +*/ 1; // we dont support mips yet
+	return ceil(log2(MAX(w, h))) + 1; 
 }
 
 void CTextureDx11::SetupTexture2D( int width, int height, int depth, int count, int i,
@@ -443,7 +443,7 @@ void CTextureDx11::SetupTexture2D( int width, int height, int depth, int count, 
 	if ( bIsCubeMap )
 		depth = 6;
 	bool bIsDynamic = ( flags & TEXTURE_CREATE_DYNAMIC ) != 0;
-	//bool bAutoMipMap = ( flags & TEXTURE_CREATE_AUTOMIPMAP ) != 0;
+	bool bAutoMipMap = ( flags & TEXTURE_CREATE_AUTOMIPMAP ) != 0;
 	bool bIsManaged = ( flags & TEXTURE_CREATE_MANAGED ) != 0;
 
 	// Can't be both managed + dynamic. Dynamic is an optimization, but
@@ -454,7 +454,7 @@ void CTextureDx11::SetupTexture2D( int width, int height, int depth, int count, 
 
 	/*if ( bAutoMipMap && numMipLevels == 0 && !bIsDynamic )
 	{
-		numMipLevels = CalcMipLevels( width, height );
+		numMipLevels = CalcMipLevels(width, height);
 	}
 	else if ( bIsDynamic )*/
 	{
