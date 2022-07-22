@@ -2308,7 +2308,9 @@ int CModelRender::DrawModel(
 
 int	CModelRender::ComputeLOD( const ModelRenderInfo_t &info, studiohwdata_t *pStudioHWData )
 {
-	int lod = r_lod.GetInt();
+	ConVarRef mat_drs_enable("mat_drs_enable");
+
+	int lod = (mat_drs_enable.GetBool() ? 0 : r_lod.GetInt());
 	// FIXME!!!  This calc should be in studiorender, not here!!!!!  But since the bone setup
 	// is done here, and we need the bone mask, we'll do it here for now.
 	if ( lod == -1 )
