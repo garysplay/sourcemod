@@ -124,12 +124,6 @@ const SteamInfVersionInfo_t& GetSteamInfIDVersionInfo()
 	return g_SteamInfIDVersionInfo;
 }
 
-// don't use this, it sucks
-int build_number( void )
-{
-     return GetSteamInfIDVersionInfo().ServerVersion;
-}
-
 //-----------------------------------------------------------------------------
 // Forward declarations
 //-----------------------------------------------------------------------------
