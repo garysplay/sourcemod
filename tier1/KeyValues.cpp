@@ -37,8 +37,8 @@
 static const char * s_LastFileLoadingFrom = "unknown"; // just needed for error messages
 
 // Statics for the growable string table
-int (*KeyValues::s_pfGetSymbolForString)( const char *name, bool bCreate ) = &KeyValues::GetSymbolForStringClassic;
-const char *(*KeyValues::s_pfGetStringForSymbol)( int symbol ) = &KeyValues::GetStringForSymbolClassic;
+intp (*KeyValues::s_pfGetSymbolForString)( const char *name, bool bCreate ) = &KeyValues::GetSymbolForStringClassic;
+const char *(*KeyValues::s_pfGetStringForSymbol)( intp symbol ) = &KeyValues::GetStringForSymbolClassic;
 CKeyValuesGrowableStringTable *KeyValues::s_pGrowableStringTable = NULL;
 
 #define KEYVALUES_TOKEN_SIZE	4096
@@ -63,7 +63,7 @@ public:
 
 	// entering a new keyvalues block, save state for errors
 	// Not save symbols instead of pointers because the pointers can move!
-	int Push( int symName )
+	int Push( intp symName )
 	{
 		if ( m_errorIndex < MAX_ERROR_STACK )
 		{
@@ -82,7 +82,7 @@ public:
 	}
 
 	// Allows you to keep the same stack level, but change the name as you parse peers
-	void Reset( int stackLevel, int symName )
+	void Reset( int stackLevel, intp symName )
 	{
 		Assert( stackLevel >= 0 );
 		Assert( stackLevel < m_errorIndex );
@@ -118,7 +118,7 @@ public:
 	}
 
 private:
-	int  	m_errorStack[MAX_ERROR_STACK];
+	intp  	m_errorStack[MAX_ERROR_STACK];
 	const char *m_pFilename;
 	int		m_errorIndex;
 	int		m_maxErrorIndex;
@@ -138,11 +138,11 @@ public:
 	{
 		g_KeyValuesErrorStack.Pop();
 	}
-	explicit CKeyErrorContext( int symName )
+	CKeyErrorContext( intp symName )
 	{
 		Init( symName );
 	}
-	void Reset( int symName )
+	void Reset( intp symName )
 	{
 		g_KeyValuesErrorStack.Reset( m_stackLevel, symName );
 	}
@@ -151,7 +151,7 @@ public:
 		return m_stackLevel;
 	}
 private:
-	void Init( int symName )
+	void Init( intp symName )
 	{
 		m_stackLevel = g_KeyValuesErrorStack.Push( symName );
 	}
@@ -242,9 +242,9 @@ public:
 	}
 
 	// Translates a string to an index
-	int GetSymbolForString( const char *name, bool bCreate = true )
+	intp GetSymbolForString( const char *name, bool bCreate = true )
 	{
-		AUTO_LOCK( m_mutex );
+		AUTO_LOCK_FM( m_mutex );
 
 		// Put the current details into our hash functor
 		m_Functor.SetCurString( name );
@@ -273,7 +273,7 @@ public:
 	}
 
 	// Translates an index back to a string
-	const char *GetStringForSymbol( int symbol )
+	const char *GetStringForSymbol( intp symbol )
 	{
 		return (const char *)m_vecStrings.Base() + symbol;
 	}
@@ -292,7 +292,7 @@ private:
 		void SetCurStringBase( const char *pchCurBase ) { m_pchCurBase = pchCurBase; }
 
 		// The compare function.
-		bool operator()( int nLhs, int nRhs ) const
+		bool operator()( intp nLhs, intp nRhs ) const
 		{
 			const char *pchLhs = nLhs > 0 ? m_pchCurBase + nLhs : m_pchCurString;
 			const char *pchRhs = nRhs > 0 ? m_pchCurBase + nRhs : m_pchCurString;
@@ -313,7 +313,7 @@ private:
 
 	CThreadFastMutex m_mutex;
 	CLookupFunctor	m_Functor;
-	CUtlHash<int, CLookupFunctor &, CLookupFunctor &> m_hashLookup;
+	CUtlHash<intp, CLookupFunctor &, CLookupFunctor &> m_hashLookup;
 	CUtlVector<char> m_vecStrings;
 };
 
@@ -348,22 +348,22 @@ void KeyValues::SetUseGrowableStringTable( bool bUseGrowableTable )
 // Purpose: Bodys of the function pointers used for interacting with the key
 //	name string table
 //-----------------------------------------------------------------------------
-int KeyValues::GetSymbolForStringClassic( const char *name, bool bCreate )
+intp KeyValues::GetSymbolForStringClassic( const char *name, bool bCreate )
 {
 	return KeyValuesSystem()->GetSymbolForString( name, bCreate );
 }
 
-const char *KeyValues::GetStringForSymbolClassic( int symbol )
+const char *KeyValues::GetStringForSymbolClassic( intp symbol )
 {
 	return KeyValuesSystem()->GetStringForSymbol( symbol );
 }
 
-int KeyValues::GetSymbolForStringGrowable( const char *name, bool bCreate )
+intp KeyValues::GetSymbolForStringGrowable( const char *name, bool bCreate )
 {
 	return s_pGrowableStringTable->GetSymbolForString( name, bCreate );
 }
 
-const char *KeyValues::GetStringForSymbolGrowable( int symbol )
+const char *KeyValues::GetStringForSymbolGrowable( intp symbol )
 {
 	return s_pGrowableStringTable->GetStringForSymbol( symbol );
 }
@@ -952,7 +952,7 @@ void KeyValues::SaveKeyToFile( KeyValues *dat, IBaseFileSystem *filesystem, File
 //-----------------------------------------------------------------------------
 // Purpose: looks up a key by symbol name
 //-----------------------------------------------------------------------------
-KeyValues *KeyValues::FindKey(int keySymbol) const
+KeyValues *KeyValues::FindKey(intp keySymbol) const
 {
 	for (KeyValues *dat = m_pSub; dat != NULL; dat = dat->m_pPeer)
 	{
@@ -1012,7 +1012,7 @@ KeyValues *KeyValues::FindKey(const char *keyName, bool bCreate)
 		lastItem = dat;	// record the last item looked at (for if we need to append to the end of the list)
 
 		// symbol compare
-		if (dat->m_iKeyName == (uint32)iSearchStr)
+		if (dat->m_iKeyName == iSearchStr)
 		{
 			break;
 		}
@@ -1320,17 +1320,9 @@ uint64 KeyValues::GetUint64( const char *keyName, uint64 defaultValue )
 		switch (dat->m_iDataType)
 		{
 	    case TYPE_STRING:
-			{
-				uint64 uiResult = 0ull;
-				sscanf( dat->m_sValue, "%lld", &uiResult );
-				return uiResult;
-			}
+			return (uint64)Q_atoi64(dat->m_sValue);
 		case TYPE_WSTRING:
-			{
-				uint64 uiResult = 0ull;
-				swscanf( dat->m_wsValue, L"%lld", &uiResult );
-				return uiResult;
-			}
+			return _wtoi64(dat->m_wsValue);
 		case TYPE_FLOAT:
 			return (int)dat->m_flValue;
 		case TYPE_UINT64:
@@ -2196,6 +2188,9 @@ bool EvaluateConditional( const char *str )
 	if ( Q_stristr( str, "$X360" ) )
 		return IsX360() ^ bNot;
 	
+	if( Q_stristr( str, "$DECK" ) ) //enderzip: piece of crap steam deck!!!
+		return false ^ bNot; // Steam deck unsupported
+
 	if ( Q_stristr( str, "$WIN32" ) )
 		return IsPC() ^ bNot; // hack hack - for now WIN32 really means IsPC
 
@@ -2639,7 +2634,7 @@ bool KeyValues::WriteAsBinary( CUtlBuffer &buffer )
 
 		case TYPE_UINT64:
 			{
-				buffer.PutInt64( *((int64 *)dat->m_sValue) );
+				buffer.PutDouble( *((double *)dat->m_sValue) );
 				break;
 			}
 
