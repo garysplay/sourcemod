@@ -181,8 +181,9 @@ public:
 	memhandle_t CreateResource( const CREATE_PARAMS &createParams, bool bCreateLocked = false )
 	{
 		BaseClass::EnsureCapacity(STORAGE_TYPE::EstimatedSize(createParams));
-		unsigned short memoryIndex = BaseClass::CreateHandle( bCreateLocked );
 		STORAGE_TYPE *pStore = STORAGE_TYPE::CreateResource( createParams );
+		AUTO_LOCK_( CDataManagerBase, *this );
+		unsigned short memoryIndex = BaseClass::CreateHandle( bCreateLocked );
 		return BaseClass::StoreResourceInHandle( memoryIndex, pStore, pStore->Size() );
 	}
 
@@ -251,7 +252,7 @@ private:
 
 inline unsigned short CDataManagerBase::FromHandle( memhandle_t handle )
 {
-	uintp fullWord = (uintp)handle;
+	unsigned int fullWord = (unsigned int)reinterpret_cast<uintp>( handle );
 	unsigned short serial = fullWord>>16;
 	unsigned short index = fullWord & 0xFFFF;
 	index--;
