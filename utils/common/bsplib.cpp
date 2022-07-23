@@ -4995,7 +4995,7 @@ bool RepackBSPCallback_LZMA( CUtlBuffer &inputBuffer, CUtlBuffer &outputBuffer )
 	}
 
 	unsigned int originalSize = inputBuffer.TellPut() - inputBuffer.TellGet();
-	unsigned int compressedSize = 0;
+	size_t compressedSize = 0;
 	unsigned char *pCompressedOutput = LZMA_Compress( (unsigned char *)inputBuffer.Base() + inputBuffer.TellGet(),
 													  originalSize, &compressedSize );
 	if ( pCompressedOutput )

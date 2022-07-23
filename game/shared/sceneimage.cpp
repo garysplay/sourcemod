@@ -257,7 +257,7 @@ bool CreateTargetFile_VCD( const char *pSourceName, const char *pTargetName, boo
 	g_SceneFiles[iScene].compiledBuffer.SetBigEndian( !bLittleEndian );
 	pChoreoScene->SaveToBinaryBuffer( g_SceneFiles[iScene].compiledBuffer, crcSource, &g_ChoreoStringPool );
 
-	unsigned int compressedSize;
+	size_t compressedSize;
 	unsigned char *pCompressedBuffer = LZMA_Compress( (unsigned char *)g_SceneFiles[iScene].compiledBuffer.Base(), g_SceneFiles[iScene].compiledBuffer.TellMaxPut(), &compressedSize );
 	if ( pCompressedBuffer )
 	{

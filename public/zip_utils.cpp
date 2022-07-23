@@ -1024,7 +1024,7 @@ void CZipFile::AddBufferToZip( const char *relativename, void *data, int length,
 #ifdef ZIP_SUPPORT_LZMA_ENCODE
 	if ( compressionType == IZip::eCompressionType_LZMA )
 	{
-		unsigned int compressedSize = 0;
+		size_t compressedSize = 0;
 		unsigned char *pCompressedOutput = LZMA_Compress( (unsigned char *)outData, outLength, &compressedSize );
 		if ( !pCompressedOutput || compressedSize < sizeof( lzma_header_t ) )
 		{

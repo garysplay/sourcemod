@@ -193,7 +193,7 @@ LzmaEncode( const Byte *inBuffer,
 //-----------------------------------------------------------------------------
 unsigned char *LZMA_Compress( unsigned char *pInput,
                               unsigned int  inputSize,
-                              unsigned int  *pOutputSize )
+                              size_t        *pOutputSize )
 {
 	*pOutputSize = 0;
 
@@ -239,7 +239,7 @@ unsigned char *LZMA_Compress( unsigned char *pInput,
 //-----------------------------------------------------------------------------
 unsigned char *LZMA_OpportunisticCompress( unsigned char *pInput,
                               unsigned int  inputSize,
-                              unsigned int  *pOutputSize )
+                              size_t        *pOutputSize )
 {
 	unsigned char *pRet = LZMA_Compress( pInput, inputSize, pOutputSize );
 	if ( *pOutputSize <= inputSize )
@@ -257,7 +257,7 @@ unsigned char *LZMA_OpportunisticCompress( unsigned char *pInput,
 //-----------------------------------------------------------------------------
 bool LZMA_Uncompress( unsigned char *pInBuffer,
                       unsigned char **ppOutBuffer,
-                      unsigned int  *pOutSize )
+	                  size_t        *pOutSize )
 {
 	*ppOutBuffer = NULL;
 	*pOutSize = 0;
