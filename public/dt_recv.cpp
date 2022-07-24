@@ -127,9 +127,7 @@ CStandardRecvProxies::CStandardRecvProxies()
 	m_Int32ToInt8 = RecvProxy_Int32ToInt8;
 	m_Int32ToInt16 = RecvProxy_Int32ToInt16;
 	m_Int32ToInt32 = RecvProxy_Int32ToInt32;
-#ifdef SUPPORTS_INT64
 	m_Int64ToInt64 = RecvProxy_Int64ToInt64;
-#endif
 	m_FloatToFloat = RecvProxy_FloatToFloat;
 	m_VectorToVector = RecvProxy_VectorToVector;
 }
@@ -321,12 +319,10 @@ RecvProp RecvPropInt(
 		{
 			varProxy = RecvProxy_Int32ToInt32;
 		}
-#ifdef SUPPORTS_INT64		
 		else if (sizeofVar == 8)
 		{
 			varProxy = RecvProxy_Int64ToInt64;
 		}
-#endif
 		else
 		{
 			Assert(!"RecvPropInt var has invalid size");
@@ -336,11 +332,8 @@ RecvProp RecvPropInt(
 
 	ret.m_pVarName = pVarName;
 	ret.SetOffset( offset );
-#ifdef SUPPORTS_INT64
 	ret.m_RecvType = (sizeofVar == 8) ? DPT_Int64 : DPT_Int;
-#else
-	ret.m_RecvType = DPT_Int;
-#endif
+
 	ret.m_Flags = flags;
 	ret.SetProxyFn( varProxy );
 
@@ -496,12 +489,10 @@ void RecvProxy_Int32ToInt32( const CRecvProxyData *pData, void *pStruct, void *p
 	*((unsigned long*)pOut) = (unsigned long)pData->m_Value.m_Int;
 }
 
-#ifdef SUPPORTS_INT64
 void RecvProxy_Int64ToInt64( const CRecvProxyData *pData, void *pStruct, void *pOut )
 {
 	*((int64*)pOut) = (int64)pData->m_Value.m_Int64;
 }
-#endif
 
 void RecvProxy_StringToString( const CRecvProxyData *pData, void *pStruct, void *pOut )
 {

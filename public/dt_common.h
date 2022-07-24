@@ -105,9 +105,6 @@
 
 class SendProp;
 
-// The day we do this, we break all mods until they recompile.
-//#define SUPPORTS_INT64
-
 typedef enum
 {
 	DPT_Int=0,
@@ -121,9 +118,7 @@ typedef enum
 	DPT_Quaternion,
 #endif
 
-#ifdef SUPPORTS_INT64
 	DPT_Int64,
-#endif
 
 	DPT_NUMSendPropTypes
 
@@ -174,11 +169,9 @@ public:
 						case DPT_DataTable :
 							Q_snprintf( text, sizeof(text), "DataTable" ); 
 							break;
-#ifdef SUPPORTS_INT64
 						case DPT_Int64:
 							Q_snprintf( text, sizeof(text), "%I64d", m_Int64 );
 							break;
-#endif
 						default :
 							Q_snprintf( text, sizeof(text), "DVariant type %i unknown", m_Type ); 
 							break;
@@ -198,10 +191,7 @@ public:
 #else
 		float	m_Vector[3];
 #endif
-
-#ifdef SUPPORTS_INT64
 		int64	m_Int64;
-#endif
 	};
 	SendPropType	m_Type;
 };

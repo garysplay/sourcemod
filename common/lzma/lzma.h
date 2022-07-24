@@ -30,7 +30,7 @@
 unsigned char *LZMA_Compress(
 unsigned char	*pInput,
 unsigned int	inputSize,
-unsigned int	*pOutputSize );
+size_t      	*pOutputSize );
 
 //-----------------------------------------------------------------------------
 // Decoding glue. Returns TRUE if succesful.

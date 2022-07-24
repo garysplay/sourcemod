@@ -1088,9 +1088,7 @@ const char* DataTable_GetTypeNameString()
 // ---------------------------------------------------------------------------------------- //
 
 void Int64_Encode( const unsigned char *pStruct, DVariant *pVar, const SendProp *pProp, bf_write *pOut, int objectID )
-{
-#ifdef SUPPORTS_INT64
-	if ( pProp->GetFlags() & SPROP_VARINT)
+{	if ( pProp->GetFlags() & SPROP_VARINT)
 	{
 		if ( pProp->GetFlags() & SPROP_UNSIGNED )
 		{
@@ -1120,13 +1118,11 @@ void Int64_Encode( const unsigned char *pStruct, DVariant *pVar, const SendProp 
 			pOut->WriteUBitLong( (unsigned int)highInt, pProp->m_nBits - 32 );
 		}
 	}
-#endif
 }
 
 
 void Int64_Decode( DecodeInfo *pInfo )
 {
-#ifdef SUPPORTS_INT64
 	if ( pInfo->m_pProp->GetFlags() & SPROP_VARINT )
 	{
 		if ( pInfo->m_pProp->GetFlags() & SPROP_UNSIGNED )
@@ -1169,7 +1165,6 @@ void Int64_Decode( DecodeInfo *pInfo )
 	{
 		pInfo->m_pRecvProp->GetProxyFn()( pInfo, pInfo->m_pStruct, pInfo->m_pData );
 	}
-#endif
 }
 
 
@@ -1199,24 +1194,18 @@ const char* Int64_GetTypeNameString()
 
 bool Int64_IsZero( const unsigned char *pStruct, DVariant *pVar, const SendProp *pProp )
 {
-#ifdef SUPPORTS_INT64
 	return (pVar->m_Int64 == 0);
-#else
-	return false;
-#endif
 }
 
 
 void Int64_DecodeZero( DecodeInfo *pInfo )
-{
-#ifdef SUPPORTS_INT64
+{ 
 	pInfo->m_Value.m_Int64 = 0;
 
 	if ( pInfo->m_pRecvProp )
 	{
 		pInfo->m_pRecvProp->GetProxyFn()( pInfo, pInfo->m_pStruct, pInfo->m_pData );
 	}
-#endif
 }
 
 bool Int64_IsEncodedZero( const SendProp *pProp, bf_read *pIn )
@@ -1364,7 +1353,6 @@ PropTypeFns g_PropTypeFns[DPT_NUMSendPropTypes] =
 	},
 #endif
 
-#ifdef SUPPORTS_INT64
 	// DPT_Int64
 	{
 		Int64_Encode,
@@ -1377,6 +1365,5 @@ PropTypeFns g_PropTypeFns[DPT_NUMSendPropTypes] =
 		Int64_IsEncodedZero,
 		Int64_SkipProp,
 	},
-#endif
 
 };
