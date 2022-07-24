@@ -419,13 +419,15 @@ public:
 
 	void			FreezeFrame( float flFreezeTime );
 
+	int             CalcResScaleForDRS();
+	double          DynResScale();
+
 	void SetWaterOverlayMaterial( IMaterial *pMaterial )
 	{
 		m_UnderWaterOverlayMaterial.Init( pMaterial );
 	}
 private:
 	int				m_BuildWorldListsNumber;
-
 
 	// General draw methods
 	// baseDrawFlags is a combination of DF_ defines. DF_MONITOR is passed into here while drawing a monitor.

@@ -58,7 +58,8 @@
 #ifdef PORTAL
 #include "c_prop_portal.h" //portal surface rendering functions
 #endif
-
+#include <vector>
+#include <iostream>
 	
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -1049,16 +1050,50 @@ void CViewRender::SetUpOverView()
 }
 
 #if DRS_FEATURE
-ConVar mat_drs_minscale("mat_drs_minscale", "0.75");
-ConVar mat_drs_enable("mat_drs_enable", "1");
-ConVar mat_drs_targetfps("mat_drs_targetfps", "60");
-ConVar mat_drs_debug("mat_drs_debug", "1");
-float CalcDynResScale()
-{
-	float fps = 1.0f / gpGlobals->absoluteframetime;
-	float result = 1.0f / ((mat_drs_targetfps.GetFloat() + 1.0) / fps);
+ConVar mat_drs_minscale("mat_drs_minscale", "0.6", FCVAR_ARCHIVE);
+ConVar mat_drs_enable("mat_drs_enable", "1", FCVAR_ARCHIVE);
+ConVar mat_drs_targetfps("mat_drs_targetfps", "60", FCVAR_ARCHIVE);
+ConVar mat_drs_debug("mat_drs_debug", "1", FCVAR_ARCHIVE);
 
-	if (fps >= mat_drs_targetfps.GetFloat())
+std::vector<float> fps_history;
+int i = 0;
+int average = 0;
+float prev_time = 0;
+
+//enderzip: function i grabbed from the cyberspace
+float CalcAverage(std::vector<float>& in)
+{
+	float sum = 0;
+
+	for (int p : in) 
+		sum = sum + p;
+
+	return (sum / in.size());
+}
+
+int CViewRender::CalcResScaleForDRS() //enderzip: not the best naming okay
+{
+	if (i < 5)
+	{
+		fps_history.push_back(1.0f / gpGlobals->absoluteframetime);
+		i++;
+	}
+	else
+	{
+		average = static_cast<int>(CalcAverage(fps_history));
+		fps_history.clear();
+		i = 0;
+	}
+
+	return (average);
+}
+
+double CViewRender::DynResScale()
+{
+	int fps_drs = CalcResScaleForDRS();
+	float result = 1.0f / ((mat_drs_targetfps.GetFloat() + 1.0) / fps_drs);
+
+	if (fps_drs >= mat_drs_targetfps.GetFloat())
 	{
 		result = 1.0f;
 	}
@@ -1069,9 +1104,9 @@ float CalcDynResScale()
 	 
 	if (mat_drs_debug.GetBool())
 	{
-		engine->Con_NPrintf(10, "Current framtime: %f", gpGlobals->frametime);
-		engine->Con_NPrintf(11, "Current FPS: %f", fps);
-		engine->Con_NPrintf(14, "Current ResScale: %f", result);
+		engine->Con_NPrintf(11, "Current FPS: %3f", 1/gpGlobals->absoluteframetime);
+		engine->Con_NPrintf(14, "Average FPS: %3f", fps_drs);
+		engine->Con_NPrintf(17, "Current ResScale: %3f", result);
 	}
 
 	return result;
@@ -1177,7 +1212,7 @@ void CViewRender::Render( vrect_t *rect )
 #ifdef DRS_FEATURE
 		if (mat_drs_enable.GetBool())
 		{
-			dyn_scale = CalcDynResScale();
+			dyn_scale = DynResScale();
 		}
 #endif
 		view.m_nUnscaledX = vr.x;
