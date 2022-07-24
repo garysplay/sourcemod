@@ -25,8 +25,9 @@ static CNonModifiedPointerProxy *s_pNonModifiedPointerProxyHead = NULL;
 void SendProxy_UInt8ToInt32( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID);
 void SendProxy_UInt16ToInt32( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID);
 void SendProxy_UInt32ToInt32( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID);
+#ifdef SUPPORTS_INT64
 void SendProxy_UInt64ToInt64( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID);
-
+#endif
 const char *s_ElementNames[MAX_ARRAY_ELEMENTS] =
 {
 	"000", "001", "002", "003", "004", "005", "006", "007", "008", "009", 
@@ -149,12 +150,16 @@ CStandardSendProxiesV1::CStandardSendProxiesV1()
 	m_Int8ToInt32 = SendProxy_Int8ToInt32;
 	m_Int16ToInt32 = SendProxy_Int16ToInt32;
 	m_Int32ToInt32 = SendProxy_Int32ToInt32;
+#ifdef SUPPORTS_INT64
 	m_Int64ToInt64 = SendProxy_Int64ToInt64;
+#endif
 
 	m_UInt8ToInt32 = SendProxy_UInt8ToInt32;
 	m_UInt16ToInt32 = SendProxy_UInt16ToInt32;
 	m_UInt32ToInt32 = SendProxy_UInt32ToInt32;
+#ifdef SUPPORTS_INT64
 	m_UInt64ToInt64 = SendProxy_UInt64ToInt64;
+#endif
 	
 	m_FloatToFloat = SendProxy_FloatToFloat;
 	m_VectorToVector = SendProxy_VectorToVector;
@@ -241,10 +246,12 @@ void SendProxy_Int32ToInt32( const SendProp *pProp, const void *pStruct, const v
 	pOut->m_Int = *((int*)pData);
 }
 
+#ifdef SUPPORTS_INT64
 void SendProxy_Int64ToInt64( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID)
 {
 	pOut->m_Int64 = *((int64*)pData);
 }
+#endif
 
 void SendProxy_UInt8ToInt32( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID)
 {
@@ -260,10 +267,12 @@ void SendProxy_UInt32ToInt32( const SendProp *pProp, const void *pStruct, const 
 {
 	memcpy( &pOut->m_Int, pData, sizeof(uint32) );
 }
+#ifdef SUPPORTS_INT64
 void SendProxy_UInt64ToInt64( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID)
 {
 	*((int64*)&pOut->m_Int64) = *((uint64*)pData);
 }
+#endif
 
 void SendProxy_StringToString( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID)
 {
@@ -604,10 +613,12 @@ SendProp SendPropInt(
 		{
 			varProxy = SendProxy_Int32ToInt32;
 		}
+#ifdef SUPPORTS_INT64
 		else if ( sizeofVar == 8 )
 		{
 			varProxy = SendProxy_Int64ToInt64;
 		}
+#endif
 		else
 		{
 			Assert(!"SendPropInt var has invalid size");
@@ -622,7 +633,11 @@ SendProp SendPropInt(
 		nBits = sizeofVar * 8;
 	}
 
+#ifdef SUPPORTS_INT64
 	ret.m_Type = (sizeofVar == 8) ? DPT_Int64 : DPT_Int;
+#else
+	ret.m_Type = DPT_Int;
+#endif
 	
 	ret.m_pVarName = pVarName;
 	ret.SetOffset( offset );
@@ -644,8 +659,10 @@ SendProp SendPropInt(
 		else if( varProxy == SendProxy_Int32ToInt32 )
 			ret.SetProxyFn( SendProxy_UInt32ToInt32 );
 			
+#ifdef SUPPORTS_INT64
 		else if( varProxy == SendProxy_Int64ToInt64 )
 			ret.SetProxyFn( SendProxy_UInt64ToInt64 );
+#endif
 	}
 
 	return ret;
