@@ -2914,7 +2914,7 @@ bool ScreenSpaceRectFromPoints( IMatRenderContext *pRenderContext, Vector vClipp
 // Turn this optimization off by default
 static ConVar r_flashlightclip("r_flashlightclip", "0", FCVAR_CHEAT );
 static ConVar r_flashlightdrawclip("r_flashlightdrawclip", "0", FCVAR_CHEAT );
-static ConVar r_flashlightscissor( "r_flashlightscissor", "1", 0 );
+static ConVar r_flashlightscissor( "r_flashlightscissor", "0", 0 );
 
 void ExtractFrustumPlanes( Frustum frustumPlanes, float flPlaneEpsilon )
 {
