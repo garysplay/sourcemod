@@ -1053,12 +1053,19 @@ void CViewRender::SetUpOverView()
 ConVar mat_drs_minscale("mat_drs_minscale", "0.6", FCVAR_ARCHIVE);
 ConVar mat_drs_enable("mat_drs_enable", "1", FCVAR_ARCHIVE);
 ConVar mat_drs_targetfps("mat_drs_targetfps", "60", FCVAR_ARCHIVE);
+ConVar mat_drs_sample("mat_drs_sample", "5", FCVAR_ARCHIVE);
 ConVar mat_drs_debug("mat_drs_debug", "1", FCVAR_ARCHIVE);
 
 std::vector<float> fps_history;
 int i = 0;
 int average = 0;
 float prev_time = 0;
+float m_fDynscale = 0;
+
+float GetDynamicResolutionScale()
+{
+	return m_fDynscale;
+}
 
 //enderzip: function i grabbed from the cyberspace
 float CalcAverage(std::vector<float>& in)
@@ -1073,7 +1080,7 @@ float CalcAverage(std::vector<float>& in)
 
 int CViewRender::CalcResScaleForDRS() //enderzip: not the best naming okay
 {
-	if (i < 5)
+	if (i < int(mat_drs_sample.GetInt()))
 	{
 		fps_history.push_back(1.0f / gpGlobals->absoluteframetime);
 		i++;
@@ -1108,9 +1115,10 @@ double CViewRender::DynResScale()
 		engine->Con_NPrintf(14, "Average FPS: %3f", fps_drs);
 		engine->Con_NPrintf(17, "Current ResScale: %3f", result);
 	}
-
+	m_fDynscale = result;
 	return result;
 }
+
 #endif
 
 //-----------------------------------------------------------------------------
