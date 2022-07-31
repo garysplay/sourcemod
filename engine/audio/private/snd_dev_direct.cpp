@@ -83,7 +83,7 @@ public:
 	bool		Should3DMix( void );
 	void		StopAllSounds( void );
 
-	int			PaintBegin( float mixAheadTime, int soundtime, int paintedtime );
+	int64		PaintBegin( float mixAheadTime, int soundtime, int paintedtime );
 	void		PaintEnd( void );
 
 	int			GetOutputPosition( void );
@@ -331,7 +331,7 @@ IAudioDevice *Audio_CreateDirectSoundDevice( void )
 	return NULL;
 }
 
-int CAudioDirectSound::PaintBegin( float mixAheadTime, int soundtime, int lpaintedtime )
+int64 CAudioDirectSound::PaintBegin( float mixAheadTime, int soundtime, int lpaintedtime )
 {
 	//  soundtime - total full samples that have been played out to hardware at dmaspeed
 	//  paintedtime - total full samples that have been mixed at speed
@@ -339,7 +339,7 @@ int CAudioDirectSound::PaintBegin( float mixAheadTime, int soundtime, int lpaint
 	//  samps - size of output buffer in full samples
 	
 	int mixaheadtime = mixAheadTime * DeviceDmaSpeed();
-	int endtime = soundtime + mixaheadtime;
+	int64 endtime = soundtime + mixaheadtime;
 
 	if ( endtime <= lpaintedtime )
 		return endtime;
@@ -1670,8 +1670,8 @@ ConVar snd_lockpartial("snd_lockpartial","1");
 
 void CAudioDirectSound::TransferSamples( int end )
 {
-	int		lpaintedtime = g_paintedtime;
-	int		endtime = end;
+	int64		lpaintedtime = g_paintedtime;
+	int64		endtime = end;
 	
 	// When Surround is enabled, divert to 4 or 5 chan xfer scheme.
 	if ( m_bSurround )
@@ -1854,7 +1854,7 @@ void CAudioDirectSound::S_TransferSurround16( portable_samplepair_t *pfront, por
 
 struct surround_transfer_t
 {
-	int paintedtime;
+	int64 paintedtime;
 	int	linearCount;
 	int sampleMask;
 	int channelCount;

@@ -583,7 +583,7 @@ public:
 	bool		Should3DMix( void ) { return false; }
 	void		StopAllSounds( void ) {}
 	
-	int			PaintBegin( float, int, int ) { return 0; }
+	int64		PaintBegin( float, int, int ) { return 0; }
 	void		PaintEnd( void ) {}
 
 	void		SpatializeChannel( int volume[CCHANVOLUMES/2], int master_vol, const Vector& sourceDir, float gain, float mono ) {}

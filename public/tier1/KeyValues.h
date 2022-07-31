@@ -118,7 +118,7 @@ public:
 	void SetName( const char *setName);
 
 	// gets the name as a unique int
-	int GetNameSymbol() const { return m_iKeyName; }
+	intp GetNameSymbol() const { return m_iKeyName; }
 
 	// File access. Set UsesEscapeSequences true, if resource file/buffer uses Escape Sequences (eg \n, \t)
 	void UsesEscapeSequences(bool state); // default false

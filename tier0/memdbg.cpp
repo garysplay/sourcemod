@@ -1557,7 +1557,7 @@ void CDbgMemAlloc::DumpStats()
 {
 	DumpStatsFileBase( "memstats" );
 }
-
+extern void MemAllocOOMError(size_t);
 void CDbgMemAlloc::SetCRTAllocFailed( size_t nSize )
 {
 	m_sMemoryAllocFailed = nSize;

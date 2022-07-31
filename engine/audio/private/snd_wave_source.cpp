@@ -1521,7 +1521,7 @@ class CAudioSourceStreamWave : public CAudioSourceWave, public IWaveStreamSource
 public:
 	CAudioSourceStreamWave( CSfxTable *pSfx );
 	CAudioSourceStreamWave( CSfxTable *pSfx, CAudioSourceCachedInfo *info );
-	~CAudioSourceStreamWave();
+	virtual ~CAudioSourceStreamWave();
 
 	CAudioMixer		*CreateMixer( int initialStreamPosition = 0 );
 	int				GetOutputData( void **pData, int64 samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] );
@@ -1531,7 +1531,7 @@ public:
 	virtual int		GetCacheStatus( void );
 
 	// IWaveStreamSource
-	virtual int UpdateLoopingSamplePosition( int64 samplePosition )
+	virtual int64 UpdateLoopingSamplePosition( int64 samplePosition )
 	{
 		return ConvertLoopedPosition( samplePosition );
 	}
