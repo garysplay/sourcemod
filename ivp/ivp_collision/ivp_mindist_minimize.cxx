@@ -204,9 +204,12 @@ IVP_MRC_TYPE IVP_Mindist::recalc_invalid_mindist()
 	  return res;
 	}
 	default:
+	    CORE;
 	    break;
 	}
+	CORE;	
     }	// while
+    CORE;
 }
 
 
@@ -276,9 +279,13 @@ IVP_MRC_TYPE IVP_Mindist::recalc_mindist()
 	    return res;
 	}
 	default:
+//	    CORE;
 	    break;
 	}
+//	CORE;	
     }	// while
+//    CORE;
+// TODO(nillerusr): add warnings here instead of using CORE;
 }
 
 IVP_MRC_TYPE IVP_Mindist_Minimize_Solver::p_minimize_FF( const IVP_Compact_Edge *A,const IVP_Compact_Edge *B, IVP_Cache_Ledge_Point *m_cache_A, IVP_Cache_Ledge_Point *m_cache_B)

@@ -92,7 +92,7 @@ int hk_Stiff_Spring_Constraint::get_vmq_storage_size()
 
 int	hk_Stiff_Spring_Constraint::setup_and_step_constraint( hk_PSI_Info& pi, void *mem, hk_real tau_factor, hk_real damp_factor )
 {
-	// TODO(crack); changes need to be made to complete this. mainly handling of stiff/rigid springs
+	// TODO(nillerusr); changes need to be made to complete this. mainly handling of stiff/rigid springs
 	//HK_ASSERT(0 && "Incomplete implementation");
 	
 	hk_Stiff_Spring_Work& work = *new (mem) hk_Stiff_Spring_Work;
@@ -109,42 +109,24 @@ int	hk_Stiff_Spring_Constraint::setup_and_step_constraint( hk_PSI_Info& pi, void
 	hk_Vector3 dir;
 	dir.set_sub( translation_ws_ks[1], translation_ws_ks[0] );
 
-	hk_real len = dir.normalize_with_length();
-	if (this->m_min_length <= len)
+	hk_real dist = dir.length();
+	if (this->m_min_length <= dist)
 	{
-		if (len <= this->m_stiff_spring_length)
-		{
-			work.current_dist = 0;
-		}
+		if (dist <= this->m_stiff_spring_length)
+			dist = 0.f;
 		else
-		{
-			work.current_dist = len - this->m_stiff_spring_length;
-		}
+			dist -= this->m_stiff_spring_length;
 	}
 	else
-	{
-		work.current_dist = len - this->m_min_length;
-	}
+		dist -= this->m_min_length;
 
-	if (this->m_min_length == this->m_stiff_spring_length || work.current_dist != 0)
-	{
+	work.current_dist = dist;
+
+	if (this->m_min_length == this->m_stiff_spring_length || work.current_dist != 0.f)
 		work.skip_solve = false;
-	}
 	else
 	{
-		hk_Vector3 translation_ws_ks[2];
-
-		translation_ws_ks[0]._set_transformed_pos(b0->get_transform_next_PSI(pi.get_delta_time()), m_translation_os_ks[0]);
-		translation_ws_ks[1]._set_transformed_pos(b1->get_transform_next_PSI(pi.get_delta_time()), m_translation_os_ks[1]);
-
-		hk_Vector3 dir;
-		dir.set_sub(translation_ws_ks[1], translation_ws_ks[0]);
-
-		hk_real len = dir.normalize_with_length();
-
-		bool skipSolve = this->m_min_length <= len && (this->m_min_length = this->m_stiff_spring_length, len <= this->m_min_length) || (float)(len - this->m_min_length) == 0.0;
-		work.skip_solve = skipSolve;
-		if (skipSolve)
+		work.skip_solve = true;
 			return HK_NEXT_MULTIPLE_OF(16, sizeof(hk_Stiff_Spring_Work));
 	}
 
@@ -161,12 +143,7 @@ int	hk_Stiff_Spring_Constraint::setup_and_step_constraint( hk_PSI_Info& pi, void
 	query_engine.commit(HK_BODY_B, b1);
 
 	hk_Dense_Matrix& mass_matrix = query_engine.get_vmq_storage().get_dense_matrix();
-	if (mass_matrix.getRealPointer()[0] == 0) {
-		printf("hk_Stiff_Spring_Constraint::setup_and_step_constraint: zero dense matrix(objs: %s, %s)\n", b0->get_name(), b1->get_name());
-	}
-	else {
 		mass_matrix(0, 0) = 1.0f / mass_matrix(0, 0); // invert in place
-	}
 
 	{ // step
 		hk_real *approaching_velocity = query_engine.get_vmq_storage().get_velocities();
@@ -216,7 +193,4 @@ void hk_Stiff_Spring_Constraint::apply_effector_PSI( hk_PSI_Info& pi, hk_Array<h
 	hk_Stiff_Spring_Constraint::setup_and_step_constraint( pi,(void *)&work_mem, 1.0f, 1.0f );
 }
 
-
-
 // HAVOK DO NOT EDIT
-
