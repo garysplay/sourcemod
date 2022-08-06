@@ -305,7 +305,7 @@ public:
     static inline int calc_hash_index( IVP_Collision *c, IVP_MM_CMP_Key * /*ref_key*/){
 	const IVP_Compact_Ledge *ledge[2];
 	c->get_ledges(ledge);
-	int x = (intp)ledge[0] ^ ( intp(ledge[1])* 75 );
+	intp x = (intp)ledge[0] ^ ( intp(ledge[1])* 75 );
 	return x + 1023 * (x>>8);
     }
 
