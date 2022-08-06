@@ -279,10 +279,6 @@ void hk_Local_Constraint_System::apply_effector_PSI(hk_PSI_Info& pi, hk_Array<hk
 			hk_Rigid_Body *b0 = m_constraints.element_at(i)->get_rigid_body(0);
 			hk_Rigid_Body *b1 = m_constraints.element_at(i)->get_rigid_body(1);
 
-			// HACK(nillerusr): calculate inv mass and inv inertia to avoid crashes, this works, but it shouldn't be calculated here
-			b0->get_core()->calc_calc();
-			b1->get_core()->calc_calc();
-
 			int b_size = m_constraints.element_at(i)->setup_and_step_constraint(pi, (void*)p_buffer, 1.0f, 1.0f);
 			p_buffer += b_size;
 		}

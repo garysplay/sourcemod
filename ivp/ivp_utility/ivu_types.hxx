@@ -187,6 +187,14 @@ typedef unsigned char	uchar; // feel free to remove these three typedefs
 typedef unsigned short	ushort;
 typedef unsigned int	uint;
 
+#ifdef PLATFORM_64BITS
+typedef long long			intp;
+typedef unsigned long long	uintp;
+#else
+typedef int					intp;
+typedef unsigned int		uintp;
+#endif
+
 typedef const char *IVP_ERROR_STRING;
 #define IVP_NO_ERROR 0
 
