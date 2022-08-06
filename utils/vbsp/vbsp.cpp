@@ -907,6 +907,7 @@ int RunVBSP( int argc, char **argv )
 	LoadCmdLineFromFile( argc, argv, mapbase, "vbsp" );
 
 	Msg( "Valve Software - vbsp.exe (%s)\n", __DATE__ );
+	Msg( "        Now running on 64bit!\n");
 
 	for (i=1 ; i<argc ; i++)
 	{
