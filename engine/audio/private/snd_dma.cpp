@@ -123,7 +123,7 @@ void Voice_Spatialize( channel_t *channel );
 
 channel_t   channels[MAX_CHANNELS];
 
-int	total_channels;
+int	total_channels = MAX_DYNAMIC_CHANNELS;
 CActiveChannels g_ActiveChannels;
 static double g_LastSoundFrame = 0.0f;		// last full frame of sound
 static double g_LastMixTime = 0.0f;			// last time we did mixing
@@ -236,13 +236,13 @@ vec_t S_GetNominalClipDist()
 	return sound_nominal_clip_dist;
 }
 
-int				g_soundtime = 0;		// sample PAIRS output since start
-int   			g_paintedtime = 0; 		// sample PAIRS mixed since start
+int64				g_soundtime = 0;		// sample PAIRS output since start
+int64   			g_paintedtime = 0; 		// sample PAIRS mixed since start
 
-float			g_ReplaySoundTimeFracAccumulator = 0.0f;	// Used by replay
+float			    g_ReplaySoundTimeFracAccumulator = 0.0f;	// Used by replay
 
-float			g_ClockSyncArray[NUM_CLOCK_SYNCS] = {0};
-int				g_SoundClockPaintTime[NUM_CLOCK_SYNCS] = {0};
+float			    g_ClockSyncArray[NUM_CLOCK_SYNCS] = {0};
+int64				g_SoundClockPaintTime[NUM_CLOCK_SYNCS] = {0};
 
 // default 10ms
 ConVar snd_delay_sound_shift("snd_delay_sound_shift","0.01");
@@ -1022,7 +1022,7 @@ CAudioSource *S_LoadSound( CSfxTable *pSfx, channel_t *ch )
 			else
 			{
 				// load all into memory directly
-				pSfx->pSource = Audio_CreateMemoryWave( pSfx );
+				pSfx->pSource = Audio_CreateStreamedWave( pSfx );
 			}
 		}
 
@@ -5182,11 +5182,8 @@ int S_StartDynamicSound( StartSoundParams_t& params )
 	else
 	{
 		// regular or streamed sound fx
-		pSource = S_LoadSound( params.pSfx, target_chan );
-		if (pSource == NULL)
-		{
-			Warning("damn yo ass pSource is null! sound is still broken :(\n");
-		}
+		pSource = S_LoadSound(params.pSfx, target_chan );
+
 		if ( pSource && !IsValidSampleRate( pSource->SampleRate() ) )
 		{
 			Warning( "*** Invalid sample rate (%d) for sound '%s'.\n", pSource->SampleRate(), sndname );
@@ -6273,8 +6270,8 @@ void S_Update( const AudioState_t *pAudioState )
 			{
 				Con_NXPrintf ( &np, "%02i l(%03d) r(%03d) vol(%03d) ent(%03d) pos(%6d %6d %6d) timeleft(%f) looped(%d) %50s", 
 					total+ 1, 
-					(int)channel->fvolume[IFRONT_LEFT],
-					(int)channel->fvolume[IFRONT_RIGHT],
+					channel->fvolume[IFRONT_LEFT],
+					channel->fvolume[IFRONT_RIGHT],
 					channel->master_vol,
 					channel->soundsource,
 					(int)channel->origin[0],
@@ -6288,11 +6285,11 @@ void S_Update( const AudioState_t *pAudioState )
 			{
 				Con_NXPrintf ( &np, "%02i l(%03d) c(%03d) r(%03d) rl(%03d) rr(%03d) vol(%03d) ent(%03d) pos(%6d %6d %6d) timeleft(%f) looped(%d) %50s", 
 					total+ 1, 
-					(int)channel->fvolume[IFRONT_LEFT],
-					(int)channel->fvolume[IFRONT_CENTER],
-					(int)channel->fvolume[IFRONT_RIGHT],
-					(int)channel->fvolume[IREAR_LEFT],
-					(int)channel->fvolume[IREAR_RIGHT],
+					channel->fvolume[IFRONT_LEFT],
+					channel->fvolume[IFRONT_CENTER],
+					channel->fvolume[IFRONT_RIGHT],
+					channel->fvolume[IREAR_LEFT],
+					channel->fvolume[IREAR_RIGHT],
 					channel->master_vol,
 					channel->soundsource,
 					(int)channel->origin[0],
@@ -6385,8 +6382,8 @@ CON_COMMAND( snd_dumpclientsounds, "Dump sounds to VXConsole" )
 //-----------------------------------------------------------------------------
 void GetSoundTime(void)
 {
-	int		fullsamples;
-	int		sampleOutCount;
+	int64		fullsamples;
+	int64		sampleOutCount;
 
 	// size of output buffer in *full* 16 bit samples
 	// A 2 channel device has a *full* sample consisting of a 16 bit LR pair.
@@ -6436,7 +6433,7 @@ void GetSoundTime(void)
 					float intPart = (float) floor( fSamples );
 					g_ReplaySoundTimeFracAccumulator = fSamples - intPart;
 					
-					g_soundtime += (int) intPart;
+					g_soundtime += intPart;
 					s_lastsoundtime = t;
 				}
 			}
@@ -6533,7 +6530,7 @@ void S_Update_Guts( float mixAheadTime )
 //	time.
 
 	// mix ahead of current position
-	unsigned endtime = g_AudioDevice->PaintBegin( mixAheadTime, g_soundtime, g_paintedtime );
+	int64 endtime = g_AudioDevice->PaintBegin( mixAheadTime, g_soundtime, g_paintedtime );
 
 	int samples = endtime - g_paintedtime;
 	samples = samples < 0 ? 0 : samples;
@@ -7048,7 +7045,7 @@ static void S_Say( const CCommand &args )
 		unsigned time;
 		int count = 10000;
 		static int hash=543;
-		int psav = g_paintedtime;
+		int64 psav = g_paintedtime;
 
 		Msg ("Start profiling MIX_PaintChannels\n");
 		

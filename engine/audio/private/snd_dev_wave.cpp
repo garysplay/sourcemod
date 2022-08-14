@@ -40,7 +40,7 @@ public:
 	bool		Should3DMix( void );
 	void		StopAllSounds( void );
 
-	int			PaintBegin( float mixAheadTime, int soundtime, int paintedtime );
+	int64		PaintBegin( float mixAheadTime, int soundtime, int paintedtime );
 	void		ClearBuffer( void );
 	void		UpdateListener( const Vector& position, const Vector& forward, const Vector& right, const Vector& up );
 	void		MixBegin( int sampleCount );
@@ -95,7 +95,7 @@ private:
 //-----------------------------------------------------------------------------
 IAudioDevice *Audio_CreateWaveDevice( void )
 {
-	CAudioDeviceWave *wave = NULL;
+	static CAudioDeviceWave *wave = NULL;
 	if ( !wave )
 	{
 		wave = new CAudioDeviceWave;
@@ -321,13 +321,13 @@ void CAudioDeviceWave::FreeOutputBuffers()
 //-----------------------------------------------------------------------------
 // Mixing setup
 //-----------------------------------------------------------------------------
-int CAudioDeviceWave::PaintBegin( float mixAheadTime, int soundtime, int paintedtime )
+int64 CAudioDeviceWave::PaintBegin( float mixAheadTime, int soundtime, int paintedtime )
 {
 	//  soundtime - total samples that have been played out to hardware at dmaspeed
 	//  paintedtime - total samples that have been mixed at speed
 	//  endtime - target for samples in mixahead buffer at speed
 
-	unsigned int endtime = soundtime + mixAheadTime * DeviceDmaSpeed();
+	int64 endtime = soundtime + mixAheadTime * DeviceDmaSpeed();
 	
 	int samps = DeviceSampleCount() >> (DeviceChannels()-1);
 

@@ -92,15 +92,15 @@ IVP_BOOL IVP_Mindist_Minimize_Solver::check_loop_hash(IVP_SYNAPSE_POLYGON_STATUS
     IVP_ASSERT( i_s0 < 4);
     IVP_ASSERT( i_s1 < 4);
 
-    int x0 = int(i_e0) | i_s0;
-    int x1 = int(i_e1) | i_s1;
+    intp x0 = intp(i_e0) | i_s0;
+    intp x1 = intp(i_e1) | i_s1;
 
     if (x0 < x1) {
 	int h = x0; x0 = x1; x1 = h;
     }
 
-    IVP_MM_Loop_Hash_Struct *s = & loop_hash[loop_hash_size-1];
-    for(int i = loop_hash_size-1; i>=0; i--){
+    IVP_MM_Loop_Hash_Struct *s = & loop_hash[loop_hash_size];
+    for(int i = loop_hash_size; i>=0; i--){
 	if ( s->a == x0 && s->b == x1){
 	    return IVP_TRUE;
 	}
@@ -279,12 +279,13 @@ IVP_MRC_TYPE IVP_Mindist::recalc_mindist()
 	    return res;
 	}
 	default:
-	    CORE;
+//	    CORE;
 	    break;
 	}
-	CORE;	
+//	CORE;	
     }	// while
-    CORE;
+//    CORE;
+// TODO(nillerusr): add warnings here instead of using CORE;
 }
 
 IVP_MRC_TYPE IVP_Mindist_Minimize_Solver::p_minimize_FF( const IVP_Compact_Edge *A,const IVP_Compact_Edge *B, IVP_Cache_Ledge_Point *m_cache_A, IVP_Cache_Ledge_Point *m_cache_B)
@@ -434,7 +435,7 @@ IVP_MRC_TYPE IVP_Mindist_Minimize_Solver::p_minimize_FF( const IVP_Compact_Edge 
 	      break;
 	    }
 	    default:
-		CORE;
+		printf("IVP_Mindist_Minimize_Solver::p_minimize_FF failed(%s:%d)\n", __FILE__, __LINE__);
 	  }
 	  break;
       };
@@ -445,13 +446,13 @@ IVP_MRC_TYPE IVP_Mindist_Minimize_Solver::p_minimize_FF( const IVP_Compact_Edge 
 		break;
 	    }
 	  default:
-	      CORE;
+		  printf("IVP_Mindist_Minimize_Solver::p_minimize_FF failed(%s:%d)\n", __FILE__, __LINE__);
 	      break;
 	  }
 	  break;
       }
       default:
-	CORE;
+      printf("IVP_Mindist_Minimize_Solver::p_minimize_FF failed(%s:%d)\n", __FILE__, __LINE__);
     }
     
     return ret_val;

@@ -2887,13 +2887,10 @@ void PrintUsage( int argc, char **argv )
 
 int RunVRAD( int argc, char **argv )
 {
-#if defined(_MSC_VER) && ( _MSC_VER >= 1310 )
-	Msg("Valve Software - vrad.exe SSE (" __DATE__ ")\n" );
-#else
-	Msg("Valve Software - vrad.exe (" __DATE__ ")\n" );
-#endif
+	Msg("Valve Software - vrad.exe  (" __DATE__ ")\n" );
 
 	Msg("\n      Valve Radiosity Simulator     \n");
+	Msg("\n        Now running on 64bit!       \n");
 
 	verbose = true;  // Originally FALSE
 

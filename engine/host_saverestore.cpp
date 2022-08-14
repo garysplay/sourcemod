@@ -2181,10 +2181,6 @@ int CSaveRestore::SaveReadNameAndComment( FileHandle_t f, OUT_Z_CAP(nameSize) ch
 		pFieldName = pTokenList[index];
 		pData += sizeof(short);
 
-        Q_memcpy( &index, pData, sizeof(short) );
-		pFieldName = pTokenList[index];
-		pData += sizeof(short);
-
 		if ( !Q_stricmp( pFieldName, "comment" ) )
 		{
 			int copySize = MAX( commentSize, nFieldSize );

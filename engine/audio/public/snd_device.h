@@ -75,7 +75,7 @@ public:
 	virtual void		StopAllSounds( void ) = 0;
 	
 	// Called before painting channels, must calculated the endtime and return it (once per frame)
-	virtual int			PaintBegin( float, int soundtime, int paintedtime ) = 0;
+	virtual int64		PaintBegin( float, int soundtime, int paintedtime ) = 0;
 	// Called when all channels are painted (once per frame)
 	virtual void		PaintEnd( void ) = 0;
 

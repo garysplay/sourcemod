@@ -20,7 +20,7 @@ public:
 	virtual bool		Should3DMix( void ) { return m_bSurround; }
 	virtual void		StopAllSounds( void ) {}
 
-	virtual int			PaintBegin( float, int soundtime, int paintedtime ) { return 0; }
+	virtual int64		PaintBegin( float, int soundtime, int paintedtime ) { return 0; }
 	virtual void		PaintEnd( void ) {}
 
 	virtual void		SpatializeChannel( int volume[CCHANVOLUMES/2], int master_vol, const Vector& sourceDir, float gain, float mono );

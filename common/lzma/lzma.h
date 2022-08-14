@@ -38,7 +38,7 @@ size_t      	*pOutputSize );
 bool LZMA_Uncompress(
 unsigned char	*pInput,
 unsigned char	**ppOutput,
-unsigned int	*pOutputSize );
+size_t          *pOutputSize );
 
 //-----------------------------------------------------------------------------
 // Decoding helper, returns TRUE if buffer is LZMA compressed.

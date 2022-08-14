@@ -226,7 +226,7 @@ void *CUtlMemoryPool::Alloc( size_t amount )
 {
 	void *returnBlock;
 
-	if ( amount > (unsigned int)m_BlockSize )
+	if ( amount > (size_t)m_BlockSize )
 		return NULL;
 
 	if( !m_pHeadOfFreeList )
@@ -268,7 +268,7 @@ void *CUtlMemoryPool::AllocZero( size_t amount )
 	void *mem = Alloc( amount );
 	if ( mem )
 	{
-		V_memset( mem, 0x00, amount );
+		V_memset( mem, 0x00, (int)amount );
 	}
 	return mem;
 }
