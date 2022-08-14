@@ -90,6 +90,15 @@ int hk_Stiff_Spring_Constraint::get_vmq_storage_size()
 	return HK_NEXT_MULTIPLE_OF(16, sizeof(hk_Stiff_Spring_Work));
 }
 
+float IntervalDistance(float a1, float a2, float a3)
+{
+	if ( a2 > a1 )
+		return a1 - a2;
+	if ( a1 <= a3 )
+		return 0.f;
+	return a1 - a3;
+}
+
 int	hk_Stiff_Spring_Constraint::setup_and_step_constraint( hk_PSI_Info& pi, void *mem, hk_real tau_factor, hk_real damp_factor )
 {
 	// TODO(nillerusr); changes need to be made to complete this. mainly handling of stiff/rigid springs
@@ -109,24 +118,26 @@ int	hk_Stiff_Spring_Constraint::setup_and_step_constraint( hk_PSI_Info& pi, void
 	hk_Vector3 dir;
 	dir.set_sub( translation_ws_ks[1], translation_ws_ks[0] );
 
-	hk_real dist = dir.length();
-	if (this->m_min_length <= dist)
-	{
-		if (dist <= this->m_stiff_spring_length)
-			dist = 0.f;
-		else
-			dist -= this->m_stiff_spring_length;
-	}
-	else
-		dist -= this->m_min_length;
+    hk_real norm_length = dir.normalize_with_length();
 
-	work.current_dist = dist;
+	work.current_dist = IntervalDistance(norm_length, m_min_length, m_stiff_spring_length);
 
 	if (this->m_min_length == this->m_stiff_spring_length || work.current_dist != 0.f)
 		work.skip_solve = false;
 	else
 	{
-		work.skip_solve = true;
+		hk_Vector3 next_translation_ws_ks[2];
+		next_translation_ws_ks[0]._set_transformed_pos(b0->get_transform_next_PSI(pi.get_delta_time()), m_translation_os_ks[0]);
+		next_translation_ws_ks[1]._set_transformed_pos(b1->get_transform_next_PSI(pi.get_delta_time()), m_translation_os_ks[1]);
+
+		hk_Vector3 next_dir;
+		next_dir.set_sub(next_translation_ws_ks[1], next_translation_ws_ks[0]);
+
+		hk_real next_norm_length = next_dir.normalize_with_length();
+
+		hk_real next_dist = IntervalDistance(next_norm_length, m_min_length, m_stiff_spring_length);
+		work.skip_solve = next_dist == 0.f;
+		if (work.skip_solve)
 			return HK_NEXT_MULTIPLE_OF(16, sizeof(hk_Stiff_Spring_Work));
 	}
 
