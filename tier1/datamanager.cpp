@@ -45,7 +45,7 @@ unsigned int CDataManagerBase::FlushAllUnlocked()
 	Lock();
 
 	int nFlush = m_memoryLists.Count( m_lruList );
-	void **pScratch = (void **)_alloca( nFlush * sizeof(void *) );
+	void **pScratch = (void **)stackalloc( nFlush * sizeof(void *) );
 	CUtlVector<void *> destroyList( pScratch, nFlush );
 
 	unsigned nBytesInitial = MemUsed_Inline();
@@ -82,7 +82,7 @@ unsigned int CDataManagerBase::FlushAll()
 	Lock();
 
 	int nFlush = m_memoryLists.Count( m_lruList ) + m_memoryLists.Count( m_lockList );
-	void **pScratch = (void **)_alloca( nFlush * sizeof(void *) );
+	void **pScratch = (void **)stackalloc( nFlush * sizeof(void *) );
 	CUtlVector<void *> destroyList( pScratch, nFlush );
 
 	unsigned result = MemUsed_Inline();
@@ -323,7 +323,7 @@ memhandle_t CDataManagerBase::ToHandle( unsigned short index )
 	unsigned int hiword = m_memoryLists.Element(index).serial;
 	hiword <<= 16;
 	index++;
-	return (memhandle_t)( hiword|index );
+	return reinterpret_cast< memhandle_t >( (uintp)( hiword|index ) );
 }
 
 unsigned int CDataManagerBase::TargetSize() 

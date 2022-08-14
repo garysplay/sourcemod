@@ -2,7 +2,7 @@
 #	include <hk_math/math_ps2.inl>
 #else	//HK_PS2
 
-#include "math.h"
+#include "base_math.h"
 #ifdef _WIN32
 inline hk_double hk_Math::fabsd(hk_double r) { return hk_double(::fabs(r)); }
 
@@ -19,8 +19,8 @@ inline hk_real hk_Math::cos(hk_real r) { return hk_real(::cos(r)); }
 inline hk_real hk_Math::atan2(hk_real a, hk_real b) { return hk_real(::atan2(a, b)); }
 inline hk_real hk_Math::asin(hk_real r) { return hk_real(::asin(r)); }
 inline hk_real hk_Math::acos(hk_real r) { return hk_real(::acos(r)); }
-inline hk_real hk_Math::max(hk_real a, hk_real b) { return a > b ? a : b; }
-inline hk_real hk_Math::min(hk_real a, hk_real b) { return a < b ? a : b; }
+inline hk_real hk_Math::max_(hk_real a, hk_real b) { return a > b ? a : b; }
+inline hk_real hk_Math::min_(hk_real a, hk_real b) { return a < b ? a : b; }
 
 inline hk_real hk_Math::exp(hk_real e) { return hk_real(::exp(e)); }
 

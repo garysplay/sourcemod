@@ -23,7 +23,7 @@
 // If you change to serialization protocols, this must be bumped...
 #define UTL_CACHE_SYSTEM_VERSION		2
 
-#define UTL_CACHED_FILE_DATA_UNDEFINED_DISKINFO	(int)-2
+#define UTL_CACHED_FILE_DATA_UNDEFINED_DISKINFO	(long)-2
 
 // Cacheable types must derive from this and implement the appropriate methods...
 abstract_class IBaseCacheInfo
@@ -108,7 +108,7 @@ public:
 		return idx != m_Elements.InvalidIndex() ? true : false;
 	}
 
-	void SetElement( char const *name, int fileinfo, T* src )
+	void SetElement( char const *name, long fileinfo, T* src )
 	{
 		SetDirty( true );
 
@@ -154,14 +154,14 @@ public:
 
 	void	ForceRecheckDiskInfo();
 	// Iterates all entries and gets filesystem info and optionally causes rebuild on any existing items which are out of date
-	void	CheckDiskInfo( bool force_rebuild, int cacheFileTime = 0L );
+	void	CheckDiskInfo( bool force_rebuild, int64 cacheFileTime = 0L );
 
 	void	SaveManifest();
 	bool	ManifestExists();
 
 	const char *GetRepositoryFileName() const { return m_sRepositoryFileName; }
 
-	int	GetFileInfo( char const *filename )
+	long	GetFileInfo( char const *filename )
 	{
 		ElementType_t element;
 		element.handle = g_pFullFileSystem->FindOrAddFileName( filename );
@@ -228,8 +228,8 @@ private:
 		}
 
 		FileNameHandle_t	handle;
-		int 				fileinfo;
-		int 				diskfileinfo;
+		int64 				fileinfo;
+		int64 				diskfileinfo;
 		int					dataIndex;
 	};
 
@@ -266,7 +266,7 @@ T* CUtlCachedFileData<T>::Get( char const *filename )
 	{
 		e.fileinfo = 0;
 	}
-	int cachefileinfo = e.fileinfo;
+	long cachefileinfo = e.fileinfo;
 	// Set the disk fileinfo the first time we encounter the filename
 	if ( e.diskfileinfo == UTL_CACHED_FILE_DATA_UNDEFINED_DISKINFO )
 	{
@@ -826,7 +826,7 @@ T *CUtlCachedFileData<T>::RebuildItem( const char *filename )
 
 	ForceRecheckDiskInfo();
 
-	int cachefileinfo = e.fileinfo;
+	long cachefileinfo = e.fileinfo;
 	// Set the disk fileinfo the first time we encounter the filename
 	if ( e.diskfileinfo == UTL_CACHED_FILE_DATA_UNDEFINED_DISKINFO )
 	{
@@ -907,7 +907,7 @@ public:
 
 // Iterates all entries and causes rebuild on any existing items which are out of date
 template <class T>
-void	CUtlCachedFileData<T>::CheckDiskInfo( bool forcerebuild, int cacheFileTime )
+void CUtlCachedFileData<T>::CheckDiskInfo( bool forcerebuild, int64 cacheFileTime )
 {
 	char fn[ 512 ];
 	int i;

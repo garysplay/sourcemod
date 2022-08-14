@@ -1303,8 +1303,6 @@ bool CMaterialSystem::SetMode( void* hwnd, const MaterialSystem_Config_t &config
 	g_pLauncherMgr->RenderedSize( width, height, true ); // true = set
 #endif
 
-	ShaderSystem()->InitShaders();
-
 	TextureManager()->FreeStandardRenderTargets();
 	TextureManager()->AllocateStandardRenderTargets();
 

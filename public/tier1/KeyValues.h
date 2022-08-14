@@ -78,7 +78,7 @@ public:
 	//	understand the implications before using this.
 	static void SetUseGrowableStringTable( bool bUseGrowableTable );
 
-	KeyValues( const char *setName );
+	explicit KeyValues( const char *setName );
 
 	//
 	// AutoDelete class to automatically free the keyvalues.
@@ -118,7 +118,7 @@ public:
 	void SetName( const char *setName);
 
 	// gets the name as a unique int
-	int GetNameSymbol() const { return m_iKeyName; }
+	intp GetNameSymbol() const { return m_iKeyName; }
 
 	// File access. Set UsesEscapeSequences true, if resource file/buffer uses Escape Sequences (eg \n, \t)
 	void UsesEscapeSequences(bool state); // default false
@@ -145,9 +145,17 @@ public:
 	// NOTE: GetFirstSubKey/GetNextKey will iterate keys AND values. Use the functions 
 	// below if you want to iterate over just the keys or just the values.
 	//
-	KeyValues *GetFirstSubKey() { return m_pSub; }	// returns the first subkey in the list
-	KeyValues *GetNextKey() { return m_pPeer; }		// returns the next subkey
-	const KeyValues *GetNextKey() const { return m_pPeer; }		// returns the next subkey
+	KeyValues *GetFirstSubKey() 
+	{
+		AssertMsg(this, "Member function called on NULL KeyValues");
+		return this ? m_pSub : NULL;
+	}	// returns the first subkey in the list
+	KeyValues *GetNextKey()
+	{ 
+		AssertMsg(this, "Member function called on NULL KeyValues");
+		return this ? m_pPeer : NULL;
+	}	// returns the next subkey
+	const KeyValues *GetNextKey() const { return this ? m_pPeer : NULL; }		// returns the next subkey
 
 	void SetNextKey( KeyValues * pDat);
 	KeyValues *FindLastSubKey();	// returns the LAST subkey in the list.  This requires a linked list iteration to find the key.  Returns NULL if we don't have any children
@@ -185,6 +193,7 @@ public:
 
 	// Data access
 	int   GetInt( int keySymbol, int defaultValue = 0 );
+	uint64 GetUint64( int keySymbol, uint64 defaultValue = 0 );
 	float GetFloat( int keySymbol, float defaultValue = 0.0f );
 	const char *GetString( int keySymbol, const char *defaultValue = "" );
 	const wchar_t *GetWString( int keySymbol, const wchar_t *defaultValue = L"" );
@@ -313,7 +322,7 @@ private:
 	void FreeAllocatedValue();
 	void AllocateValueBlock(int size);
 
-	intp m_iKeyName;	// keyname is a symbol defined in KeyValuesSystem
+	intp m_iKeyName : 24;	// keyname is a symbol defined in KeyValuesSystem
 
 	// These are needed out of the union because the API returns string pointers
 	char *m_sValue;
@@ -391,6 +400,12 @@ inline int   KeyValues::GetInt( int keySymbol, int defaultValue )
 {
 	KeyValues *dat = FindKey( keySymbol );
 	return dat ? dat->GetInt( (const char *)NULL, defaultValue ) : defaultValue;
+}
+
+inline uint64 KeyValues::GetUint64( int keySymbol, uint64 defaultValue )
+{
+	KeyValues *dat = FindKey( keySymbol );
+	return dat ? dat->GetUint64( (const char *)NULL, defaultValue ) : defaultValue;
 }
 
 inline float KeyValues::GetFloat( int keySymbol, float defaultValue )

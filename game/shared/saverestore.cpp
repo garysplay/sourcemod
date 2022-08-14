@@ -2268,7 +2268,10 @@ int CRestore::ReadFunction( datamap_t *pMap, inputfunc_t **pValue, int count, in
 	if ( *pszFunctionName == 0 )
 		*pValue = NULL;
 	else
-		inputfunc_t func = UTIL_FunctionFromName( pMap, pszFunctionName );
+	{
+		inputfunc_t func = UTIL_FunctionFromName(pMap, pszFunctionName);
+		Q_memcpy((void*)pValue, &func, sizeof(void*));
+	}
 
 	return 0;
 }

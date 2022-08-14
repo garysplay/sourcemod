@@ -28,6 +28,7 @@ struct MaterialAdapterInfo_t;
 class IMesh;
 class KeyValues;
 
+
 //-----------------------------------------------------------------------------
 // Describes how to set the mode
 //-----------------------------------------------------------------------------
@@ -274,11 +275,6 @@ public:
 #endif
 	virtual char *GetDisplayDeviceName() = 0;
 
-	virtual ConstantBufferHandle_t CreateConstantBuffer(size_t nBufSize) = 0;
-	virtual void UpdateConstantBuffer(ConstantBufferHandle_t hBuffer, void* pData) = 0;
-	virtual void UploadConstantBuffers(ConstantBufferHandle_t* pBuffers, int nBuffers) = 0;
-	virtual void DestroyConstantBuffer(ConstantBufferHandle_t hBuffer) = 0;
-	virtual ConstantBufferHandle_t GetInternalConstantBuffer(int type) = 0;
 };
 
 abstract_class IShaderDeviceDX11 : public IShaderDevice

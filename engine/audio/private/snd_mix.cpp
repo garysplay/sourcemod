@@ -53,7 +53,7 @@ bool BChannelLowVolume( channel_t *pch, int vol_min );
 void ChannelCopyVolumes( channel_t *pch, int *pvolume_dest, int ivol_start, int cvol );
 float ChannelLoudestCurVolume( const channel_t * RESTRICT pch );
 
-extern int g_soundtime;
+extern int64 g_soundtime;
 extern float host_frametime;
 extern float host_frametime_unbounded;
 
@@ -281,7 +281,7 @@ double MIX_GetMaxRate( double rate, int sampleCount )
 // pfront - pointer to stereo paintbuffer - 32 bit samples, interleaved stereo
 // lpaintedtime - total number of 32 bit stereo samples previously output to hardware
 // endtime - total number of 32 bit stereo samples currently mixed in paintbuffer
-void S_TransferStereo16( void *pOutput, const portable_samplepair_t *pfront, int lpaintedtime, int endtime )
+void S_TransferStereo16( void *pOutput, const portable_samplepair_t *pfront, int64 lpaintedtime, int64 endtime )
 {
 	int		lpos;
 	
@@ -346,7 +346,7 @@ void S_TransferStereo16( void *pOutput, const portable_samplepair_t *pfront, int
 
 // Transfer contents of main paintbuffer pfront out to 
 // device.  Perform volume multiply on each sample.
-void S_TransferPaintBuffer(void *pOutput, const portable_samplepair_t *pfront, int lpaintedtime, int endtime)
+void S_TransferPaintBuffer(void *pOutput, const portable_samplepair_t *pfront, int64 lpaintedtime, int64 endtime)
 {
 	int 		out_idx;		// mono sample index
 	int 		count;			// number of mono samples to output
@@ -454,7 +454,7 @@ void S_FreeChannel(channel_t *ch)
 //		 this routine will fill the paintbuffer to endtime.  Otherwise, fewer samples are mixed.
 //		 if (endtime - paintedtime) is not aligned on boundaries of 4, 
 //		 we'll miss data if outputRate < SOUND_DMA_SPEED!
-void MIX_MixChannelsToPaintbuffer( CChannelList &list, int endtime, int flags, int rate, int outputRate )
+void MIX_MixChannelsToPaintbuffer( CChannelList &list, int64 endtime, int flags, int rate, int outputRate )
 {
 	VPROF( "MixChannelsToPaintbuffer" );
 	int		i;
@@ -1772,7 +1772,7 @@ void MIX_CompressPaintbuffer(int ipaint, int count)
 // will advance any internal pointers on mixed channels; subsequent calls will be at 
 // incorrect offset.
 
-void MIX_MixUpsampleBuffer( CChannelList &list, int ipaintbuffer, int end, int count, int flags )
+void MIX_MixUpsampleBuffer( CChannelList &list, int ipaintbuffer, int64 end, int count, int flags )
 {
 	VPROF("MixUpsampleBuffer");
 	int ipaintcur = MIX_GetCurrentPaintbufferIndex(); // save current paintbuffer
@@ -1820,7 +1820,7 @@ void MIX_MixUpsampleBuffer( CChannelList &list, int ipaintbuffer, int end, int c
 // dsp fx are then applied to these buffers by the caller.
 // caller also remixes all into final SOUND_BUFFER_PAINT output.
 
-void MIX_UpsampleAllPaintbuffers( CChannelList &list, int end, int count )
+void MIX_UpsampleAllPaintbuffers( CChannelList &list, int64 end, int count )
 {
 	VPROF( "MixUpsampleAll" );
 
@@ -2266,12 +2266,12 @@ extern ConVar dsp_vol_2ch;
 extern void MXR_SetCurrentSoundMixer( const char *szsoundmixer );
 extern ConVar snd_soundmixer;
 
-void MIX_PaintChannels( int endtime, bool bIsUnderwater )
+void MIX_PaintChannels( int64 endtime, bool bIsUnderwater )
 {
 	VPROF("MIX_PaintChannels");
 	tmZone( TELEMETRY_LEVEL0, TMZF_NONE, "%s", __FUNCTION__ );
 
-	int 	end;
+	int64 	end;
 	int		count;
 	bool	b_spatial_delays = dsp_enhance_stereo.GetInt() != 0 ? true : false;
 	bool room_fsurround_sav;

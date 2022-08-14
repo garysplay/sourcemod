@@ -2041,7 +2041,7 @@ public:
 		if ( !pHash )
 			return m_objectList.InvalidIndex();
 
-		unsigned int hash = (unsigned int)pHash;
+        uintp hash = (uintp)pHash;
 		// mask off the extra bit we added to avoid zeros
 		hash &= 0xFFFF;
 		return (unsigned short)hash;
@@ -2054,7 +2054,7 @@ public:
 		
 		// set the high bit, so zero means "not there"
 		hash |= 0x80000000;
-		return (void *)hash;
+		return (void *)(intp)hash;
 	}
 
 	// Lookup this object and get a multilist entry

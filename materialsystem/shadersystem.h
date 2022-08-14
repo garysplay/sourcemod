@@ -174,7 +174,6 @@ public:
 	// Methods related to reading in shader DLLs
 	virtual bool		LoadShaderDLL( const char *pFullPath ) = 0;
 	virtual void		UnloadShaderDLL( const char *pFullPath ) = 0;
-	virtual void		InitShaders() = 0;
 
 	// Find me a shader!
 	virtual IShader*	FindShader( char const* pShaderName ) = 0;

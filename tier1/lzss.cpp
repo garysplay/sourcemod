@@ -54,7 +54,7 @@ void CLZSS::BuildHash( const unsigned char *pData )
 	lzss_list_t *pList;
 	lzss_node_t *pTarget;
 
-	intp targetindex = (intp)pData & ( m_nWindowSize - 1 );
+	int targetindex = (unsigned int)( uintp( pData ) & 0xFFFFFFFF ) & ( m_nWindowSize - 1 );
 	pTarget = &m_pHashTarget[targetindex];
 	if ( pTarget->pData )
 	{

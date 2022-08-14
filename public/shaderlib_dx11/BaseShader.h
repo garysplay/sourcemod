@@ -202,22 +202,13 @@ public:
 	void SetDefaultBlendingShadowState( int textureVar = -1, bool isBaseTexture = true );
 	void SingleTextureLightmapBlendMode( );
 
-	virtual void StoreConstantGammaToLinear( float *pOut, int param );
-	virtual void StoreEnvmapTint( Vector4D &out, int param );
-	virtual void StoreEnvmapTintGammaToLinear( Vector4D &out, int param );
-	virtual void StoreVertexShaderTextureScaledTransform( Vector4D *pOut, int transformVar, int scaleVar );
-	virtual void StoreVertexShaderTextureTransform( Vector4D *pOut, int param );
-
 	virtual void SetInternalVertexShaderConstantBuffers();
 	virtual void SetInternalVertexShaderConstantBuffersNoSkinning();
 	virtual void SetInternalPixelShaderConstantBuffers();
-	virtual void SetInternalGeometryShaderConstantBuffers();
 	virtual void SetPixelShaderConstantBuffer(int slot, ConstantBufferHandle_t cbuffer);
 	virtual void SetVertexShaderConstantBuffer(int slot, ConstantBufferHandle_t cbuffer);
 	virtual void SetPixelShaderConstantBuffer(int slot, ShaderInternalConstantBuffer_t cbuffer);
 	virtual void SetVertexShaderConstantBuffer(int slot, ShaderInternalConstantBuffer_t cbuffer);
-	virtual void SetGeometryShaderConstantBuffer( int slot, ConstantBufferHandle_t cbuffer );
-	virtual void SetGeometryShaderConstantBuffer( int slot, ShaderInternalConstantBuffer_t cbuffer );
 	virtual void UpdateConstantBuffer(ConstantBufferHandle_t cbuffer, void* pNewData);
 
 	// Helpers for color modulation
@@ -295,13 +286,11 @@ public:
 
 protected:
 	SoftwareVertexShader_t m_SoftwareVertexShader;
-	bool m_bInitialized;
 
 	static const char *s_pTextureGroupName; // Current material's texture group name.
-	static IShaderShadowDX11*s_pShaderShadow;
+	static IShaderShadowDX11 *s_pShaderShadow;
 	static IShaderAPIDX11 *s_pShaderAPI;
 	static IShaderInit *s_pShaderInit;
-	static IShaderDevice* s_pShaderDevice;
 
 private:
 	static int s_nModulationFlags;

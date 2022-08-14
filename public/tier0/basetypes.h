@@ -12,6 +12,7 @@
 #include "wchartypes.h"
 
 #include "tier0/valve_off.h"
+#include <string.h>
 
 #ifdef _WIN32
 #pragma once

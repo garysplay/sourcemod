@@ -32,8 +32,8 @@ class hk_Math
 		
 		static inline hk_real asin( hk_real );
 		static inline hk_real acos( hk_real );
-		static inline hk_real max( hk_real, hk_real );
-		static inline hk_real min( hk_real, hk_real );
+		static inline hk_real max_( hk_real, hk_real );
+		static inline hk_real min_( hk_real, hk_real );
 
 		static inline hk_real floor( hk_real );
 		static inline hk_real ceil( hk_real );
@@ -48,6 +48,6 @@ class hk_Math
 		static unsigned int hk_random_seed;
 };
 
-#include <hk_math/math.inl>
+#include <hk_math/base_math.inl>
 
 #endif /* HK_MATH_MATH_H */

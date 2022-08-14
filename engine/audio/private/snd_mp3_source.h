@@ -135,7 +135,7 @@ public:
 	int				GetOutputData( void **pData, int64 samplePosition, int sampleCount, char copyBuf[AUDIOSOURCE_COPYBUF_SIZE] ) OVERRIDE;
 
 	// IWaveStreamSource
-	int UpdateLoopingSamplePosition( int64 samplePosition ) OVERRIDE
+	int64 UpdateLoopingSamplePosition( int64 samplePosition ) OVERRIDE
 	{
 		return samplePosition;
 	}

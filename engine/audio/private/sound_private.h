@@ -44,7 +44,7 @@ void SNDDMA_Shutdown(void);
 // User-setable variables
 // ====================================================================
 
-extern int g_paintedtime;
+extern int64 g_paintedtime;
 
 extern bool	snd_initialized;
 
@@ -70,8 +70,8 @@ extern IAudioDevice *g_AudioDevice;
 extern "C" {
 #endif // __cplusplus
 
-void S_TransferStereo16 (void *pOutput, const portable_samplepair_t *pfront, int lpaintedtime, int endtime);
-void S_TransferPaintBuffer(void *pOutput, const portable_samplepair_t *pfront, int lpaintedtime, int endtime);
+void S_TransferStereo16 (void *pOutput, const portable_samplepair_t *pfront, int64 lpaintedtime, int64 endtime);
+void S_TransferPaintBuffer(void *pOutput, const portable_samplepair_t *pfront, int64 lpaintedtime, int64 endtime);
 void S_MixBufferUpsample2x( int count, portable_samplepair_t *pbuffer, portable_samplepair_t *pfiltermem, int cfltmem, int filtertype );
 
 extern void Mix8MonoWavtype( channel_t *pChannel, portable_samplepair_t *pOutput, int *volume, byte *pData, int inputOffset, fixedint rateScaleFix, int outCount );
@@ -88,7 +88,7 @@ extern bool SND_IsMouth( channel_t *pChannel );
 extern bool SND_ShouldPause( channel_t *pChannel );
 extern bool SND_IsRecording();
 
-void MIX_PaintChannels( int endtime, bool bIsUnderwater );
+void MIX_PaintChannels( int64 endtime, bool bIsUnderwater );
 // Play a big of zeroed out sound
 void MIX_PaintNullChannels( int endtime );
 

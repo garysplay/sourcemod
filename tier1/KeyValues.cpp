@@ -41,7 +41,7 @@ intp (*KeyValues::s_pfGetSymbolForString)( const char *name, bool bCreate ) = &K
 const char *(*KeyValues::s_pfGetStringForSymbol)( intp symbol ) = &KeyValues::GetStringForSymbolClassic;
 CKeyValuesGrowableStringTable *KeyValues::s_pGrowableStringTable = NULL;
 
-#define KEYVALUES_TOKEN_SIZE	4096
+#define KEYVALUES_TOKEN_SIZE	(1024 * 32)
 static char s_pTokenBuf[KEYVALUES_TOKEN_SIZE];
 
 
@@ -1321,16 +1321,8 @@ uint64 KeyValues::GetUint64( const char *keyName, uint64 defaultValue )
 		{
 	    case TYPE_STRING:
 			return (uint64)Q_atoi64(dat->m_sValue);
-
-
-
-
 		case TYPE_WSTRING:
 			return _wtoi64(dat->m_wsValue);
-
-
-
-
 		case TYPE_FLOAT:
 			return (int)dat->m_flValue;
 		case TYPE_UINT64:
@@ -1423,7 +1415,7 @@ const char *KeyValues::GetString( const char *keyName, const char *defaultValue 
 			SetString( keyName, buf );
 			break;
 		case TYPE_PTR:
-			Q_snprintf( buf, sizeof( buf ), "%lld", (int64)(size_t)dat->m_pValue );
+			Q_snprintf( buf, sizeof( buf ), "%lld", (int64)dat->m_pValue );
 			SetString( keyName, buf );
 			break;
 		case TYPE_INT:
@@ -1476,7 +1468,7 @@ const wchar_t *KeyValues::GetWString( const char *keyName, const wchar_t *defaul
 			SetWString( keyName, wbuf);
 			break;
 		case TYPE_PTR:
-			swprintf( wbuf, Q_ARRAYSIZE(wbuf), L"%lld", (int64)(size_t)dat->m_pValue );
+			swprintf( wbuf, Q_ARRAYSIZE(wbuf), L"%lld", (int64)dat->m_pValue );
 			SetWString( keyName, wbuf );
 			break;
 		case TYPE_INT:
@@ -2661,7 +2653,7 @@ bool KeyValues::WriteAsBinary( CUtlBuffer &buffer )
 			}
 		case TYPE_PTR:
 		{
-#if defined( PLATFORM_64BITS )
+#if !defined( PLATFORM_64BITS )
 				// We only put an int here, because 32-bit clients do not expect 64 bits. It'll cause them to read the wrong
 				// amount of data and then crash. Longer term, we may bump this up in size on all platforms, but short term 
 				// we don't really have much of a choice other than sticking in something that appears to not be NULL.
@@ -2784,7 +2776,7 @@ bool KeyValues::ReadAsBinary( CUtlBuffer &buffer, int nStackDepth )
 			}
 		case TYPE_PTR:
 		    {
-#if defined( PLATFORM_64BITS )
+#if !defined( PLATFORM_64BITS )
 				// We need to ensure we only read 32 bits out of the stream because 32 bit clients only wrote 
 				// 32 bits of data there. The actual pointer is irrelevant, all that we really care about here
 				// contractually is whether the pointer is zero or not zero.
@@ -2824,13 +2816,13 @@ bool KeyValues::ReadAsBinary( CUtlBuffer &buffer, int nStackDepth )
 void *KeyValues::operator new( size_t iAllocSize )
 {
 	MEM_ALLOC_CREDIT();
-	return KeyValuesSystem()->AllocKeyValuesMemory( (int)iAllocSize );
+	return KeyValuesSystem()->AllocKeyValuesMemory( iAllocSize );
 }
 
 void *KeyValues::operator new( size_t iAllocSize, int nBlockUse, const char *pFileName, int nLine )
 {
 	MemAlloc_PushAllocDbgInfo( pFileName, nLine );
-	void *p = KeyValuesSystem()->AllocKeyValuesMemory( (int)iAllocSize );
+	void *p = KeyValuesSystem()->AllocKeyValuesMemory( iAllocSize );
 	MemAlloc_PopAllocDbgInfo();
 	return p;
 }
@@ -2840,12 +2832,12 @@ void *KeyValues::operator new( size_t iAllocSize, int nBlockUse, const char *pFi
 //-----------------------------------------------------------------------------
 void KeyValues::operator delete( void *pMem )
 {
-	KeyValuesSystem()->FreeKeyValuesMemory(pMem);
+	KeyValuesSystem()->FreeKeyValuesMemory((KeyValues*)pMem);
 }
 
 void KeyValues::operator delete( void *pMem, int nBlockUse, const char *pFileName, int nLine )
 {
-	KeyValuesSystem()->FreeKeyValuesMemory(pMem);
+	KeyValuesSystem()->FreeKeyValuesMemory((KeyValues*)pMem);
 }
 
 void KeyValues::UnpackIntoStructure( KeyValuesUnpackStructure const *pUnpackTable, void *pDest, size_t DestSizeInBytes )
@@ -2919,8 +2911,13 @@ void KeyValues::UnpackIntoStructure( KeyValuesUnpackStructure const *pUnpackTabl
 				Assert( dest_field + pUnpackTable->m_nFieldSize < pDestEnd );
 
 				char *dest_s=(char *) dest_field;
-				strncpy( dest_s, GetString( pUnpackTable->m_pKeyName,
-											pUnpackTable->m_pKeyDefault ),
+				char const *pDefault = "";
+				if ( pUnpackTable->m_pKeyDefault )
+				{
+					pDefault = pUnpackTable->m_pKeyDefault;
+				}
+				strncpy( dest_s,
+					GetString( pUnpackTable->m_pKeyName, pDefault ),
 						 pUnpackTable->m_nFieldSize );
 
 			}

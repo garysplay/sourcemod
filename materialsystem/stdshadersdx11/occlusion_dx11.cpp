@@ -4,7 +4,7 @@
 //
 // $NoKeywords: $
 //=============================================================================//
-#if 1
+#if 0
 #include "BaseVSShader.h"
 
 #include "writez_vs40.inc"
