@@ -1060,7 +1060,7 @@ std::vector<float> fps_history;
 int i = 0;
 int average = 0;
 float prev_time = 0;
-float m_fDynscale = 0;
+float m_fDynscale = 1;
 
 float GetDynamicResolutionScale()
 {
