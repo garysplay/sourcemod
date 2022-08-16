@@ -1112,8 +1112,7 @@ double CViewRender::DynResScale()
 	if (mat_drs_debug.GetBool())
 	{
 		engine->Con_NPrintf(11, "Current FPS: %3f", 1/gpGlobals->absoluteframetime);
-		engine->Con_NPrintf(14, "Average FPS: %3f", fps_drs);
-		engine->Con_NPrintf(17, "Current ResScale: %3f", result);
+		engine->Con_NPrintf(14, "Current ResScale: %3f", result);
 	}
 	m_fDynscale = result;
 	return result;

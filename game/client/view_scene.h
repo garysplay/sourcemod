@@ -35,6 +35,7 @@ int HudTransform( const Vector& point, Vector& screen );
 extern ConVar r_updaterefracttexture;
 extern int g_viewscene_refractUpdateFrame;
 extern bool g_bAllowMultipleRefractUpdatesPerScenePerFrame;
+extern float GetDynamicResolutionScale();
 bool DrawingShadowDepthView( void );
 bool DrawingMainView();
 
@@ -95,10 +96,10 @@ inline void UpdateScreenEffectTexture( int textureIndex, int x, int y, int w, in
 		// nonpow2 rendertargets aren't supported), so lets figure it out here.
 		float scaleX = ( float )nDestWidth / ( float )nSrcWidth;
 		float scaleY = ( float )nDestHeight / ( float )nSrcHeight;
-		destRect.x = srcRect.x * scaleX;
-		destRect.y = srcRect.y * scaleY;
-		destRect.width = srcRect.width * scaleX;
-		destRect.height = srcRect.height * scaleY;
+		destRect.x = srcRect.x * scaleX * GetDynamicResolutionScale();
+		destRect.y = srcRect.y * scaleY * GetDynamicResolutionScale();
+		destRect.width = srcRect.width * scaleX * GetDynamicResolutionScale();
+		destRect.height = srcRect.height * scaleY * GetDynamicResolutionScale();
 		destRect.x = clamp( destRect.x, 0, nDestWidth );
 		destRect.y = clamp( destRect.y, 0, nDestHeight );
 		destRect.width = clamp( destRect.width, 0, nDestWidth - destRect.x );
@@ -117,6 +118,19 @@ inline void UpdateScreenEffectTexture( int textureIndex, int x, int y, int w, in
 	}
 }
 
+inline void DrawScreenEffectQuad(IMaterial* pMaterial, int w, int h)
+{
+	if (pMaterial != NULL)
+	{
+		CMatRenderContextPtr pRenderContext(materials);
+		pRenderContext->DrawScreenSpaceRectangle(
+			pMaterial,
+			0, 0, w, h,
+			0, 0, w - 1, h - 1,
+			w, h);
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Draws the screen effect
 //-----------------------------------------------------------------------------
@@ -128,7 +142,7 @@ inline void DrawScreenEffectMaterial( IMaterial *pMaterial, int x, int y, int w,
 
 	CMatRenderContextPtr pRenderContext( materials );
 
-	pRenderContext->DrawScreenSpaceRectangle( pMaterial, x, y, w, h,
+	pRenderContext->DrawScreenSpaceRectangle( pMaterial, x * GetDynamicResolutionScale(), y * GetDynamicResolutionScale(), w * GetDynamicResolutionScale(), h * GetDynamicResolutionScale(),
 		actualRect.x, actualRect.y, actualRect.x+actualRect.width-1, actualRect.y+actualRect.height-1, 
 		pTexture->GetActualWidth(), pTexture->GetActualHeight() );
 }
