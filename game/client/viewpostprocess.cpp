@@ -1520,40 +1520,15 @@ void DumpTGAofRenderTarget( const int width, const int height, const char *pFile
 
 static bool s_bScreenEffectTextureIsUpdated = false;
 
-static bool s_bHDRBloomIsEnabled = false;
-extern ConVar mat_drs_enable;
-
-void HDRBloom_Callback(IConVar* pConVar, const char* pOldValue, float flOldValue)
-{
-	if (mat_drs_enable.GetBool())
-	{
-		s_bHDRBloomIsEnabled = false;
-		Warning("Dynamic Resolution Scaling is ON! Disable DRS before enabling HDR Bloom!\n");
-	}
-	else if (flOldValue)
-	{
-		s_bHDRBloomIsEnabled = false;
-		Msg("HDR Bloom disabled!\n");
-	}
-	else
-	{
-		s_bHDRBloomIsEnabled = true;
-		Msg("HDR Bloom enabled!\n");
-	}
-}
-
-ConVar mat_hdrbloom_enable("mat_hdrbloom_enable", "1", FCVAR_ARCHIVE, "Enable or disable HDR Bloom", HDRBloom_Callback);
+ConVar mat_hdrbloom_enable("mat_hdrbloom_enable", "1", FCVAR_ARCHIVE, "Enable or disable HDR Bloom");
 
 static void GenerateHDRBloomTexture( IMatRenderContext *pRenderContext, float flBloomScale,
 										int x, int y, int w, int h )
 {
-	//pRenderContext->PushRenderTargetAndViewport();
 	ITexture *pSrc = materials->FindTexture( "_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET );
-	int nSrcWidth = pSrc->GetActualWidth();
-	int nSrcHeight = pSrc->GetActualHeight(); //,dest_height;
 
 	IMaterial *blend_mat = materials->FindMaterial( "dev/hdrbloom_blend", TEXTURE_GROUP_OTHER, true );
-	IMaterial* downsample_mat = materials->FindMaterial("dev/downsample", TEXTURE_GROUP_OTHER, true);
+	IMaterial* downsample_mat = materials->FindMaterial("dev/hdrbloom_downsample", TEXTURE_GROUP_OTHER, true);
 	IMaterial *blur_mat1 = materials->FindMaterial( "dev/blur_bloom1", TEXTURE_GROUP_OTHER, true );
 	IMaterial *blur_mat2 = materials->FindMaterial( "dev/blur_bloom2", TEXTURE_GROUP_OTHER, true );
 	IMaterial *blur_mat3 = materials->FindMaterial( "dev/blur_bloom3", TEXTURE_GROUP_OTHER, true );
@@ -1567,10 +1542,7 @@ static void GenerateHDRBloomTexture( IMatRenderContext *pRenderContext, float fl
 
 	pRenderContext->PushRenderTargetAndViewport();
 	SetRenderTargetAndViewPort(pSrc);
-	DrawScreenEffectQuad(downsample_mat, pSrc->GetActualWidth(), pSrc->GetActualHeight());
-	/*pRenderContext->DrawScreenSpaceRectangle(downsample_mat, 0, 0, nSrcWidth, nSrcHeight,
-		0, 0, nSrcWidth - 2, nSrcHeight - 2,
-		nSrcWidth, nSrcHeight);*/
+	DrawScreenEffectQuad(downsample_mat, w-1, h-1 );
 	pRenderContext->PopRenderTargetAndViewport();
 
 	pRenderContext->PushRenderTargetAndViewport();
@@ -2379,7 +2351,7 @@ void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, b
 					s_bScreenEffectTextureIsUpdated = true;
 				}
 
-				if ( bPerformBloom && s_bHDRBloomIsEnabled)
+				if ( bPerformBloom && mat_hdrbloom_enable.GetBool())
 				{
 					GenerateHDRBloomTexture( pRenderContext, flBloomScale, x, y, w, h );
 				}

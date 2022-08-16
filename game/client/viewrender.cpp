@@ -794,6 +794,7 @@ CLIENTEFFECT_REGISTER_BEGIN( PrecachePostProcessingEffects )
 	CLIENTEFFECT_MATERIAL( "dev/engine_post" )
 	CLIENTEFFECT_MATERIAL( "dev/motion_blur" )
 	CLIENTEFFECT_MATERIAL( "dev/upscale" )
+	CLIENTEFFECT_MATERIAL( "dev/upscale_effects" )
 
 	CLIENTEFFECT_MATERIAL( "dev/blur_bloom1" )
 	CLIENTEFFECT_MATERIAL( "dev/blur_bloom2" )
@@ -801,6 +802,7 @@ CLIENTEFFECT_REGISTER_BEGIN( PrecachePostProcessingEffects )
 	CLIENTEFFECT_MATERIAL( "dev/blur_bloom4" )
 	CLIENTEFFECT_MATERIAL( "dev/blur_bloom5" )
 	CLIENTEFFECT_MATERIAL( "dev/hdrbloom_blend" )
+	CLIENTEFFECT_MATERIAL( "dev/hdrbloom_downsample" )
 
 #ifdef TF_CLIENT_DLL
 	CLIENTEFFECT_MATERIAL( "dev/pyro_blur_filter_y" )
@@ -2157,17 +2159,17 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 #endif
 	{
 		CMatRenderContextPtr pRenderContext( materials );
+		float dyn_scale = GetDynamicResolutionScale();
 
 		ITexture	*pFullFrameFB1 = materials->FindTexture( "_rt_FullFrameFB1", TEXTURE_GROUP_RENDER_TARGET );
 		IMaterial	*pCopyMaterial = materials->FindMaterial( "dev/upscale", TEXTURE_GROUP_OTHER );
 		pCopyMaterial->IncrementReferenceCount();
 
 		Rect_t	DownscaleRect, UpscaleRect;
-
-		DownscaleRect.x = view.x;
-		DownscaleRect.y = view.y;
-		DownscaleRect.width = view.width;
-		DownscaleRect.height = view.height;
+		DownscaleRect.x = view.x * dyn_scale;
+		DownscaleRect.y = view.y * dyn_scale;
+		DownscaleRect.width = view.width * dyn_scale;
+		DownscaleRect.height = view.height * dyn_scale;
 
 		UpscaleRect.x = view.m_nUnscaledX;
 		UpscaleRect.y = view.m_nUnscaledY;
@@ -2175,9 +2177,9 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 		UpscaleRect.height = view.m_nUnscaledHeight;
 
 		pRenderContext->CopyRenderTargetToTextureEx( pFullFrameFB1, 0, &DownscaleRect, &DownscaleRect );
-		pRenderContext->DrawScreenSpaceRectangle( pCopyMaterial, UpscaleRect.x, UpscaleRect.y, UpscaleRect.width, UpscaleRect.height,
-			DownscaleRect.x, DownscaleRect.y, DownscaleRect.x+DownscaleRect.width-1, DownscaleRect.y+DownscaleRect.height-1, 
-			pFullFrameFB1->GetActualWidth(), pFullFrameFB1->GetActualHeight() );
+		pRenderContext->DrawScreenSpaceRectangle(pCopyMaterial, UpscaleRect.x, UpscaleRect.y, UpscaleRect.width, UpscaleRect.height,
+			DownscaleRect.x, DownscaleRect.y, DownscaleRect.x + DownscaleRect.width - 1, DownscaleRect.y + DownscaleRect.height - 1,
+			pFullFrameFB1->GetActualWidth(), pFullFrameFB1->GetActualHeight());
 
 		pCopyMaterial->DecrementReferenceCount();
 	}
@@ -2378,12 +2380,11 @@ void CViewRender::Render2DEffectsPreHUD( const CViewSetup &view )
 
 		pRenderContext->Viewport(0, 0, view.m_nUnscaledWidth, view.m_nUnscaledHeight);
 
-		pRenderContext->CopyTextureToRenderTargetEx(0, materials->FindTexture("_rt_FullFrameFB1", TEXTURE_GROUP_RENDER_TARGET), &UpscaleRect , &OGRect);
-		//pRenderContext->DrawScreenSpaceRectangle(pCopyMaterial, UpscaleRect.x, UpscaleRect.y, UpscaleRect.width, UpscaleRect.height,
-		//	OGRect.x, OGRect.y, OGRect.x + OGRect.width - 1, OGRect.y + OGRect.height - 1,
-		//	pFullFrameFB1->GetActualWidth(), pFullFrameFB1->GetActualHeight());
-
-		//pCopyMaterial->DecrementReferenceCount();
+		pRenderContext->CopyRenderTargetToTextureEx(materials->FindTexture("_rt_FullFrameFB1", TEXTURE_GROUP_RENDER_TARGET), 0, &UpscaleRect, &OGRect);
+		pRenderContext->DrawScreenSpaceRectangle(materials->FindMaterial("dev/upscale_effects", TEXTURE_GROUP_OTHER), UpscaleRect.x, UpscaleRect.y, UpscaleRect.width, UpscaleRect.height,
+			OGRect.x, OGRect.y, OGRect.x + OGRect.width + 1, OGRect.y + OGRect.height + 1,
+			materials->FindTexture("_rt_FullFrameFB1", TEXTURE_GROUP_RENDER_TARGET)->GetActualWidth(), 
+			materials->FindTexture("_rt_FullFrameFB1", TEXTURE_GROUP_RENDER_TARGET)->GetActualHeight());
 	}
 #endif
 }

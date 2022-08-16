@@ -299,7 +299,7 @@ static void CreateHDRBloomRenderTargets()
 			int power = pow(2, i);
 
 			auto rt = g_pMaterialSystem->CreateNamedRenderTargetTextureEx2(
-				szRTname, w / power, h / power, RT_SIZE_OFFSCREEN,
+				szRTname, w / power, h / power, RT_SIZE_DEFAULT,
 				g_pMaterialSystem->GetBackBufferFormat(),
 				MATERIAL_RT_DEPTH_SHARED,
 				TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT,
@@ -1250,21 +1250,12 @@ void CViewRender::Render( vrect_t *rect )
 
 	    ToolFramework_AdjustEngineViewport( vr.x, vr.y, vr.width, vr.height );
 
-	    float flViewportScale = mat_viewportscale.GetFloat();
-		float dyn_scale = 1.0f;
+		float dyn_scale = mat_viewportscale.GetFloat();
 #ifdef DRS_FEATURE
 		extern ConVar mat_hdrbloom_enable;
 		if (mat_drs_enable.GetBool())
-		{
-			if (mat_hdrbloom_enable.GetBool())
-			{
-				Warning("You can't use HDR Bloom with DRS! Disable HDR Bloom to use DRS!\n");
-				mat_drs_enable.SetValue(0);
-			}
-			else
-			{
-				dyn_scale = DynResScale();
-			}
+		{			
+			 DynResScale();
 		}
 #endif
 		view.m_nUnscaledX = vr.x;
