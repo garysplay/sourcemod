@@ -795,6 +795,13 @@ CLIENTEFFECT_REGISTER_BEGIN( PrecachePostProcessingEffects )
 	CLIENTEFFECT_MATERIAL( "dev/motion_blur" )
 	CLIENTEFFECT_MATERIAL( "dev/upscale" )
 
+	CLIENTEFFECT_MATERIAL( "dev/blur_bloom1" )
+	CLIENTEFFECT_MATERIAL( "dev/blur_bloom2" )
+	CLIENTEFFECT_MATERIAL( "dev/blur_bloom3" )
+	CLIENTEFFECT_MATERIAL( "dev/blur_bloom4" )
+	CLIENTEFFECT_MATERIAL( "dev/blur_bloom5" )
+	CLIENTEFFECT_MATERIAL( "dev/hdrbloom_blend" )
+
 #ifdef TF_CLIENT_DLL
 	CLIENTEFFECT_MATERIAL( "dev/pyro_blur_filter_y" )
 	CLIENTEFFECT_MATERIAL( "dev/pyro_blur_filter_x" )
@@ -1902,7 +1909,6 @@ void CViewRender::FreezeFrame( float flFreezeTime )
 
 const char *COM_GetModDirectory();
 
-
 //-----------------------------------------------------------------------------
 // Purpose: This renders the entire 3D view and the in-game hud/viewmodel
 // Input  : &view - 
@@ -2357,7 +2363,7 @@ void CViewRender::Render2DEffectsPreHUD( const CViewSetup &view )
 	if (mat_drs_enable.GetBool())
 	{
 		CMatRenderContextPtr pRenderContext(materials);
-		//pRenderContext->Viewport(0, 0, view.width, view.height);
+		pRenderContext->Viewport(0, 0, view.width, view.height);
 		Rect_t UpscaleRect, OGRect;
 
 		OGRect.x = view.m_nUnscaledX;
@@ -2370,9 +2376,9 @@ void CViewRender::Render2DEffectsPreHUD( const CViewSetup &view )
 		UpscaleRect.width = view.width;
 		UpscaleRect.height = view.height;
 
-		//pRenderContext->Viewport(0, 0, view.m_nUnscaledWidth, view.m_nUnscaledHeight);
+		pRenderContext->Viewport(0, 0, view.m_nUnscaledWidth, view.m_nUnscaledHeight);
 
-		pRenderContext->CopyTextureToRenderTargetEx(0, materials->FindTexture("_rt_FullFrameFB1", TEXTURE_GROUP_RENDER_TARGET), &UpscaleRect, &OGRect);
+		pRenderContext->CopyTextureToRenderTargetEx(0, materials->FindTexture("_rt_FullFrameFB1", TEXTURE_GROUP_RENDER_TARGET), &UpscaleRect , &OGRect);
 		//pRenderContext->DrawScreenSpaceRectangle(pCopyMaterial, UpscaleRect.x, UpscaleRect.y, UpscaleRect.width, UpscaleRect.height,
 		//	OGRect.x, OGRect.y, OGRect.x + OGRect.width - 1, OGRect.y + OGRect.height - 1,
 		//	pFullFrameFB1->GetActualWidth(), pFullFrameFB1->GetActualHeight());

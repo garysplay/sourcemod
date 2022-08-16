@@ -1520,82 +1520,97 @@ void DumpTGAofRenderTarget( const int width, const int height, const char *pFile
 
 static bool s_bScreenEffectTextureIsUpdated = false;
 
-static void Generate8BitBloomTexture( IMatRenderContext *pRenderContext, float flBloomScale,
+static bool s_bHDRBloomIsEnabled = false;
+extern ConVar mat_drs_enable;
+
+void HDRBloom_Callback(IConVar* pConVar, const char* pOldValue, float flOldValue)
+{
+	if (mat_drs_enable.GetBool())
+	{
+		s_bHDRBloomIsEnabled = false;
+		Warning("Dynamic Resolution Scaling is ON! Disable DRS before enabling HDR Bloom!\n");
+	}
+	else if (flOldValue)
+	{
+		s_bHDRBloomIsEnabled = false;
+		Msg("HDR Bloom disabled!\n");
+	}
+	else
+	{
+		s_bHDRBloomIsEnabled = true;
+		Msg("HDR Bloom enabled!\n");
+	}
+}
+
+ConVar mat_hdrbloom_enable("mat_hdrbloom_enable", "1", FCVAR_ARCHIVE, "Enable or disable HDR Bloom", HDRBloom_Callback);
+
+static void GenerateHDRBloomTexture( IMatRenderContext *pRenderContext, float flBloomScale,
 										int x, int y, int w, int h )
 {
-	tmZone( TELEMETRY_LEVEL0, TMZF_NONE, "%s", __FUNCTION__ );
-
-	pRenderContext->PushRenderTargetAndViewport();
+	//pRenderContext->PushRenderTargetAndViewport();
 	ITexture *pSrc = materials->FindTexture( "_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET );
 	int nSrcWidth = pSrc->GetActualWidth();
 	int nSrcHeight = pSrc->GetActualHeight(); //,dest_height;
 
-	// Counter-Strike: Source uses a different downsample algorithm than other games
-	#ifdef CSTRIKE_DLL
-		IMaterial *downsample_mat = materials->FindMaterial( "dev/downsample_non_hdr_cstrike", TEXTURE_GROUP_OTHER, true);
-	#else
-		IMaterial *downsample_mat = materials->FindMaterial( "dev/downsample_non_hdr", TEXTURE_GROUP_OTHER, true);
-	#endif
+	IMaterial *blend_mat = materials->FindMaterial( "dev/hdrbloom_blend", TEXTURE_GROUP_OTHER, true );
+	IMaterial* downsample_mat = materials->FindMaterial("dev/downsample", TEXTURE_GROUP_OTHER, true);
+	IMaterial *blur_mat1 = materials->FindMaterial( "dev/blur_bloom1", TEXTURE_GROUP_OTHER, true );
+	IMaterial *blur_mat2 = materials->FindMaterial( "dev/blur_bloom2", TEXTURE_GROUP_OTHER, true );
+	IMaterial *blur_mat3 = materials->FindMaterial( "dev/blur_bloom3", TEXTURE_GROUP_OTHER, true );
+	IMaterial *blur_mat4 = materials->FindMaterial( "dev/blur_bloom4", TEXTURE_GROUP_OTHER, true );
+	IMaterial *blur_mat5 = materials->FindMaterial( "dev/blur_bloom5", TEXTURE_GROUP_OTHER, true );
+	ITexture *dest_rt1 = materials->FindTexture( "_rt_Bloom1", TEXTURE_GROUP_RENDER_TARGET );
+	ITexture *dest_rt2 = materials->FindTexture( "_rt_Bloom2", TEXTURE_GROUP_RENDER_TARGET );
+	ITexture *dest_rt3 = materials->FindTexture( "_rt_Bloom3", TEXTURE_GROUP_RENDER_TARGET );
+	ITexture *dest_rt4 = materials->FindTexture( "_rt_Bloom4", TEXTURE_GROUP_RENDER_TARGET );
+	ITexture *dest_rt5 = materials->FindTexture( "_rt_Bloom5", TEXTURE_GROUP_RENDER_TARGET );
 
-	IMaterial *xblur_mat = materials->FindMaterial( "dev/blurfilterx_nohdr", TEXTURE_GROUP_OTHER, true );
-	IMaterial *yblur_mat = materials->FindMaterial( "dev/blurfiltery_nohdr", TEXTURE_GROUP_OTHER, true );
-	ITexture *dest_rt0 = materials->FindTexture( "_rt_SmallFB0", TEXTURE_GROUP_RENDER_TARGET );
-	ITexture *dest_rt1 = materials->FindTexture( "_rt_SmallFB1", TEXTURE_GROUP_RENDER_TARGET );
-
-	// *Everything* in here relies on the small RTs being exactly 1/4 the full FB res
-	Assert( dest_rt0->GetActualWidth()  == pSrc->GetActualWidth()  / 4 );
-	Assert( dest_rt0->GetActualHeight() == pSrc->GetActualHeight() / 4 );
-	Assert( dest_rt1->GetActualWidth()  == pSrc->GetActualWidth()  / 4 );
-	Assert( dest_rt1->GetActualHeight() == pSrc->GetActualHeight() / 4 );
-
-	// Downsample fb to rt0
-	SetRenderTargetAndViewPort( dest_rt0 );
-	// note the -2's below. Thats because we are downsampling on each axis and the shader
-	// accesses pixels on both sides of the source coord
-	pRenderContext->DrawScreenSpaceRectangle(	downsample_mat, 0, 0, nSrcWidth/4, nSrcHeight/4,
-												0, 0, nSrcWidth-2, nSrcHeight-2,
-												nSrcWidth, nSrcHeight );
-
-	if ( IsX360() )
-	{
-		pRenderContext->CopyRenderTargetToTextureEx( dest_rt0, 0, NULL, NULL );
-	}
-	else if ( g_bDumpRenderTargets )
-	{
-		DumpTGAofRenderTarget( nSrcWidth/4, nSrcHeight/4, "QuarterSizeFB" );
-	}
-
-	// Gaussian blur x rt0 to rt1
-	SetRenderTargetAndViewPort( dest_rt1 );
-	pRenderContext->DrawScreenSpaceRectangle(	xblur_mat, 0, 0, nSrcWidth/4, nSrcHeight/4,
-												0, 0, nSrcWidth/4-1, nSrcHeight/4-1,
-												nSrcWidth/4, nSrcHeight/4 );
-	if ( IsX360() )
-	{
-		pRenderContext->CopyRenderTargetToTextureEx( dest_rt1, 0, NULL, NULL );
-	}
-	else if ( g_bDumpRenderTargets )
-	{
-		DumpTGAofRenderTarget( nSrcWidth/4, nSrcHeight/4, "BlurX" );
-	}
-
-	// Gaussian blur y rt1 to rt0
-	SetRenderTargetAndViewPort( dest_rt0 );
-	IMaterialVar *pBloomAmountVar = yblur_mat->FindVar( "$bloomamount", NULL );
-	pBloomAmountVar->SetFloatValue( flBloomScale );
-	pRenderContext->DrawScreenSpaceRectangle(	yblur_mat, 0, 0, nSrcWidth / 4, nSrcHeight / 4,
-												0, 0, nSrcWidth / 4 - 1, nSrcHeight / 4 - 1,
-												nSrcWidth / 4, nSrcHeight / 4 );
-	if ( IsX360() )
-	{
-		pRenderContext->CopyRenderTargetToTextureEx( dest_rt0, 0, NULL, NULL );
-	}
-	else if ( g_bDumpRenderTargets )
-	{
-		DumpTGAofRenderTarget( nSrcWidth/4, nSrcHeight/4, "BlurYAndBloom" );
-	}
-
+	pRenderContext->PushRenderTargetAndViewport();
+	SetRenderTargetAndViewPort(pSrc);
+	DrawScreenEffectQuad(downsample_mat, pSrc->GetActualWidth(), pSrc->GetActualHeight());
+	/*pRenderContext->DrawScreenSpaceRectangle(downsample_mat, 0, 0, nSrcWidth, nSrcHeight,
+		0, 0, nSrcWidth - 2, nSrcHeight - 2,
+		nSrcWidth, nSrcHeight);*/
 	pRenderContext->PopRenderTargetAndViewport();
+
+	pRenderContext->PushRenderTargetAndViewport();
+	SetRenderTargetAndViewPort(dest_rt1);
+	DrawScreenEffectQuad(blur_mat1, dest_rt1->GetActualWidth(), dest_rt1->GetActualHeight());
+	pRenderContext->PopRenderTargetAndViewport();
+
+	pRenderContext->PushRenderTargetAndViewport();
+	SetRenderTargetAndViewPort(dest_rt2);
+	DrawScreenEffectQuad(blur_mat2, dest_rt2->GetActualWidth(), dest_rt2->GetActualHeight());
+	pRenderContext->PopRenderTargetAndViewport();
+
+	pRenderContext->PushRenderTargetAndViewport();
+	SetRenderTargetAndViewPort(dest_rt3);
+	DrawScreenEffectQuad(blur_mat3, dest_rt3->GetActualWidth(), dest_rt3->GetActualHeight());
+	pRenderContext->PopRenderTargetAndViewport();
+	
+	pRenderContext->PushRenderTargetAndViewport();
+	SetRenderTargetAndViewPort(dest_rt4);
+	DrawScreenEffectQuad(blur_mat4, dest_rt4->GetActualWidth(), dest_rt4->GetActualHeight());
+	pRenderContext->PopRenderTargetAndViewport();	
+	
+	pRenderContext->PushRenderTargetAndViewport();
+	SetRenderTargetAndViewPort(dest_rt5);
+	DrawScreenEffectQuad(blur_mat5, dest_rt5->GetActualWidth(), dest_rt5->GetActualHeight());
+	pRenderContext->PopRenderTargetAndViewport();
+
+	IMaterialVar *pBloomAmountVar1 = blur_mat1->FindVar( "$scale", NULL );
+	IMaterialVar *pBloomAmountVar2 = blur_mat2->FindVar( "$scale", NULL );
+	IMaterialVar *pBloomAmountVar3 = blur_mat3->FindVar( "$scale", NULL );
+	IMaterialVar *pBloomAmountVar4 = blur_mat4->FindVar( "$scale", NULL );
+	IMaterialVar *pBloomAmountVar5 = blur_mat5->FindVar( "$scale", NULL );
+	flBloomScale++;
+	pBloomAmountVar1->SetFloatValue( flBloomScale );
+	pBloomAmountVar2->SetFloatValue( flBloomScale*2 );
+	pBloomAmountVar3->SetFloatValue( flBloomScale*4 );
+	pBloomAmountVar4->SetFloatValue( flBloomScale*8 );
+	pBloomAmountVar5->SetFloatValue( flBloomScale*16 );
+
+	DrawScreenEffectMaterial(blend_mat, x, y, w, h);
 }
 
 static void DoPreBloomTonemapping( IMatRenderContext *pRenderContext, int nX, int nY, int nWidth, int nHeight, float flAutoExposureMin, float flAutoExposureMax )
@@ -2271,9 +2286,22 @@ void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, b
 		{
 			s_bScreenEffectTextureIsUpdated = false;
 
-			if ( hdrType != HDR_TYPE_NONE )
+			DoPreBloomTonemapping( pRenderContext, x, y, w, h, flAutoExposureMin, flAutoExposureMax );
+
+			int dest_width,dest_height;
+			pRenderContext->GetRenderTargetDimensions( dest_width, dest_height );
+			if (mat_dynamic_tonemapping.GetInt() || mat_show_histogram.GetInt())
 			{
-				DoPreBloomTonemapping( pRenderContext, x, y, w, h, flAutoExposureMin, flAutoExposureMax );
+				g_HDR_HistogramSystem.Update();
+				//				Warning("avg_lum=%f\n",g_HDR_HistogramSystem.GetTargetTonemapScalar());
+				if ( mat_dynamic_tonemapping.GetInt() )
+				{
+					float avg_lum = MAX( 0.0001, g_HDR_HistogramSystem.GetTargetTonemapScalar() );
+					float scalevalue = MAX( flAutoExposureMin,
+										 MIN( flAutoExposureMax, 0.18 / avg_lum ));
+					pRenderContext->SetGoalToneMappingScale( scalevalue );
+					mat_hdr_tonemapscale.SetValue( scalevalue );
+				}
 			}
 
 			// Set software-AA on by default for 360
@@ -2351,9 +2379,9 @@ void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, b
 					s_bScreenEffectTextureIsUpdated = true;
 				}
 
-				if ( bPerformBloom )
+				if ( bPerformBloom && s_bHDRBloomIsEnabled)
 				{
-					Generate8BitBloomTexture( pRenderContext, flBloomScale, x, y, w, h );
+					GenerateHDRBloomTexture( pRenderContext, flBloomScale, x, y, w, h );
 				}
 
 				// Now add bloom (dest_rt0) to the framebuffer and perform software anti-aliasing and
@@ -2547,16 +2575,25 @@ void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, b
 				}
 				bFirstFrame = false;
 			}
-
-			if ( hdrType != HDR_TYPE_NONE )
+			pRenderContext->SetRenderTarget(NULL);
+			if (mat_show_histogram.GetInt() && (engine->GetDXSupportLevel() >= 90))
+				g_HDR_HistogramSystem.DisplayHistogram();
+			if (mat_dynamic_tonemapping.GetInt())
 			{
-				DoPostBloomTonemapping( pRenderContext, x, y, w, h, flAutoExposureMin, flAutoExposureMax );
+				float avg_lum = MAX(0.0001, g_HDR_HistogramSystem.GetTargetTonemapScalar());
+				float scalevalue = MAX(flAutoExposureMin,
+					MIN(flAutoExposureMax, 0.023 / avg_lum));
+				SetToneMapScale(pRenderContext, scalevalue, flAutoExposureMin, flAutoExposureMax);
 			}
+			pRenderContext->SetRenderTarget(NULL);
+			DoPostBloomTonemapping( pRenderContext, x, y, w, h, flAutoExposureMin, flAutoExposureMax );
 		}
 		break;
 
 		case HDR_TYPE_FLOAT:
 		{
+			DoPreBloomTonemapping(pRenderContext, x, y, w, h, flAutoExposureMin, flAutoExposureMax);
+
 			int dest_width,dest_height;
 			pRenderContext->GetRenderTargetDimensions( dest_width, dest_height );
 			if (mat_dynamic_tonemapping.GetInt() || mat_show_histogram.GetInt())
@@ -2577,41 +2614,6 @@ void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, b
 			pBloomMaterial = materials->FindMaterial( "dev/floattoscreen_combine", "" );
 			IMaterialVar *pBloomAmountVar = pBloomMaterial->FindVar( "$bloomamount", NULL );
 			pBloomAmountVar->SetFloatValue( flBloomScale );
-			
-			PostProcessingPass* selectedHDR;
-			
-			if ( flBloomScale > 0.0 )
-			{
-				selectedHDR = HDRFinal_Float;
-			}
-			else
-			{
-				selectedHDR = HDRFinal_Float_NoBloom;
-			}
-			
-			if (mat_show_ab_hdr.GetInt())
-			{
-				ClipBox splitScreenClip;
-				
-				splitScreenClip.m_minx = splitScreenClip.m_miny = 0;
-
-				// Left half
-				splitScreenClip.m_maxx = dest_width / 2;
-				splitScreenClip.m_maxy = dest_height - 1;
-				
-				ApplyPostProcessingPasses(HDRSimulate_NonHDR, &splitScreenClip);
-				
-				// Right half
-				splitScreenClip.m_minx = splitScreenClip.m_maxx;
-				splitScreenClip.m_maxx = dest_width - 1;
-				
-				ApplyPostProcessingPasses(selectedHDR, &splitScreenClip);
-				
-			}
-			else
-			{
-				ApplyPostProcessingPasses(selectedHDR);
-			}
 
 			pRenderContext->SetRenderTarget(NULL);
 			if ( mat_show_histogram.GetInt() && (engine->GetDXSupportLevel()>=90))
@@ -2624,6 +2626,9 @@ void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, b
 				SetToneMapScale( pRenderContext, scalevalue, flAutoExposureMin, flAutoExposureMax );
 			}
 			pRenderContext->SetRenderTarget( NULL );
+
+			DoPostBloomTonemapping(pRenderContext, x, y, w, h, flAutoExposureMin, flAutoExposureMax);
+
 			break;
 		}
 	}

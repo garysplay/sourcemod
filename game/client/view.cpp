@@ -285,8 +285,34 @@ static ConCommand centerview( "centerview", StartPitchDrift );
 
 extern ConVar default_fov;
 
+std::vector<CTextureReference>	m_RenderTextures;
+static void CreateHDRBloomRenderTargets()
+{
+	int w, h = 0;
+	g_pMaterialSystem->GetBackBufferDimensions(w, h);
+	{
+		for (int i = 1; i <= 5; i++)
+		{
+			char szRTname[13];
+			sprintf(szRTname, "_rt_Bloom%d", i);
 
+			int power = pow(2, i);
 
+			auto rt = g_pMaterialSystem->CreateNamedRenderTargetTextureEx2(
+				szRTname, w / power, h / power, RT_SIZE_OFFSCREEN,
+				g_pMaterialSystem->GetBackBufferFormat(),
+				MATERIAL_RT_DEPTH_SHARED,
+				TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT,
+				CREATERENDERTARGETFLAGS_HDR
+			);
+
+			CTextureReference ref;
+			ref.Init(rt);
+
+			m_RenderTextures.push_back(ref);
+		}
+	}
+}
 //-----------------------------------------------------------------------------
 // Purpose: Initializes all view systems
 //-----------------------------------------------------------------------------
@@ -321,6 +347,9 @@ void CViewRender::Init( void )
 	m_flLastFOV = default_fov.GetFloat();
 #endif
 
+	materials->BeginRenderTargetAllocation();
+	CreateHDRBloomRenderTargets();
+	materials->EndRenderTargetAllocation();
 }
 
 //-----------------------------------------------------------------------------
@@ -366,6 +395,13 @@ void CViewRender::Shutdown( void )
 	m_UnderWaterOverlayMaterial.Shutdown();
 	beams->ShutdownBeams();
 	tempents->Shutdown();
+
+	for (auto& rt : m_RenderTextures)
+	{
+		rt.Shutdown();
+	}
+
+	m_RenderTextures.clear();
 }
 
 
@@ -1217,9 +1253,18 @@ void CViewRender::Render( vrect_t *rect )
 	    float flViewportScale = mat_viewportscale.GetFloat();
 		float dyn_scale = 1.0f;
 #ifdef DRS_FEATURE
+		extern ConVar mat_hdrbloom_enable;
 		if (mat_drs_enable.GetBool())
 		{
-			dyn_scale = DynResScale();
+			if (mat_hdrbloom_enable.GetBool())
+			{
+				Warning("You can't use HDR Bloom with DRS! Disable HDR Bloom to use DRS!\n");
+				mat_drs_enable.SetValue(0);
+			}
+			else
+			{
+				dyn_scale = DynResScale();
+			}
 		}
 #endif
 		view.m_nUnscaledX = vr.x;
