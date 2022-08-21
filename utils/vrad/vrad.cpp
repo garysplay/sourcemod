@@ -101,6 +101,7 @@ qboolean	do_extra = true;
 bool		debug_extra = false;
 qboolean	do_fast = false;
 qboolean	do_centersamples = false;
+bool        do_ambientocclusion = true;
 int			extrapasses = 4;
 float		smoothing_threshold = 0.7071067; // cos(45.0*(M_PI/180)) 
 // Cosine of smoothing angle(in radians)
@@ -2367,8 +2368,8 @@ int ParseCommandLine( int argc, char **argv, bool *onlydetail )
 
 	int mapArg = -1;
 
-	// default to LDR
-	SetHDRMode( false );
+	// default to HDR
+	SetHDRMode( true );
 	int i;
 	for( i=1 ; i<argc ; i++ )
 	{
@@ -2556,6 +2557,10 @@ int ParseCommandLine( int argc, char **argv, bool *onlydetail )
 		else if( !Q_stricmp( argv[i], "-onlydetail" ) )
 		{
 			*onlydetail = true;
+		}
+		else if( !Q_stricmp( argv[i], "-noambientocclusion" ) )
+		{
+			do_ambientocclusion = false;
 		}
 		else if (!Q_stricmp(argv[i],"-softsun"))
 		{

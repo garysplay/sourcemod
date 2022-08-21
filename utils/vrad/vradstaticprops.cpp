@@ -39,6 +39,21 @@
 #include "vmpi.h"
 #include "vmpi_distribute_work.h"
 
+struct RGBA16161616_t
+{
+	unsigned short r;
+	unsigned short g;
+	unsigned short b;
+	unsigned short a;
+	inline bool operator==(const RGBA16161616_t& in) const
+	{
+		return (r == in.r) && (g == in.g) && (b == in.b) && (a == in.a);
+	}
+	inline bool operator!=(const RGBA16161616_t& in) const
+	{
+		return (r != in.r) || (g != in.g) || (b != in.b) || (a != in.a);
+	}
+};
 
 #define ALIGN_TO_POW2(x,y) (((x)+(y-1))&~(y-1))
 
@@ -231,8 +246,8 @@ IPhysicsCollision *s_pPhysCollision = NULL;
 static void ConvertTexelDataToTexture(unsigned int _resX, unsigned int _resY, ImageFormat _destFmt, const CUtlVector<colorTexel_t>& _srcTexels, CUtlMemory<byte>* _outTexture);
 
 // Such a monstrosity. :(
-static void GenerateLightmapSamplesForMesh( const matrix3x4_t& _matPos, const matrix3x4_t& _matNormal, int _iThread, int _skipProp, int _nFlags, int _lightmapResX, int _lightmapResY, 
-											studiohdr_t* _pStudioHdr, mstudiomodel_t* _pStudioModel, OptimizedModel::ModelHeader_t* _pVtxModel, int _meshID, float _flScale, 
+static void GenerateLightmapSamplesForMesh( const matrix3x4_t& _matPos, const matrix3x4_t& _matNormal, int _iThread, int _skipProp, int _skipProp_ao, int _nFlags, int _lightmapResX, int _lightmapResY,
+											studiohdr_t* _pStudioHdr, mstudiomodel_t* _pStudioModel, OptimizedModel::ModelHeader_t* _pVtxModel, int _meshID, float _flScale,
 											CComputeStaticPropLightingResults *_pResults );
 
 // Debug function, converts lightmaps to linear space then dumps them out. 
@@ -1057,7 +1072,7 @@ void CVradStaticPropMgr::UnserializeModels( CUtlBuffer& buf )
 		// Changed this from using DXT1 to RGB888 because the compression artifacts were pretty nasty. 
 		// TODO: Consider changing back or basing this on user selection in hammer.
 		
-		m_StaticProps[i].m_LightmapImageFormat = IMAGE_FORMAT_RGB888;
+		m_StaticProps[i].m_LightmapImageFormat = IMAGE_FORMAT_RGBA16161616;
 		m_StaticProps[i].m_LightmapImageWidth = lump.m_nLightmapResolutionX;
 		m_StaticProps[i].m_LightmapImageHeight = lump.m_nLightmapResolutionY;
 		
@@ -1217,7 +1232,7 @@ void ComputeDirectLightingAtPoint( Vector &position, Vector &normal, Vector &out
 
 		GatherSampleLightSSE( sampleOutput, dl, -1, adjusted_pos4, &normal4, 1, iThread, nLFlags | GATHERLFLAGS_FORCE_FAST,
 		                      static_prop_id_to_skip, flEpsilon );
-		
+
 		VectorMA( outColor, sampleOutput.m_flFalloff.m128_f32[0] * sampleOutput.m_flDot[0].m128_f32[0], dl->light.intensity, outColor );
 	}
 }
@@ -1344,6 +1359,7 @@ void CVradStaticPropMgr::ComputeLighting( CStaticProp &prop, int iThread, int pr
 		return;
 
 	const int skip_prop = (g_bDisablePropSelfShadowing || (prop.m_Flags & STATIC_PROP_NO_SELF_SHADOWING)) ? prop_index : -1;
+	const int skip_prop_ao = prop_index;
 	const int nFlags = ( prop.m_Flags & STATIC_PROP_IGNORE_NORMALS ) ? GATHERLFLAGS_IGNORE_NORMALS : 0;
 
 	VMPI_SetCurrentStage( "ComputeLighting" );
@@ -1387,7 +1403,7 @@ void CVradStaticPropMgr::ComputeLighting( CStaticProp &prop, int iThread, int pr
 				// TODO: Move this into its own function. In fact, refactor this whole function.
 				if (withTexelLighting)
 				{
-					GenerateLightmapSamplesForMesh( matPos, matNormal, iThread, skip_prop, nFlags, prop.m_LightmapImageWidth, prop.m_LightmapImageHeight, pStudioHdr, pStudioModel, pVtxModel, meshID, prop.m_Scale, pResults );
+					GenerateLightmapSamplesForMesh( matPos, matNormal, iThread, skip_prop, skip_prop_ao, nFlags, prop.m_LightmapImageWidth, prop.m_LightmapImageHeight, pStudioHdr, pStudioModel, pVtxModel, meshID, prop.m_Scale, pResults );
 				}
 
 				// If we do lightmapping, we also do vertex lighting as a potential fallback. This may change.
@@ -1434,6 +1450,15 @@ void CVradStaticPropMgr::ComputeLighting( CStaticProp &prop, int iThread, int pr
 									indirectColor, iThread, true,
 									( prop.m_Flags & STATIC_PROP_IGNORE_NORMALS) != 0 );
 						}
+
+						FourVectors fourOrigin;
+						FourVectors fourNormal;
+						fourOrigin.DuplicateVector(samplePosition);
+						fourNormal.DuplicateVector(sampleNormal);
+						fltx4 AO = GatherSampleAOSSE(fourOrigin, &fourNormal, 0, skip_prop_ao);
+
+						directColor *= AO.m128_f32[0];
+						indirectColor *= AO.m128_f32[0];
 						
 						colorVerts[numVertexes].m_bValid = true;
 						colorVerts[numVertexes].m_Position = samplePosition;
@@ -1503,6 +1528,15 @@ void CVradStaticPropMgr::ComputeLighting( CStaticProp &prop, int iThread, int pr
 					Vector indirectColor;
 					ComputeIndirectLightingAtPoint( bestPosition, badVerts[nBadVertex].m_Normal,
 													indirectColor, iThread, true );
+
+					FourVectors fourOrigin;
+					FourVectors fourNormal;
+					fourOrigin.DuplicateVector(bestPosition);
+					fourNormal.DuplicateVector(badVerts[nBadVertex].m_Normal);
+					fltx4 AO = GatherSampleAOSSE(fourOrigin, &fourNormal, 0, skip_prop_ao);
+
+					directColor *= AO.m128_f32[0]; 
+					indirectColor *= AO.m128_f32[0];
 
 					// save results, not changing valid status
 					// to ensure this offset position is not considered as a viable candidate
@@ -2294,7 +2328,7 @@ inline float ComputeBarycentricDistanceToTri( Vector _barycentricCoord, Vector2D
 }
 
 // ------------------------------------------------------------------------------------------------
-static void GenerateLightmapSamplesForMesh( const matrix3x4_t& _matPos, const matrix3x4_t& _matNormal, int _iThread, int _skipProp, int _flags, int _lightmapResX, int _lightmapResY, studiohdr_t* _pStudioHdr, mstudiomodel_t* _pStudioModel, OptimizedModel::ModelHeader_t* _pVtxModel, int _meshID, float _flScale, CComputeStaticPropLightingResults *_outResults )
+static void GenerateLightmapSamplesForMesh( const matrix3x4_t& _matPos, const matrix3x4_t& _matNormal, int _iThread, int _skipProp, int _skipProp_ao, int _flags, int _lightmapResX, int _lightmapResY, studiohdr_t* _pStudioHdr, mstudiomodel_t* _pStudioModel, OptimizedModel::ModelHeader_t* _pVtxModel, int _meshID, float _flScale, CComputeStaticPropLightingResults* _outResults)
 {
 	// Could iterate and gen this if needed.
 	int nLod = 0;
@@ -2453,6 +2487,18 @@ static void GenerateLightmapSamplesForMesh( const matrix3x4_t& _matPos, const ma
 					ComputeIndirectLightingAtPoint( colorTexels[linearPos].m_WorldPosition, colorTexels[linearPos].m_WorldNormal, indirectColor, _iThread, true, (_flags & GATHERLFLAGS_IGNORE_NORMALS) != 0 );
 				}
 
+				if (do_ambientocclusion)
+				{
+					FourVectors fourOrigin;
+					FourVectors fourNormal;
+					fourOrigin.DuplicateVector(colorTexels[linearPos].m_WorldPosition);
+					fourNormal.DuplicateVector(colorTexels[linearPos].m_WorldNormal);
+					fltx4 AO = GatherSampleAOSSE(fourOrigin, &fourNormal, 0, _skipProp_ao);
+
+					directColor *= AO.m128_f32[0];
+					indirectColor *= AO.m128_f32[0];
+				}
+
 				VectorAdd(directColor, indirectColor, colorTexels[linearPos].m_Color);
 			}
 
@@ -2538,17 +2584,17 @@ static void FilterFineMipmap(unsigned int _resX, unsigned int _resY, const CUtlV
 }
 
 // ------------------------------------------------------------------------------------------------
-static void BuildFineMipmap(unsigned int _resX, unsigned int _resY, bool _applyFilter, const CUtlVector<colorTexel_t>& _srcTexels, CUtlVector<RGB888_t>* _outTexelsRGB888, CUtlVector<Vector>* _outLinear)
+static void BuildFineMipmap(unsigned int _resX, unsigned int _resY, bool _applyFilter, const CUtlVector<colorTexel_t>& _srcTexels, CUtlVector<RGBA16161616_t>* _outTexelsRGBA16161616, CUtlVector<Vector>* _outLinear)
 {
 	// At least one of these needs to be non-null, otherwise what are we doing here?
-	Assert(_outTexelsRGB888 || _outLinear);
+	Assert(_outTexelsRGBA16161616 || _outLinear);
 	Assert(!_applyFilter || _outLinear);
 	Assert(_srcTexels.Count() == GetTexelCount(_resX, _resY, false));
 
 	int texelCount = GetTexelCount(_resX, _resY, true);
 
-	if (_outTexelsRGB888)
-		(*_outTexelsRGB888).EnsureCount(texelCount);
+	if (_outTexelsRGBA16161616)
+		(*_outTexelsRGBA16161616).EnsureCount(texelCount);
 
 	if (_outLinear)
 		(*_outLinear).EnsureCount(GetTexelCount(_resX, _resY, false));
@@ -2559,18 +2605,18 @@ static void BuildFineMipmap(unsigned int _resX, unsigned int _resY, bool _applyF
 
 		FilterFineMipmap(_resX, _resY, _srcTexels, _outLinear);
 
-		if ( _outTexelsRGB888 )
+		if (_outTexelsRGBA16161616)
 		{
 			for (int i = 0; i < _srcTexels.Count(); ++i) 
 			{
-				RGBA8888_t encodedColor;
+				RGBA16161616_t encodedColor;
 
 				Vector linearColor = (*_outLinear)[i];
 
-				ConvertLinearToRGBA8888( &linearColor, (unsigned char*)&encodedColor );
-				(*_outTexelsRGB888)[i].r = encodedColor.r;
-				(*_outTexelsRGB888)[i].g = encodedColor.g;
-				(*_outTexelsRGB888)[i].b = encodedColor.b;
+				ConvertLinearToRGBA16161616( &linearColor, (unsigned short*)&encodedColor );
+				(*_outTexelsRGBA16161616)[i].r = encodedColor.r;
+				(*_outTexelsRGBA16161616)[i].g = encodedColor.g;
+				(*_outTexelsRGBA16161616)[i].b = encodedColor.b;
 			}
 		}
 	}
@@ -2579,26 +2625,26 @@ static void BuildFineMipmap(unsigned int _resX, unsigned int _resY, bool _applyF
 		for (int i = 0; i < _srcTexels.Count(); ++i) 
 		{
 			ColorRGBExp32 rgbColor;
-			RGBA8888_t encodedColor;
+			RGBA16161616_t encodedColor;
 			VectorToColorRGBExp32(_srcTexels[i].m_Color, rgbColor);
-			ConvertRGBExp32ToRGBA8888(&rgbColor, (unsigned char*)&encodedColor, (_outLinear ? (&(*_outLinear)[i]) : NULL) );
+			ConvertRGBExp32ToRGBA16161616(&rgbColor, (unsigned short*)&encodedColor, (_outLinear ? (&(*_outLinear)[i]) : NULL) );
 			// We drop alpha on the floor here, if this were to fire we'd need to consider using a different compressed format.
 			Assert(encodedColor.a == 0xFF);
 
-			if (_outTexelsRGB888)
+			if (_outTexelsRGBA16161616)
 			{
-				(*_outTexelsRGB888)[i].r = encodedColor.r;
-				(*_outTexelsRGB888)[i].g = encodedColor.g;
-				(*_outTexelsRGB888)[i].b = encodedColor.b;
+				(*_outTexelsRGBA16161616)[i].r = encodedColor.r;
+				(*_outTexelsRGBA16161616)[i].g = encodedColor.g;
+				(*_outTexelsRGBA16161616)[i].b = encodedColor.b;
 			}
 		}
 	}
 }
 
 // ------------------------------------------------------------------------------------------------
-static void FilterCoarserMipmaps(unsigned int _resX, unsigned int _resY, CUtlVector<Vector>* _scratchLinear, CUtlVector<RGB888_t> *_outTexelsRGB888)
+static void FilterCoarserMipmaps(unsigned int _resX, unsigned int _resY, CUtlVector<Vector>* _scratchLinear, CUtlVector<RGBA16161616_t> * _outTexelsRGBA16161616)
 {
-	Assert(_outTexelsRGB888);
+	Assert(_outTexelsRGBA16161616);
 
 	int srcResX = _resX;
 	int srcResY = _resY;
@@ -2628,7 +2674,7 @@ static void FilterCoarserMipmaps(unsigned int _resX, unsigned int _resY, CUtlVec
 
 				Vector sample = (tl + tr + bl + br) / 4.0f;
 
-				ConvertLinearToRGBA8888(&sample, (unsigned char*)&(*_outTexelsRGB888)[dstOffset + dstCol + dstRow * dstResX]);
+				ConvertLinearToRGBA16161616(&sample, (unsigned short*)&(*_outTexelsRGBA16161616)[dstOffset + dstCol + dstRow * dstResX]);
 
 				// Also overwrite the srcBuffer to filter the next loop. This is safe because we won't be reading this source value
 				// again during this mipmap level.
@@ -2645,9 +2691,9 @@ static void FilterCoarserMipmaps(unsigned int _resX, unsigned int _resY, CUtlVec
 }
 
 // ------------------------------------------------------------------------------------------------
-static void ConvertToDestinationFormat(unsigned int _resX, unsigned int _resY, ImageFormat _destFmt, const CUtlVector<RGB888_t>& _scratchRBG888, CUtlMemory<byte>* _outTexture)
+static void ConvertToDestinationFormat(unsigned int _resX, unsigned int _resY, ImageFormat _destFmt, const CUtlVector<RGBA16161616_t>& _scratchRBGA16161616, CUtlMemory<byte>* _outTexture)
 {
-	const ImageFormat cSrcImageFormat = IMAGE_FORMAT_RGB888;
+	const ImageFormat cSrcImageFormat = IMAGE_FORMAT_RGBA16161616;
 
 	// Converts from the scratch RGB888 buffer, which should be fully filled out to the output texture.
 	int destMemoryUsage = ImageLoader::GetMemRequired(_resX, _resY, 1, _destFmt, true);
@@ -2664,7 +2710,7 @@ static void ConvertToDestinationFormat(unsigned int _resX, unsigned int _resY, I
 		while (srcResX > 1 || srcResY > 1)
 		{
 			// Convert this mipmap level.
-			ImageLoader::ConvertImageFormat((unsigned char*)(&_scratchRBG888[srcOffset]), cSrcImageFormat, (*_outTexture).Base() + dstOffset, _destFmt, srcResX, srcResY);
+			ImageLoader::ConvertImageFormat((unsigned char*)(&_scratchRBGA16161616[srcOffset]), cSrcImageFormat, (*_outTexture).Base() + dstOffset, _destFmt, srcResX, srcResY);
 
 			// Then update offsets for the next mipmap level.
 			srcOffset += GetTexelCount(srcResX, srcResY, false);
@@ -2675,10 +2721,10 @@ static void ConvertToDestinationFormat(unsigned int _resX, unsigned int _resY, I
 		}
 
 		// Do the 1x1 level also.
-		ImageLoader::ConvertImageFormat((unsigned char*)_scratchRBG888.Base() + srcOffset, cSrcImageFormat, (*_outTexture).Base() + dstOffset, _destFmt, srcResX, srcResY);
+		ImageLoader::ConvertImageFormat((unsigned char*)_scratchRBGA16161616.Base() + srcOffset, cSrcImageFormat, (*_outTexture).Base() + dstOffset, _destFmt, srcResX, srcResY);
 	} else {
 		// But sometimes (particularly for debugging) they will be the same.
-		Q_memcpy( (*_outTexture).Base(), _scratchRBG888.Base(), destMemoryUsage );
+		Q_memcpy( (*_outTexture).Base(), _scratchRBGA16161616.Base(), destMemoryUsage );
 	}
 }
 
@@ -2688,12 +2734,12 @@ static void ConvertTexelDataToTexture(unsigned int _resX, unsigned int _resY, Im
 	Assert(_outTexture);
 	Assert(_srcTexels.Count() == _resX * _resY);
 
-	CUtlVector<RGB888_t> scratchRGB888;
+	CUtlVector<RGBA16161616_t> scratchRGBA16161616;
 	CUtlVector<Vector> scratchLinear;
 
-	BuildFineMipmap(_resX, _resY, true, _srcTexels, &scratchRGB888, &scratchLinear);
-	FilterCoarserMipmaps(_resX, _resY, &scratchLinear, &scratchRGB888 );
-	ConvertToDestinationFormat(_resX, _resY, _destFmt, scratchRGB888, _outTexture);
+    BuildFineMipmap(_resX, _resY, true, _srcTexels, &scratchRGBA16161616, &scratchLinear);
+	FilterCoarserMipmaps(_resX, _resY, &scratchLinear, &scratchRGBA16161616);
+	ConvertToDestinationFormat(_resX, _resY, _destFmt, scratchRGBA16161616, _outTexture);
 }
 
 // ------------------------------------------------------------------------------------------------

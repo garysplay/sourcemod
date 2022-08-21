@@ -320,6 +320,7 @@ void TouchVMFFile (void);
 extern  qboolean do_extra;
 extern  qboolean do_fast;
 extern  qboolean do_centersamples;
+extern	bool do_ambientocclusion;
 extern  int extrapasses;
 extern	Vector ambient;
 extern  float maxlight;
@@ -365,9 +366,10 @@ void PrecompLightmapOffsets();
 void FinalLightFace (int threadnum, int facenum);
 void PvsForOrigin (Vector& org, byte *pvs);
 void ConvertRGBExp32ToRGBA8888( const ColorRGBExp32 *pSrc, unsigned char *pDst, Vector* _optOutLinear = NULL );
+void ConvertRGBExp32ToRGBA16161616(const ColorRGBExp32* pSrc, unsigned short* pDst, Vector* _optOutLinear = NULL);
 void ConvertRGBExp32ToLinear(const ColorRGBExp32 *pSrc, Vector* pDst);
 void ConvertLinearToRGBA8888( const Vector *pSrc, unsigned char *pDst );
-
+void ConvertLinearToRGBA16161616(const Vector* pSrc, unsigned short* pDst);
 
 inline byte PVSCheck( const byte *pvs, int iCluster )
 {
@@ -474,6 +476,8 @@ void GatherSampleLightSSE( SSE_sampleLightOutput_t &out, directlight_t *dl, int 
 //						  int nLFlags = 0,					// GATHERLFLAGS_xxx
 //						  int static_prop_to_skip=-1,
 //						  float flEpsilon = 0.0 );
+fltx4 GatherSampleAOSSE(FourVectors const& pos, FourVectors* pNormals,
+	int nLFlags, int static_prop_index_to_ignore);
 
 //-----------------------------------------------------------------------------
 // VRad Displacements

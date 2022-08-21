@@ -1668,6 +1668,56 @@ void ExportDirectLightsToWorldLights()
 
 #define NSAMPLES_SUN_AREA_LIGHT 30							// number of samples to take for an
                                                             // non-point sun light
+															// 
+// Helper function - ambient occlusion
+fltx4 GatherSampleAOSSE(FourVectors const& pos, FourVectors* pNormals,
+	int nLFlags, int static_prop_index_to_ignore)
+{
+	bool force_fast = (nLFlags & GATHERLFLAGS_FORCE_FAST) != 0;
+
+	fltx4 ambient_intensity = Four_Zeros;
+	fltx4 possibleHitCount = Four_Zeros;
+
+	DirectionalSampler_t sampler;
+	int nsamples = 32;
+	if (do_fast || force_fast)
+		nsamples /= 4;
+
+	for (int j = 0; j < nsamples; j++)
+	{
+		FourVectors direction;
+		direction.DuplicateVector(sampler.NextValue());
+
+		fltx4 dot = direction * pNormals[0];
+		fltx4 absdot = fabs(dot);
+
+		// if vector faces opposite to normal, reflect
+		FourVectors tmp1 = pNormals[0];
+		tmp1.x = MulSIMD(tmp1.x, dot);
+		tmp1.y = MulSIMD(tmp1.y, dot);
+		tmp1.z = MulSIMD(tmp1.z, dot);
+		FourVectors tmp2 = pNormals[0];
+		tmp1.x = MulSIMD(tmp1.x, absdot);
+		tmp1.y = MulSIMD(tmp1.y, absdot);
+		tmp1.z = MulSIMD(tmp1.z, absdot);
+		direction -= tmp1;
+		direction += tmp2;
+
+		FourVectors start = pos;
+		FourVectors end = direction;
+		end *= 32;
+		end += start;
+
+		fltx4 fractionVisible = Four_Ones;
+		TestLine_DoesHitSky(start, end, &fractionVisible, true, static_prop_index_to_ignore);
+		ambient_intensity = AddSIMD(ambient_intensity, fractionVisible);
+		possibleHitCount = AddSIMD(possibleHitCount, Four_Ones);
+	}
+
+	ambient_intensity = DivSIMD(ambient_intensity, possibleHitCount);
+	ambient_intensity = MulSIMD(ambient_intensity, ambient_intensity);
+	return ambient_intensity;
+}
 
 // Helper function - gathers light from sun (emit_skylight)
 void GatherSampleSkyLightSSE( SSE_sampleLightOutput_t &out, directlight_t *dl, int facenum, 
@@ -2114,6 +2164,28 @@ void AddSampleToPatch (sample_t *s, LightingValue_t& light, int facenum)
 	// don't worry if some samples don't find a patch
 }
 
+//-----------------------------------------------------------------------------
+// Computes ambient occlusion for a group of 4 points
+//-----------------------------------------------------------------------------
+static void GatherSampleAmbientOcclusionAt4Points(SSE_SampleInfo_t& info, int sampleIdx, int numSamples)
+{
+	fltx4 AO;
+
+	if (do_ambientocclusion)
+		AO = GatherSampleAOSSE(info.m_Points, info.m_PointNormals, 0, -1);
+	else
+		AO = Four_Ones;
+
+	// ambientocclusion is an array of the AO values for each sample,
+	// here's where the result of the sample gathering goes
+	float* ambient = info.m_pFaceLight->ambientocclusion;
+
+	for (int i = 0; i < numSamples; i++)
+	{
+		ambient[sampleIdx + i] = SubFloat(AO, i);
+	}
+
+}
 
 void GetPhongNormal( int facenum, Vector const& spot, Vector& phongnormal )
 {
@@ -3112,6 +3184,7 @@ void BuildFacelights (int iThread, int facenum)
 	// always allocate style 0 lightmap
 	f->styles[0] = 0;
 	AllocateLightstyleSamples( fl, 0, sampleInfo.m_NormalCount );
+	fl->ambientocclusion = (float*)calloc(fl->numsamples, sizeof(float));
 
 	// sample the lights at each sample location
 	for ( int grp = 0; grp < numGroups; ++grp )
@@ -3143,6 +3216,7 @@ void BuildFacelights (int iThread, int facenum)
 
 		// Iterate over all the lights and add their contribution to this group of spots
 		GatherSampleLightAt4Points( sampleInfo, nSample, numSamples );
+		GatherSampleAmbientOcclusionAt4Points(sampleInfo, nSample, numSamples);
 	}
 	
 	// Tell the incremental light manager that we're done with this face.
@@ -3563,6 +3637,24 @@ void ConvertRGBExp32ToRGBA8888( const ColorRGBExp32 *pSrc, unsigned char *pDst, 
 }
 
 //-----------------------------------------------------------------------------
+// Convert a RGBExp32 to a RGBA16161616
+// This matches the engine's conversion, so the lighting result is consistent.
+//-----------------------------------------------------------------------------
+void ConvertRGBExp32ToRGBA16161616(const ColorRGBExp32* pSrc, unsigned short* pDst, Vector* _optOutLinear)
+{
+	Vector		linearColor;
+
+	// convert from ColorRGBExp32 to linear space
+	linearColor[0] = TexLightToLinear(((ColorRGBExp32*)pSrc)->r, ((ColorRGBExp32*)pSrc)->exponent);
+	linearColor[1] = TexLightToLinear(((ColorRGBExp32*)pSrc)->g, ((ColorRGBExp32*)pSrc)->exponent);
+	linearColor[2] = TexLightToLinear(((ColorRGBExp32*)pSrc)->b, ((ColorRGBExp32*)pSrc)->exponent);
+
+	ConvertLinearToRGBA16161616(&linearColor, pDst);
+	if (_optOutLinear)
+		*_optOutLinear = linearColor;
+}
+
+//-----------------------------------------------------------------------------
 // Converts a RGBExp32 to a linear color value.
 //-----------------------------------------------------------------------------
 void ConvertRGBExp32ToLinear(const ColorRGBExp32 *pSrc, Vector* pDst)
@@ -3595,4 +3687,18 @@ void ConvertLinearToRGBA8888(const Vector *pSrcLinear, unsigned char *pDst)
 	pDst[1] = RoundFloatToByte(vertexColor[1] * 255.0f);
 	pDst[2] = RoundFloatToByte(vertexColor[2] * 255.0f);
 	pDst[3] = 255;
+}
+
+//-----------------------------------------------------------------------------
+// Converts a linear color value (suitable for combining linearly) to an RBGA16161616 value expected by the engine.
+//-----------------------------------------------------------------------------
+void ConvertLinearToRGBA16161616(const Vector* pSrcLinear, unsigned short* pDst)
+{
+	// this might look stupid, but we make the light twice dimmer in VRAD
+	// and increase brightness in the shader to fake HDR
+	// that way we can support wider range of colors
+	pDst[0] = clamp(RoundFloatToInt((*pSrcLinear)[0] * 16383.0f), 0, 65535);
+	pDst[1] = clamp(RoundFloatToInt((*pSrcLinear)[1] * 16383.0f), 0, 65535);
+	pDst[2] = clamp(RoundFloatToInt((*pSrcLinear)[2] * 16383.0f), 0, 65535);
+	pDst[3] = 65535;
 }

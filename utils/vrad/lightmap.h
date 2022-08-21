@@ -73,6 +73,7 @@ struct facelight_t
 	int			numsamples;
 	sample_t	*sample;			
 	LightingValue_t *light[MAXLIGHTMAPS][NUM_BUMP_VECTS+1];	// result of direct illumination, indexed by sample
+	float* ambientocclusion; // result of GatherSampleAOSSE, separated from the rest of lightmap
 
 	// regularly spaced lightmap grid
 	int			numluxels;			

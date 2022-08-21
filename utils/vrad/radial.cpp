@@ -70,7 +70,7 @@ void LuxelSpaceToWorld( lightinfo_t const *l, fltx4 s, fltx4 t, FourVectors &wor
 void AddDirectToRadial( radial_t *rad, 
 						Vector const &pnt, 
 						Vector2D const &coordmins, Vector2D const &coordmaxs, 
-						LightingValue_t const light[NUM_BUMP_VECTS+1],
+						LightingValue_t const light[NUM_BUMP_VECTS+1], float ambient,
 						bool hasBumpmap, bool neighborHasBumpmap  )
 {
 	int     s_min, s_max, t_min, t_max;
@@ -145,7 +145,8 @@ void AddDirectToRadial( radial_t *rad,
 				{
 					rad->light[0][i].AddWeighted( light[0], r );
 				}
-				
+				rad->AO[i] += ambient * r;
+
 				rad->weight[i] += r;
 			}
 		}
@@ -413,7 +414,7 @@ radial_t *BuildLuxelRadial( int facenum, int style )
 			light[0] = fl->light[style][0][k];
 		}
 
-		AddDirectToRadial( rad, fl->sample[k].pos, fl->sample[k].mins, fl->sample[k].maxs, light, needsBumpmap, needsBumpmap );
+		AddDirectToRadial( rad, fl->sample[k].pos, fl->sample[k].mins, fl->sample[k].maxs, light, fl->ambientocclusion[k], needsBumpmap, needsBumpmap);
 	}
 
 	for (int j = 0; j < fn->numneighbors; j++)
@@ -467,7 +468,7 @@ radial_t *BuildLuxelRadial( int facenum, int style )
 			LuxelSpaceToWorld( &l, fl->sample[k].maxs[0], fl->sample[k].maxs[1], tmp );
 			WorldToLuxelSpace( &rad->l, tmp, maxs );
 
-			AddDirectToRadial( rad, fl->sample[k].pos, mins, maxs, light,
+			AddDirectToRadial( rad, fl->sample[k].pos, mins, maxs, light, fl->ambientocclusion[k],
 				         needsBumpmap, neighborHasBumpmap );
 		}
 	}
@@ -480,7 +481,7 @@ radial_t *BuildLuxelRadial( int facenum, int style )
 // Purpose: returns the closest light value for a given point on the surface
 //			this is normally a 1:1 mapping
 //-----------------------------------------------------------------------------
-bool SampleRadial( radial_t *rad, Vector& pnt, LightingValue_t light[NUM_BUMP_VECTS + 1], int bumpSampleCount )
+bool SampleRadial( radial_t *rad, Vector& pnt, LightingValue_t light[NUM_BUMP_VECTS + 1], float &AO, int bumpSampleCount )
 {
 	int bumpSample;
 	Vector2D coord;
@@ -535,6 +536,7 @@ bool SampleRadial( radial_t *rad, Vector& pnt, LightingValue_t light[NUM_BUMP_VE
 				baseSampleOk = false;
 		}
 	}
+	AO = rad->AO[i] / rad->weight[i];
 
 	return baseSampleOk;
 }
@@ -644,7 +646,7 @@ void FinalLightFace( int iThread, int facenum )
 	dface_t	        *f;
 	int		        i, j, k;
 	facelight_t	    *fl;
-	float		    minlight;
+	float		    minlight, DAO = 1.0f, RAO = 1.0f;
 	int			    lightstyles;
 	LightingValue_t lb[NUM_BUMP_VECTS + 1], v[NUM_BUMP_VECTS + 1];
 	unsigned char   *pdata[NUM_BUMP_VECTS + 1];
@@ -752,7 +754,7 @@ void FinalLightFace( int iThread, int facenum )
 			{
 				if( !bDisp )
 				{
-					baseSampleOk = SampleRadial( rad, fl->luxel[j], lb, bumpSampleCount );
+					baseSampleOk = SampleRadial( rad, fl->luxel[j], lb, DAO, bumpSampleCount );
 				}
 				else
 				{
@@ -765,6 +767,7 @@ void FinalLightFace( int iThread, int facenum )
 				{
 					lb[iBump] = fl->light[0][iBump][j];
 				}
+				DAO = fl->ambientocclusion[j];
 			}
 
 			if (prad)
@@ -773,7 +776,7 @@ void FinalLightFace( int iThread, int facenum )
 				// v is indirect light that is received on the luxel.
 				if( !bDisp )
 				{
-					SampleRadial( prad, fl->luxel[j], v, bumpSampleCount );
+					SampleRadial( prad, fl->luxel[j], v, RAO, bumpSampleCount );
 				}
 				else
 				{
@@ -782,6 +785,7 @@ void FinalLightFace( int iThread, int facenum )
 
 				for( bumpSample = 0; bumpSample < bumpSampleCount; ++bumpSample )
 				{
+					v[bumpSample].Scale(DAO);
 					lb[bumpSample].AddLight( v[bumpSample] );
 				}
 			}
