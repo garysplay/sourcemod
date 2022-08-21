@@ -1180,7 +1180,6 @@ static bool UTIL_ScaleStaticProp(vcollide_t* pCollide, float flScale)
 		}
 	}
 }
-
 //-----------------------------------------------------------------------------
 // KD Tree
 //-----------------------------------------------------------------------------
@@ -1202,13 +1201,13 @@ void CStaticProp::InsertPropIntoKDTree()
 		vcollide_t *pCollide = CM_VCollideForModel( -1, m_pModel );
 		if ( pCollide && pCollide->solidCount )
 		{
-			if (m_Scale == 1.0f)
-			{
-				physcollision->CollideGetAABB(&mins, &maxs, pCollide->solids[0], m_Origin, m_Angles);
-			}
-			else
+			/*if (m_Scale != 1.0f)
 			{
 				physcollision->CollideGetAABB(&mins, &maxs, CM_ScalePhysCollide(pCollide, m_Scale), m_Origin, m_Angles);
+			}
+			else*/
+			{
+				physcollision->CollideGetAABB(&mins, &maxs, pCollide->solids[0], m_Origin, m_Angles);
 			}
 		}
 		else
@@ -1262,13 +1261,13 @@ void CStaticProp::CreateVPhysics( IPhysicsEnvironment *pPhysEnv, IVPhysicsKeyHan
 
 	if (pVCollide)
 	{
-		if (m_Scale == 1.0f)
-		{
-			pPhysCollide = pVCollide->solids[0];
-		}
-		else
+		/*if (m_Scale != 1.0f)
 		{
 			pPhysCollide = CM_ScalePhysCollide(pVCollide, m_Scale);
+		}
+		else*/
+		{
+			pPhysCollide = pVCollide->solids[0];
 		}
 
 		IVPhysicsKeyParser *pParse = physcollision->VPhysicsKeyParserCreate( pVCollide->pKeyValues );
