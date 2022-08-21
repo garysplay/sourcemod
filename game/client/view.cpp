@@ -299,7 +299,7 @@ static void CreateHDRBloomRenderTargets()
 			int power = pow(2, i);
 
 			auto rt = g_pMaterialSystem->CreateNamedRenderTargetTextureEx2(
-				szRTname, w / power, h / power, RT_SIZE_DEFAULT,
+				szRTname, w / power, h / power, RT_SIZE_LITERAL,
 				g_pMaterialSystem->GetBackBufferFormat(),
 				MATERIAL_RT_DEPTH_SHARED,
 				TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT,

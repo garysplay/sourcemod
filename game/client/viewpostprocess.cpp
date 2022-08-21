@@ -1539,10 +1539,10 @@ static void GenerateHDRBloomTexture( IMatRenderContext *pRenderContext, float fl
 	ITexture *dest_rt3 = materials->FindTexture( "_rt_Bloom3", TEXTURE_GROUP_RENDER_TARGET );
 	ITexture *dest_rt4 = materials->FindTexture( "_rt_Bloom4", TEXTURE_GROUP_RENDER_TARGET );
 	ITexture *dest_rt5 = materials->FindTexture( "_rt_Bloom5", TEXTURE_GROUP_RENDER_TARGET );
-
+	
 	pRenderContext->PushRenderTargetAndViewport();
 	SetRenderTargetAndViewPort(pSrc);
-	DrawScreenEffectQuad(downsample_mat, w-1, h-1 );
+	DrawScreenEffectQuad(downsample_mat, w, h);
 	pRenderContext->PopRenderTargetAndViewport();
 
 	pRenderContext->PushRenderTargetAndViewport();
@@ -1559,12 +1559,12 @@ static void GenerateHDRBloomTexture( IMatRenderContext *pRenderContext, float fl
 	SetRenderTargetAndViewPort(dest_rt3);
 	DrawScreenEffectQuad(blur_mat3, dest_rt3->GetActualWidth(), dest_rt3->GetActualHeight());
 	pRenderContext->PopRenderTargetAndViewport();
-	
+
 	pRenderContext->PushRenderTargetAndViewport();
 	SetRenderTargetAndViewPort(dest_rt4);
 	DrawScreenEffectQuad(blur_mat4, dest_rt4->GetActualWidth(), dest_rt4->GetActualHeight());
-	pRenderContext->PopRenderTargetAndViewport();	
-	
+	pRenderContext->PopRenderTargetAndViewport();
+
 	pRenderContext->PushRenderTargetAndViewport();
 	SetRenderTargetAndViewPort(dest_rt5);
 	DrawScreenEffectQuad(blur_mat5, dest_rt5->GetActualWidth(), dest_rt5->GetActualHeight());

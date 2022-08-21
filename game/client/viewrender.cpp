@@ -2379,12 +2379,11 @@ void CViewRender::Render2DEffectsPreHUD( const CViewSetup &view )
 		UpscaleRect.height = view.height;
 
 		pRenderContext->Viewport(0, 0, view.m_nUnscaledWidth, view.m_nUnscaledHeight);
-
-		pRenderContext->CopyRenderTargetToTextureEx(materials->FindTexture("_rt_FullFrameFB1", TEXTURE_GROUP_RENDER_TARGET), 0, &UpscaleRect, &OGRect);
+		pRenderContext->CopyRenderTargetToTextureEx(GetFullFrameFrameBufferTexture(1), 0, &UpscaleRect, &OGRect);
 		pRenderContext->DrawScreenSpaceRectangle(materials->FindMaterial("dev/upscale_effects", TEXTURE_GROUP_OTHER), UpscaleRect.x, UpscaleRect.y, UpscaleRect.width, UpscaleRect.height,
-			OGRect.x, OGRect.y, OGRect.x + OGRect.width + 1, OGRect.y + OGRect.height + 1,
-			materials->FindTexture("_rt_FullFrameFB1", TEXTURE_GROUP_RENDER_TARGET)->GetActualWidth(), 
-			materials->FindTexture("_rt_FullFrameFB1", TEXTURE_GROUP_RENDER_TARGET)->GetActualHeight());
+			OGRect.x, OGRect.y, OGRect.x + OGRect.width, OGRect.y + OGRect.height,
+			GetFullFrameFrameBufferTexture(0)->GetActualWidth(),
+			GetFullFrameFrameBufferTexture(0)->GetActualHeight());
 	}
 #endif
 }
