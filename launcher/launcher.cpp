@@ -643,117 +643,233 @@ void ReportDirtyDiskNoMaterialSystem()
 //-----------------------------------------------------------------------------
 bool CSourceAppSystemGroup::Create()
 {
-	IFileSystem *pFileSystem = (IFileSystem*)FindSystem( FILESYSTEM_INTERFACE_VERSION );
-	pFileSystem->InstallDirtyDiskReportFunc( ReportDirtyDiskNoMaterialSystem );
+	//enderzip: ik this is horrible, but hey it works!
+	if (CommandLine()->CheckParm("-joltphysics"))
+	{
+		IFileSystem* pFileSystem = (IFileSystem*)FindSystem(FILESYSTEM_INTERFACE_VERSION);
+		pFileSystem->InstallDirtyDiskReportFunc(ReportDirtyDiskNoMaterialSystem);
 
 #ifdef WIN32
-	CoInitialize( NULL );
+		CoInitialize(NULL);
 #endif
 
-	// Are we running in edit mode?
-	m_bEditMode = CommandLine()->CheckParm( "-edit" );
+		// Are we running in edit mode?
+		m_bEditMode = CommandLine()->CheckParm("-edit");
 
-	double st = Plat_FloatTime();
+		double st = Plat_FloatTime();
 
-	AppSystemInfo_t appSystems[] = 
-	{
-		{ "engine" DLL_EXT_STRING,			CVAR_QUERY_INTERFACE_VERSION },	// NOTE: This one must be first!!
-		{ "inputsystem" DLL_EXT_STRING,		INPUTSYSTEM_INTERFACE_VERSION },
-		{ "materialsystem" DLL_EXT_STRING,	MATERIAL_SYSTEM_INTERFACE_VERSION },
-		{ "datacache" DLL_EXT_STRING,		DATACACHE_INTERFACE_VERSION },
-		{ "datacache" DLL_EXT_STRING,		MDLCACHE_INTERFACE_VERSION },
-		{ "datacache" DLL_EXT_STRING,		STUDIO_DATA_CACHE_INTERFACE_VERSION },
-		{ "studiorender" DLL_EXT_STRING,	STUDIO_RENDER_INTERFACE_VERSION },
-		{ "vphysics" DLL_EXT_STRING,		VPHYSICS_INTERFACE_VERSION },
-		//{ "video_services" DLL_EXT_STRING,  VIDEO_SERVICES_INTERFACE_VERSION },
-  
-		// NOTE: This has to occur before vgui2.dll so it replaces vgui2's surface implementation
-		{ "vguimatsurface" DLL_EXT_STRING,	VGUI_SURFACE_INTERFACE_VERSION },
-		{ "vgui2" DLL_EXT_STRING,			VGUI_IVGUI_INTERFACE_VERSION },
-		{ "engine" DLL_EXT_STRING,			VENGINE_LAUNCHER_API_VERSION },
+		AppSystemInfo_t appSystems[] =
+		{
+			{ "engine" DLL_EXT_STRING, CVAR_QUERY_INTERFACE_VERSION },	// NOTE: This one must be first!!
+			{ "inputsystem" DLL_EXT_STRING,		INPUTSYSTEM_INTERFACE_VERSION },
+			{ "materialsystem" DLL_EXT_STRING,	MATERIAL_SYSTEM_INTERFACE_VERSION },
+			{ "datacache" DLL_EXT_STRING,		DATACACHE_INTERFACE_VERSION },
+			{ "datacache" DLL_EXT_STRING,		MDLCACHE_INTERFACE_VERSION },
+			{ "datacache" DLL_EXT_STRING,		STUDIO_DATA_CACHE_INTERFACE_VERSION },
+			{ "studiorender" DLL_EXT_STRING,	STUDIO_RENDER_INTERFACE_VERSION },
+			{ "vphysics_jolt" DLL_EXT_STRING,		VPHYSICS_INTERFACE_VERSION },
+			//{ "video_services" DLL_EXT_STRING,  VIDEO_SERVICES_INTERFACE_VERSION },
 
-		{ "", "" }							// Required to terminate the list
-	};
+			// NOTE: This has to occur before vgui2.dll so it replaces vgui2's surface implementation
+			{ "vguimatsurface" DLL_EXT_STRING,	VGUI_SURFACE_INTERFACE_VERSION },
+			{ "vgui2" DLL_EXT_STRING,			VGUI_IVGUI_INTERFACE_VERSION },
+			{ "engine" DLL_EXT_STRING,			VENGINE_LAUNCHER_API_VERSION },
+
+			{ "", "" }							// Required to terminate the list
+		};
 
 #if defined( USE_SDL )
-	AddSystem( (IAppSystem *)CreateSDLMgr(), SDLMGR_INTERFACE_VERSION );
+		AddSystem((IAppSystem*)CreateSDLMgr(), SDLMGR_INTERFACE_VERSION);
 #endif
 
-	if ( !AddSystems( appSystems ) ) 
-		return false;
-
-
-	// This will be NULL for games that don't support VR. That's ok. Just don't load the DLL
-	AppModule_t sourceVRModule = LoadModule( "sourcevr" DLL_EXT_STRING );
-	if( sourceVRModule != APP_MODULE_INVALID )
-	{
-		AddSystem( sourceVRModule, SOURCE_VIRTUAL_REALITY_INTERFACE_VERSION );
-	}
-
-	// pull in our filesystem dll to pull the queued loader from it, we need to do it this way due to the 
-	// steam/stdio split for our steam filesystem
-	char pFileSystemDLL[MAX_PATH];
-	bool bSteam;
-	if ( FileSystem_GetFileSystemDLLName( pFileSystemDLL, MAX_PATH, bSteam ) != FS_OK )
-		return false;
-
-	AppModule_t fileSystemModule = LoadModule( pFileSystemDLL );
-	AddSystem( fileSystemModule, QUEUEDLOADER_INTERFACE_VERSION );
-
-	// Hook in datamodel and p4 control if we're running with -tools
-	if ( IsPC() && ( ( CommandLine()->FindParm( "-tools" ) && !CommandLine()->FindParm( "-nop4" ) ) || CommandLine()->FindParm( "-p4" ) ) )
-	{
-#ifdef STAGING_ONLY
-		AppModule_t p4libModule = LoadModule( "p4lib" DLL_EXT_STRING );
-		IP4 *p4 = (IP4*)AddSystem( p4libModule, P4_INTERFACE_VERSION );
-		
-		// If we are running with -steam then that means the tools are being used by an SDK user. Don't exit in this case!
-		if ( !p4 && !CommandLine()->FindParm( "-steam" ) )
-		{
+		if (!AddSystems(appSystems))
 			return false;
+
+		// This will be NULL for games that don't support VR. That's ok. Just don't load the DLL
+		AppModule_t sourceVRModule = LoadModule("sourcevr" DLL_EXT_STRING);
+		if (sourceVRModule != APP_MODULE_INVALID)
+		{
+			AddSystem(sourceVRModule, SOURCE_VIRTUAL_REALITY_INTERFACE_VERSION);
 		}
+
+		// pull in our filesystem dll to pull the queued loader from it, we need to do it this way due to the 
+		// steam/stdio split for our steam filesystem
+		char pFileSystemDLL[MAX_PATH];
+		bool bSteam;
+		if (FileSystem_GetFileSystemDLLName(pFileSystemDLL, MAX_PATH, bSteam) != FS_OK)
+			return false;
+
+		AppModule_t fileSystemModule = LoadModule(pFileSystemDLL);
+		AddSystem(fileSystemModule, QUEUEDLOADER_INTERFACE_VERSION);
+
+		// Hook in datamodel and p4 control if we're running with -tools
+		if (IsPC() && ((CommandLine()->FindParm("-tools") && !CommandLine()->FindParm("-nop4")) || CommandLine()->FindParm("-p4")))
+		{
+#ifdef STAGING_ONLY
+			AppModule_t p4libModule = LoadModule("p4lib" DLL_EXT_STRING);
+			IP4* p4 = (IP4*)AddSystem(p4libModule, P4_INTERFACE_VERSION);
+
+			// If we are running with -steam then that means the tools are being used by an SDK user. Don't exit in this case!
+			if (!p4 && !CommandLine()->FindParm("-steam"))
+			{
+				return false;
+			}
 #endif // STAGING_ONLY
 
-		AppModule_t vstdlibModule = LoadModule( "vstdlib" DLL_EXT_STRING );
-		IProcessUtils *processUtils = ( IProcessUtils* )AddSystem( vstdlibModule, PROCESS_UTILS_INTERFACE_VERSION );
-		if ( !processUtils )
-			return false;
-	}
-
-	// Connect to iterfaces loaded in AddSystems that we need locally
-	IMaterialSystem *pMaterialSystem = (IMaterialSystem*)FindSystem( MATERIAL_SYSTEM_INTERFACE_VERSION );
-	if ( !pMaterialSystem )
-		return false;
-
-	g_pEngineAPI = (IEngineAPI*)FindSystem( VENGINE_LAUNCHER_API_VERSION );
-
-	// Load the hammer DLL if we're in editor mode
-#if defined( _WIN32 ) && defined( STAGING_ONLY )
-	if ( m_bEditMode )
-	{
-		AppModule_t hammerModule = LoadModule( "hammer_dll" DLL_EXT_STRING );
-		g_pHammer = (IHammer*)AddSystem( hammerModule, INTERFACEVERSION_HAMMER );
-		if ( !g_pHammer )
-		{
-			return false;
+			AppModule_t vstdlibModule = LoadModule("vstdlib" DLL_EXT_STRING);
+			IProcessUtils* processUtils = (IProcessUtils*)AddSystem(vstdlibModule, PROCESS_UTILS_INTERFACE_VERSION);
+			if (!processUtils)
+				return false;
 		}
-	}
+
+		// Connect to iterfaces loaded in AddSystems that we need locally
+		IMaterialSystem* pMaterialSystem = (IMaterialSystem*)FindSystem(MATERIAL_SYSTEM_INTERFACE_VERSION);
+		if (!pMaterialSystem)
+			return false;
+
+		g_pEngineAPI = (IEngineAPI*)FindSystem(VENGINE_LAUNCHER_API_VERSION);
+
+		// Load the hammer DLL if we're in editor mode
+#if defined( _WIN32 ) && defined( STAGING_ONLY )
+		if (m_bEditMode)
+		{
+			AppModule_t hammerModule = LoadModule("hammer_dll" DLL_EXT_STRING);
+			g_pHammer = (IHammer*)AddSystem(hammerModule, INTERFACEVERSION_HAMMER);
+			if (!g_pHammer)
+			{
+				return false;
+			}
+		}
 #endif // defined( _WIN32 ) && defined( STAGING_ONLY )
 
-	// Load up the appropriate shader DLL
-	// This has to be done before connection.
-	char const* pDLLName = "shaderapidx9" DLL_EXT_STRING;
-	if ( CommandLine()->FindParm( "-noshaderapi" ) )
-	{
-		pDLLName = "shaderapiempty" DLL_EXT_STRING;
+		// Load up the appropriate shader DLL
+		// This has to be done before connection.
+		char const* pDLLName = "shaderapidx9" DLL_EXT_STRING;
+		if (CommandLine()->FindParm("-noshaderapi"))
+		{
+			pDLLName = "shaderapiempty" DLL_EXT_STRING;
+		}
+
+		pMaterialSystem->SetShaderAPI(pDLLName);
+
+		double elapsed = Plat_FloatTime() - st;
+		COM_TimestampedLog("LoadAppSystems:  Took %.4f secs to load libraries and get factories.", (float)elapsed);
+
+		return true;
 	}
+	else
+	{
+	IFileSystem* pFileSystem = (IFileSystem*)FindSystem(FILESYSTEM_INTERFACE_VERSION);
+		pFileSystem->InstallDirtyDiskReportFunc(ReportDirtyDiskNoMaterialSystem);
 
-	pMaterialSystem->SetShaderAPI( pDLLName );
+#ifdef WIN32
+		CoInitialize(NULL);
+#endif
 
-	double elapsed = Plat_FloatTime() - st;
-	COM_TimestampedLog( "LoadAppSystems:  Took %.4f secs to load libraries and get factories.", (float)elapsed );
+		// Are we running in edit mode?
+		m_bEditMode = CommandLine()->CheckParm("-edit");
 
-	return true;
+		double st = Plat_FloatTime();
+
+		AppSystemInfo_t appSystems[] =
+		{
+			{ "engine" DLL_EXT_STRING, CVAR_QUERY_INTERFACE_VERSION },	// NOTE: This one must be first!!
+			{ "inputsystem" DLL_EXT_STRING,		INPUTSYSTEM_INTERFACE_VERSION },
+			{ "materialsystem" DLL_EXT_STRING,	MATERIAL_SYSTEM_INTERFACE_VERSION },
+			{ "datacache" DLL_EXT_STRING,		DATACACHE_INTERFACE_VERSION },
+			{ "datacache" DLL_EXT_STRING,		MDLCACHE_INTERFACE_VERSION },
+			{ "datacache" DLL_EXT_STRING,		STUDIO_DATA_CACHE_INTERFACE_VERSION },
+			{ "studiorender" DLL_EXT_STRING,	STUDIO_RENDER_INTERFACE_VERSION },
+			{ "vphysics" DLL_EXT_STRING,		VPHYSICS_INTERFACE_VERSION },
+			//{ "video_services" DLL_EXT_STRING,  VIDEO_SERVICES_INTERFACE_VERSION },
+
+			// NOTE: This has to occur before vgui2.dll so it replaces vgui2's surface implementation
+			{ "vguimatsurface" DLL_EXT_STRING,	VGUI_SURFACE_INTERFACE_VERSION },
+			{ "vgui2" DLL_EXT_STRING,			VGUI_IVGUI_INTERFACE_VERSION },
+			{ "engine" DLL_EXT_STRING,			VENGINE_LAUNCHER_API_VERSION },
+
+			{ "", "" }							// Required to terminate the list
+		};
+
+#if defined( USE_SDL )
+		AddSystem((IAppSystem*)CreateSDLMgr(), SDLMGR_INTERFACE_VERSION);
+#endif
+
+		if (!AddSystems(appSystems))
+			return false;
+
+		// This will be NULL for games that don't support VR. That's ok. Just don't load the DLL
+		AppModule_t sourceVRModule = LoadModule("sourcevr" DLL_EXT_STRING);
+		if (sourceVRModule != APP_MODULE_INVALID)
+		{
+			AddSystem(sourceVRModule, SOURCE_VIRTUAL_REALITY_INTERFACE_VERSION);
+		}
+
+		// pull in our filesystem dll to pull the queued loader from it, we need to do it this way due to the 
+		// steam/stdio split for our steam filesystem
+		char pFileSystemDLL[MAX_PATH];
+		bool bSteam;
+		if (FileSystem_GetFileSystemDLLName(pFileSystemDLL, MAX_PATH, bSteam) != FS_OK)
+			return false;
+
+		AppModule_t fileSystemModule = LoadModule(pFileSystemDLL);
+		AddSystem(fileSystemModule, QUEUEDLOADER_INTERFACE_VERSION);
+
+		// Hook in datamodel and p4 control if we're running with -tools
+		if (IsPC() && ((CommandLine()->FindParm("-tools") && !CommandLine()->FindParm("-nop4")) || CommandLine()->FindParm("-p4")))
+		{
+#ifdef STAGING_ONLY
+			AppModule_t p4libModule = LoadModule("p4lib" DLL_EXT_STRING);
+			IP4* p4 = (IP4*)AddSystem(p4libModule, P4_INTERFACE_VERSION);
+
+			// If we are running with -steam then that means the tools are being used by an SDK user. Don't exit in this case!
+			if (!p4 && !CommandLine()->FindParm("-steam"))
+			{
+				return false;
+			}
+#endif // STAGING_ONLY
+
+			AppModule_t vstdlibModule = LoadModule("vstdlib" DLL_EXT_STRING);
+			IProcessUtils* processUtils = (IProcessUtils*)AddSystem(vstdlibModule, PROCESS_UTILS_INTERFACE_VERSION);
+			if (!processUtils)
+				return false;
+		}
+
+		// Connect to iterfaces loaded in AddSystems that we need locally
+		IMaterialSystem* pMaterialSystem = (IMaterialSystem*)FindSystem(MATERIAL_SYSTEM_INTERFACE_VERSION);
+		if (!pMaterialSystem)
+			return false;
+
+		g_pEngineAPI = (IEngineAPI*)FindSystem(VENGINE_LAUNCHER_API_VERSION);
+
+		// Load the hammer DLL if we're in editor mode
+#if defined( _WIN32 ) && defined( STAGING_ONLY )
+		if (m_bEditMode)
+		{
+			AppModule_t hammerModule = LoadModule("hammer_dll" DLL_EXT_STRING);
+			g_pHammer = (IHammer*)AddSystem(hammerModule, INTERFACEVERSION_HAMMER);
+			if (!g_pHammer)
+			{
+				return false;
+			}
+		}
+#endif // defined( _WIN32 ) && defined( STAGING_ONLY )
+
+		// Load up the appropriate shader DLL
+		// This has to be done before connection.
+		char const* pDLLName = "shaderapidx9" DLL_EXT_STRING;
+		if (CommandLine()->FindParm("-noshaderapi"))
+		{
+			pDLLName = "shaderapiempty" DLL_EXT_STRING;
+		}
+
+		pMaterialSystem->SetShaderAPI(pDLLName);
+
+		double elapsed = Plat_FloatTime() - st;
+		COM_TimestampedLog("LoadAppSystems:  Took %.4f secs to load libraries and get factories.", (float)elapsed);
+
+		return true;
+	}
 }
 
 bool CSourceAppSystemGroup::PreInit()

@@ -380,6 +380,16 @@ $Project "vmpi"
 	"utils/vmpi/vmpi.vpc"
 }
 
+$Project "vphysics_jolt"
+{
+	"vphysics_jolt/vphysics_jolt.vpc"
+}
+
+$Project "joltphysics"
+{
+	"joltphysics/joltphysics.vpc"
+}
+
 $Project "engine"
 {
 	"engine/engine.vpc" 
