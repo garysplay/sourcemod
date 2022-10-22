@@ -1,7 +1,5 @@
 # Kara SourceEngine (Based on CoolSource that is based on Source SDK 2013)
 
-# Special thanks to: [@nillerusr](https://github.com/nillerusr) and [@MoeMod](https://github.com/MoeMod) for the x64 port!
-
 # NOTE!!!
 DOWNLOAD THIS AND PUT IT INTO THE BIN FOLDER:
 https://www.mediafire.com/file/tziqjy3midu7a1l/x64_bin.zip/file.  
@@ -14,7 +12,6 @@ Go into launcher_main\Release\x64 to grab the launcher exe (default.exe)
 3. Restored Change Game in instance from HL1.
 4. Compatible with most Source 2013 MP mods.
 5. Can load CS:GO maps and most BSP 21 maps.
-6. DX11 support.
 
 # Current win64 state
 CAN load a map but still very buggy (everything is working fine except sound).
