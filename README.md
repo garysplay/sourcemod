@@ -1,5 +1,4 @@
-# CoolSource
-![coolsource_logo_improved](https://user-images.githubusercontent.com/44537796/138629825-eeca5164-3277-455a-8711-e27ebe3e5647.png)
+# Kara SourceEngine (Based on CoolSource that is based on Source SDK 2013)
 
 # Special thanks to: [@nillerusr](https://github.com/nillerusr) and [@MoeMod](https://github.com/MoeMod) for the x64 port!
 
