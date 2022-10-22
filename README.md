@@ -16,4 +16,9 @@ Go into launcher_main\Release\x64 to grab the launcher exe (default.exe)
 # Current win64 state
 CAN load a map but still very buggy (everything is working fine except sound).
 
-
+# Building
+1. Install Visual studio 2013 and 2022 (with Windows 11 SDK 22621)
+2. run createallprojects.bat
+3. ???
+4. Change from Debug to Release and then click build
+4. you have binaries in ..\game\bin\
