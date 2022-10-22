@@ -21,4 +21,4 @@ CAN load a map but still very buggy (everything is working fine except sound).
 2. run createallprojects.bat
 3. ???
 4. Change from Debug to Release and then click build
-4. you have binaries in ..\game\bin\
+4. you have binaries in ..\game\
