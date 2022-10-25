@@ -26,7 +26,7 @@ CUtlVector<CCoreDispInfo*> g_CoreDispInfos;
 //-----------------------------------------------------------------------------
 // Computes the bounds for a disp info
 //-----------------------------------------------------------------------------
-void ComputeDispInfoBounds( int dispinfo, Vector& mins, Vector& maxs )
+void ComputeDispInfoBounds(int dispinfo, Vector& mins, Vector& maxs )
 {
 	CDispBox box;
 
