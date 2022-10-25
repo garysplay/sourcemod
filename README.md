@@ -12,6 +12,8 @@ Go into launcher_main\Release\x64 to grab the launcher exe (default.exe)
 3. Restored Change Game in instance from HL1.
 4. Compatible with most Source 2013 MP mods.
 5. Can load CS:GO maps and most BSP 21 maps.
+6. Extended map size (131720x131720 HU)
+7. Extended map limits
 
 # Current win64 state
 CAN load a map but still very buggy (everything is working fine except sound).
