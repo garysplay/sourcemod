@@ -152,7 +152,7 @@ struct mapdispinfo_t
 	Vector			vectorOffsets[MAX_DISPVERTS];
     int				contents;
 	int				brushSideID;
-	unsigned short	triTags[MAX_DISPTRIS];
+	int         	triTags[MAX_DISPTRIS];
 	int				flags;
 
 #ifdef VSVMFIO
@@ -163,7 +163,7 @@ struct mapdispinfo_t
 };
 
 extern int              nummapdispinfo;
-extern mapdispinfo_t    mapdispinfo[MAX_MAP_DISPINFO];
+extern CUtlVector<mapdispinfo_t>    mapdispinfo;
 
 extern float			g_defaultLuxelSize;
 extern float			g_luxelScale;

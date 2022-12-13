@@ -82,7 +82,7 @@ extern	dleaf_t			*dleafs;
 #endif
 extern	CUtlVector<dleafambientlighting_t> *g_pLeafAmbientLighting;
 extern	CUtlVector<dleafambientindex_t> *g_pLeafAmbientIndex;
-extern	unsigned short  g_LeafMinDistToWater[MAX_MAP_LEAFS];
+extern	unsigned int  g_LeafMinDistToWater[MAX_MAP_LEAFS];
 
 extern	int			    numplanes;
 extern	dplane_t	    dplanes[MAX_MAP_PLANES];
@@ -91,7 +91,7 @@ extern	int			    numvertexes;
 extern	dvertex_t	    dvertexes[MAX_MAP_VERTS];
 
 extern	int				g_numvertnormalindices;	// dfaces reference these. These index g_vertnormals.
-extern	unsigned short	g_vertnormalindices[MAX_MAP_VERTNORMALS];
+extern	unsigned int	g_vertnormalindices[MAX_MAP_VERTNORMALS];
 
 extern	int				g_numvertnormals;	
 extern	Vector			g_vertnormals[MAX_MAP_VERTNORMALS];
@@ -120,7 +120,7 @@ extern	int				g_numprimverts;
 extern	dprimvert_t		g_primverts[MAX_MAP_PRIMVERTS];
 
 extern	int				g_numprimindices;
-extern	unsigned short	g_primindices[MAX_MAP_PRIMINDICES];
+extern	unsigned int	g_primindices[MAX_MAP_PRIMINDICES];
 
 extern	int			    numfaces;
 extern	dface_t		    dfaces[MAX_MAP_FACES];
@@ -135,10 +135,10 @@ extern	int			    numedges;
 extern	dedge_t		    dedges[MAX_MAP_EDGES];
 
 extern	int			    numleaffaces;
-extern	unsigned short	dleaffaces[MAX_MAP_LEAFFACES];
+extern	unsigned int	dleaffaces[MAX_MAP_LEAFFACES];
 
 extern	int			    numleafbrushes;
-extern	unsigned short	dleafbrushes[MAX_MAP_LEAFBRUSHES];
+extern	unsigned int	dleafbrushes[MAX_MAP_LEAFBRUSHES];
 
 extern	int			    numsurfedges;
 extern	int			    dsurfedges[MAX_MAP_SURFEDGES];
@@ -334,9 +334,9 @@ void BuildFaceCalcWindingData( dface_t *pFace, int *points );
 // Fills in pTriListIndices and pnTriListIndices.
 // You must free pTriListIndices with delete[].
 void TriStripToTriList( 
-	unsigned short const *pTriStripIndices,
+	unsigned int const *pTriStripIndices,
 	int nTriStripIndices,
-	unsigned short **pTriListIndices,
+	unsigned int**pTriListIndices,
 	int *pnTriListIndices );
 
 // Calculates the lightmap coordinates at a given set of positions given the 

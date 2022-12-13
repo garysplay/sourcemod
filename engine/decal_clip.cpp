@@ -163,7 +163,7 @@ void R_SetupDecalVertsForMSurface(
 	Vector * RESTRICT pTextureSpaceBasis,
 	CDecalVert * RESTRICT pVerts )
 {
-	unsigned short * RESTRICT pIndices = &host_state.worldbrush->vertindices[MSurf_FirstVertIndex( surfID )];
+	unsigned int * RESTRICT pIndices = &host_state.worldbrush->vertindices[MSurf_FirstVertIndex( surfID )];
 	int count = MSurf_VertCount( surfID );
 	float uOffset = 0.5f - pDecal->dx;
 	float vOffset = 0.5f - pDecal->dy;

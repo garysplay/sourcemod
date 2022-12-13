@@ -71,8 +71,8 @@ struct directlight_t
 	dworldlight_t light;
 
 	byte	*pvs;		// accumulated domain of the light
-	int		facenum;	// domain of attached lights
-	int		texdata;	// texture source of traced lights
+	unsigned int		facenum;	// domain of attached lights
+	unsigned int		texdata;	// texture source of traced lights
 
 	Vector	snormal;
 	Vector	tnormal;
@@ -192,7 +192,7 @@ struct CPatch
 
 	dplane_t	*plane;				// plane (corrected for facing)
 	
-	unsigned short		m_IterationKey;	// Used to prevent touching the same patch multiple times in the same query.
+	unsigned int		m_IterationKey;	// Used to prevent touching the same patch multiple times in the same query.
 										// See IncrementPatchIterationKey().
 	
 	// these are packed into one dword
@@ -239,7 +239,7 @@ struct CPatch
 	int			numtransfers;
 	transfer_t	*transfers;
 
-	short		indices[3];				// displacement use these for subdivision
+	int 		indices[3];				// displacement use these for subdivision
 };
 
 
@@ -554,19 +554,19 @@ typedef unsigned int SampleHandle_t;				// the upper 16 bits = facelight index (
 struct sample_t;
 struct SampleData_t
 {
-	unsigned short				x, y, z;
+	unsigned int				x, y, z;
 	CUtlVector<SampleHandle_t>	m_Samples;
 };
 
 struct PatchSampleData_t
 {
-	unsigned short				x, y, z;
+	unsigned int				x, y, z;
 	CUtlVector<int>				m_ndxPatches;
 };
 
 UtlHashHandle_t SampleData_AddSample( sample_t *pSample, SampleHandle_t sampleHandle );
 void PatchSampleData_AddSample( CPatch *pPatch, int ndxPatch );
-unsigned short IncrementPatchIterationKey();
+unsigned int IncrementPatchIterationKey();
 void SampleData_Log( void );
 
 extern CUtlHash<SampleData_t>		g_SampleHashTable;

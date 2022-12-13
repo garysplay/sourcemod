@@ -1495,6 +1495,8 @@ static void ClearLeafWaterData( void )
 //		dleafwaterdata		: This is an output from this file.
 // from vbsp.h:
 //		g_SurfaceProperties : This is an input to this file.
+CUtlVector<CPhysCollisionEntry*> collisionList[MAX_MAP_MODELS]; //enderzip: these two were stack overflow'ing the function
+CTextBuffer* pTextBuffer[MAX_MAP_MODELS];                       //so i had to make it into a global var, vs told me that
 void EmitPhysCollision()
 {
 	ClearLeafWaterData();
@@ -1511,16 +1513,13 @@ void EmitPhysCollision()
 		return;
 	}
 
-	CUtlVector<CPhysCollisionEntry *> collisionList[MAX_MAP_MODELS];
-	CTextBuffer *pTextBuffer[MAX_MAP_MODELS];
-
 	int physModelCount = 0, totalSize = 0;
 
 	int start = Plat_FloatTime();
 
 	Msg("Building Physics collision data...\n" );
 
-	int i, j;
+	unsigned int i, j;
 	for ( i = 0; i < nummodels; i++ )
 	{
 		// Build a list of collision models for this brush model section

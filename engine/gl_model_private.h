@@ -252,14 +252,14 @@ struct worldbrushdata_t
 	int			*occludervertindices;
 
 	int				numvertnormalindices;	// These index vertnormals.
-	unsigned short	*vertnormalindices;
+	unsigned int	*vertnormalindices;
 
 	int			numvertnormals;
 	Vector		*vertnormals;
 
 	int			numnodes;
 	mnode_t		*nodes;
-	unsigned short *m_LeafMinDistToWater;
+	unsigned int *m_LeafMinDistToWater;
 
 	int			numtexinfo;
 	mtexinfo_t	*texinfo;
@@ -284,7 +284,7 @@ struct worldbrushdata_t
 	bool		unloadedlightmaps;
 
 	int			numvertindices;
-	unsigned short *vertindices;
+	unsigned int *vertindices;
 
 	int nummarksurfaces;
 	SurfaceHandle_t *marksurfaces;
@@ -304,7 +304,7 @@ struct worldbrushdata_t
 	mprimvert_t *primverts;
 
 	int			numprimindices;
-	unsigned short *primindices;
+	unsigned int *primindices;
 
 	int				m_nAreas;
 	darea_t			*m_pAreas;
@@ -319,7 +319,7 @@ struct worldbrushdata_t
 	int				   m_nCubemapSamples;
 
 	int				m_nDispInfoReferences;
-	unsigned short	*m_pDispInfoReferences;
+	unsigned int	*m_pDispInfoReferences;
 
 	mleafambientindex_t		*m_pLeafAmbient;
 	mleafambientlighting_t	*m_pAmbientSamples;
@@ -343,8 +343,8 @@ struct brushdata_t
 	worldbrushdata_t	*pShared;
 	int			firstmodelsurface, nummodelsurfaces;
 
-	unsigned short	renderHandle;
-	unsigned short	firstnode;
+	unsigned int	renderHandle;
+	unsigned int	firstnode;
 };
 
 // only models with type "mod_sprite" have this data
@@ -444,12 +444,12 @@ struct msurface1_t
 {
 	// garymct - are these needed? - used by decal projection code
 	int		textureMins[2];		// smallest unnormalized s/t position on the surface.
-	short	textureExtents[2];	// ?? s/t texture size, 1..512 for all non-sky surfaces
+	int	textureExtents[2];	// ?? s/t texture size, 1..512 for all non-sky surfaces
 
 	struct
 	{
-		unsigned short numPrims;
-		unsigned short firstPrimID;			// index into primitive list if numPrims > 0
+		unsigned int numPrims;
+		unsigned int firstPrimID;			// index into primitive list if numPrims > 0
 	} prims;
 };
 
@@ -507,18 +507,18 @@ struct msurface2_t
 	WorldDecalHandle_t		decals;
 	ShadowDecalHandle_t		m_ShadowDecals; // unsigned short
 	OverlayFragmentHandle_t m_nFirstOverlayFragment;	// First overlay fragment on the surface (short)
-	short					materialSortID;
-	unsigned short			vertBufferIndex;
+	int					materialSortID;
+	unsigned int			vertBufferIndex;
 
-	unsigned short			m_bDynamicShadowsEnabled : 1;	// Can this surface receive dynamic shadows?
-	unsigned short			texinfo : 15;
+	unsigned int			m_bDynamicShadowsEnabled : 1;	// Can this surface receive dynamic shadows?
+	unsigned int			texinfo : 16;
 
 	IDispInfo				*pDispInfo;         // displacement map information
 	int						visframe;		// should be drawn when node is crossed
 };
 #pragma pack()
 
-inline unsigned short MSurf_AreDynamicShadowsEnabled( SurfaceHandle_t surfID )
+inline unsigned int MSurf_AreDynamicShadowsEnabled( SurfaceHandle_t surfID )
 {
 	return surfID->m_bDynamicShadowsEnabled;
 }
@@ -622,7 +622,7 @@ inline int *MSurf_TextureMins( SurfaceHandle_t surfID, worldbrushdata_t *pData =
 	return pData->surfaces1[surfaceIndex].textureMins;
 }
 
-inline short *MSurf_TextureExtents( SurfaceHandle_t surfID, worldbrushdata_t *pData = host_state.worldbrush )
+inline int *MSurf_TextureExtents( SurfaceHandle_t surfID, worldbrushdata_t *pData = host_state.worldbrush )
 {
 	int surfaceIndex = MSurf_Index(surfID,pData);
 //	ASSERT_SURF_VALID( surfID );
@@ -755,12 +755,12 @@ inline unsigned int &MSurf_FirstVertNormal( SurfaceHandle_t surfID, worldbrushda
 	return pData->surfacenormals[surfaceIndex].firstvertnormal;
 }
 
-inline unsigned short &MSurf_VertBufferIndex( SurfaceHandle_t surfID )
+inline unsigned int &MSurf_VertBufferIndex( SurfaceHandle_t surfID )
 {
 	return surfID->vertBufferIndex;
 }
 
-inline short& MSurf_MaterialSortID( SurfaceHandle_t surfID, worldbrushdata_t *pData = host_state.worldbrush )
+inline int& MSurf_MaterialSortID( SurfaceHandle_t surfID, worldbrushdata_t *pData = host_state.worldbrush )
 {
 	return surfID->materialSortID;
 }

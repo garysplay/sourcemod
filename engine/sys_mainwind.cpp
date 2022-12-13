@@ -1201,7 +1201,6 @@ void CGame::DetachFromWindow()
 	}
 
 #if defined( WIN32 ) && !defined( USE_SDL )
-	Assert( (WNDPROC)GetWindowLongPtrW( m_hWindow, GWLP_WNDPROC ) == HLEngineWindowProc );
 	SetWindowLongPtrW( m_hWindow, GWLP_WNDPROC, (LONG_PTR)m_ChainedWindowProc );
 #endif
 }

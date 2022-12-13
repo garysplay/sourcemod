@@ -91,7 +91,7 @@ struct DetailObjectLump_t
 	Vector			m_Origin;
 	QAngle			m_Angles;
 	unsigned short	m_DetailModel;		// either index into DetailObjectDictLump_t or DetailPropSpriteLump_t
-	unsigned short	m_Leaf;
+	unsigned int	m_Leaf;
 	ColorRGBExp32	m_Lighting;
 	unsigned int	m_LightStyles; 
 	unsigned char	m_LightStyleCount;
@@ -325,8 +325,8 @@ struct StaticPropLumpV11_t
 	Vector			m_Origin;
 	QAngle			m_Angles;
 	unsigned short	m_PropType;
-	unsigned short	m_FirstLeaf;
-	unsigned short	m_LeafCount;
+	unsigned int	m_FirstLeaf;
+	unsigned int	m_LeafCount;
 	unsigned char	m_Solid;
 	unsigned char	m_Flags;
 	int				m_Skin;
@@ -351,8 +351,8 @@ struct StaticPropLump_t
 	Vector			m_Origin;
 	QAngle			m_Angles;
 	unsigned short	m_PropType;
-	unsigned short	m_FirstLeaf;
-	unsigned short	m_LeafCount;
+	unsigned int	m_FirstLeaf;
+	unsigned int	m_LeafCount;
 	unsigned char	m_Solid;
 	int				m_Skin;
 	float			m_FadeMinDist;
@@ -485,7 +485,7 @@ struct StaticPropLump_t
 struct StaticPropLeafLump_t
 {
 	DECLARE_BYTESWAP_DATADESC();
-	unsigned short	m_Leaf;
+	unsigned int	m_Leaf;
 };
 
 //-----------------------------------------------------------------------------

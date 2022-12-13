@@ -47,7 +47,7 @@
 struct PatchInfo_t
 {
 	char *m_pMapName;
-	int m_pOrigin[3];
+	unsigned int m_pOrigin[3];
 };
 
 struct CubemapInfo_t
@@ -598,7 +598,7 @@ static bool PatchEnvmapForMaterialAndDependents( const char *pMaterialName, cons
 // default (skybox) cubemap into this file so the cubemap doesn't have the pink checkerboard at
 // runtime before they run buildcubemaps.
 //-----------------------------------------------------------------------------
-static int Cubemap_CreateTexInfo( int originalTexInfo, int origin[3] )
+static unsigned int Cubemap_CreateTexInfo( int originalTexInfo, unsigned int origin[3] )
 {
 	// Don't make cubemap tex infos for nodes
 	if ( originalTexInfo == TEXINFO_NODE )

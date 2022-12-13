@@ -94,8 +94,8 @@ extern TraceInfo_t g_PrimaryTraceInfo;
 struct cbrushside_t
 {
 	cplane_t	*plane;
-	unsigned short surfaceIndex;
-	unsigned short bBevel;							// is the side a bevel plane?
+	unsigned int surfaceIndex;
+	unsigned int bBevel;							// is the side a bevel plane?
 };
 
 #define NUMSIDES_BOXBRUSH	0xFFFF
@@ -103,8 +103,8 @@ struct cbrushside_t
 struct cbrush_t
 {
 	int				contents;
-	unsigned short	numsides;
-	unsigned short	firstbrushside;
+	unsigned int	numsides;
+	unsigned int	firstbrushside;
 
 	inline int GetBox() const { return firstbrushside; }
 	inline void SetBox( int boxID )
@@ -122,20 +122,20 @@ struct cboxbrush_t
 	VectorAligned	mins;
 	VectorAligned	maxs;
 
-	unsigned short	surfaceIndex[6];
-	unsigned short	pad2[2];
+	unsigned int	surfaceIndex[6];
+	unsigned int	pad2[2];
 };
 
 struct cleaf_t
 {
 	int			    contents;
-	short			cluster;
-	short			area : 9;
-	short			flags : 7;
-	unsigned short	firstleafbrush;
-	unsigned short	numleafbrushes;
-	unsigned short	dispListStart;
-	unsigned short	dispCount;
+	int			cluster;
+	int			area : 9;
+	int			flags : 7;
+	unsigned int	firstleafbrush;
+	unsigned int	numleafbrushes;
+	unsigned int	dispListStart;
+	unsigned int	dispCount;
 };
 
 struct carea_t
@@ -323,13 +323,13 @@ public:
 	CRangeValidatedArray<cleaf_t>		map_leafs;
 	int									emptyleaf, solidleaf;
 	int									numleafbrushes;
-	CRangeValidatedArray<unsigned short> map_leafbrushes;
+	CRangeValidatedArray<unsigned int> map_leafbrushes;
 	int									numcmodels;
 	CRangeValidatedArray<cmodel_t>		map_cmodels;
 	int									numbrushes;
 	CRangeValidatedArray<cbrush_t>		map_brushes;
 	int									numdisplist;
-	CRangeValidatedArray<unsigned short> map_dispList;
+	CRangeValidatedArray<unsigned int> map_dispList;
 	
 	// this points to the whole block of memory for vis data, but it is used to
 	// reference the header at the top of the block.
@@ -352,7 +352,7 @@ public:
 	int									numportalopen;
 	CRangeValidatedArray<bool>			portalopen;
 
-	csurface_t							*GetSurfaceAtIndex( unsigned short surfaceIndex );
+	csurface_t							*GetSurfaceAtIndex( unsigned int surfaceIndex );
 };
 
 //=============================================================================

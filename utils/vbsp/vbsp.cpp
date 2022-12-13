@@ -293,7 +293,7 @@ void ProcessWorldModel (void)
 		}
 		else
 		{
-			Warning( ("**** leaked ****\n") );
+			Msg( ("**** Leaked? ****\n") );
 			leaked = true;
 			LeakFile (tree);
 			if (leaktest)
@@ -325,7 +325,7 @@ void ProcessWorldModel (void)
 	// this turns portals with one solid side into faces
 	// it also subdivides each face if necessary to fit max lightmap dimensions
 	MakeFaces (tree->headnode);
-	Msg("done (%d)\n", (int)(Plat_FloatTime() - start) );
+	Msg("Done! (%f3)\n", (Plat_FloatTime() - start) );
 
 	if (glview)
 	{

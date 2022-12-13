@@ -1712,10 +1712,10 @@ void Mod_LoadVertNormalIndices( void )
 	CMapLoadHelper lh( LUMP_VERTNORMALINDICES );
 
     // get a pointer to the vertex normal data.
-	unsigned short *pIndices = ( unsigned short * )lh.LumpBase();
+	unsigned int*pIndices = ( unsigned int* )lh.LumpBase();
 
 	int count = lh.LumpSize() / sizeof(*pIndices);
-	unsigned short *out = (unsigned short *)Hunk_AllocName( lh.LumpSize(), va( "%s [%s]", lh.GetLoadName(), "vertnormalindices" ) );
+	unsigned int*out = (unsigned int *)Hunk_AllocName( lh.LumpSize(), va( "%s [%s]", lh.GetLoadName(), "vertnormalindices" ) );
 	memcpy( out, pIndices, lh.LumpSize() );
 	
 	lh.GetMap()->vertnormalindices = out;
@@ -1801,23 +1801,23 @@ void Mod_LoadPrimVerts( void )
 //-----------------------------------------------------------------------------
 void Mod_LoadPrimIndices( void )
 {
-	unsigned short	*in;
-	unsigned short	*out;
+	unsigned int*in;
+	unsigned int*out;
 	int				count;
 
 	CMapLoadHelper lh( LUMP_PRIMINDICES );
 
-	in = (unsigned short *)lh.LumpBase();
+	in = (unsigned int*)lh.LumpBase();
 	if (lh.LumpSize() % sizeof(*in))
 		Host_Error ("Mod_LoadPrimIndices: funny lump size in %s",lh.GetMapName());
 	count = lh.LumpSize() / sizeof(*in);
-	out = (unsigned short *)Hunk_AllocName( count*sizeof(*out), va("%s [%s]", lh.GetLoadName(), "primindices" ) );
-	memset( out, 0, count * sizeof( unsigned short ) );
+	out = (unsigned int*)Hunk_AllocName( count*sizeof(*out), va("%s [%s]", lh.GetLoadName(), "primindices" ) );
+	memset( out, 0, count * sizeof( unsigned int) );
 
 	lh.GetMap()->primindices = out;
 	lh.GetMap()->numprimindices = count;
 
-	memcpy( out, in, count * sizeof( unsigned short ) );
+	memcpy( out, in, count * sizeof( unsigned int) );
 }
 
 
@@ -2520,7 +2520,7 @@ void Mod_LoadLeafMinDistToWater( void )
 {
 	CMapLoadHelper lh( LUMP_LEAFMINDISTTOWATER );
 
-	unsigned short *pTmp = ( unsigned short * )lh.LumpBase();
+	unsigned int*pTmp = ( unsigned int* )lh.LumpBase();
 
 	int i;
 	bool foundOne = false;
@@ -2544,14 +2544,14 @@ void Mod_LoadLeafMinDistToWater( void )
 	else
 	{
 		int		count;
-		unsigned short	*in;
-		unsigned short	*out;
+		unsigned int*in;
+		unsigned int*out;
 
-		in = (unsigned short *)lh.LumpBase();
+		in = (unsigned int*)lh.LumpBase();
 		if (lh.LumpSize() % sizeof(*in))
 			Host_Error ("Mod_LoadLeafMinDistToWater: funny lump size in %s",lh.GetMapName());
 		count = lh.LumpSize() / sizeof(*in);
-		out = (unsigned short *)Hunk_AllocName( count*sizeof(*out), va( "%s [%s]", lh.GetLoadName(), "leafmindisttowater" ) );
+		out = (unsigned int*)Hunk_AllocName( count*sizeof(*out), va( "%s [%s]", lh.GetLoadName(), "leafmindisttowater" ) );
 
 		memcpy( out, in, sizeof( out[0] ) * count );
 		lh.GetMap()->m_LeafMinDistToWater = out;
@@ -2652,7 +2652,7 @@ void Mod_LoadSurfedges( medge_t *pedges )
 {	
 	int		i, count;
 	int		*in;
-	unsigned short *out;
+	unsigned int*out;
 	
 	CMapLoadHelper lh( LUMP_SURFEDGES );
 
@@ -2663,7 +2663,7 @@ void Mod_LoadSurfedges( medge_t *pedges )
 	if (count < 1 || count >= MAX_MAP_SURFEDGES)
 		Host_Error ("Mod_LoadSurfedges: bad surfedges count in %s: %i",
 		lh.GetMapName(), count);
-	out = (unsigned short *)Hunk_AllocName( count*sizeof(*out), va( "%s [%s]", lh.GetLoadName(), "surfedges" ) );
+	out = (unsigned int*)Hunk_AllocName( count*sizeof(*out), va( "%s [%s]", lh.GetLoadName(), "surfedges" ) );
 
 	lh.GetMap()->vertindices = out;
 	lh.GetMap()->numvertindices = count;

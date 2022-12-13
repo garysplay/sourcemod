@@ -84,15 +84,15 @@ END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dleaf_t )
 	DEFINE_FIELD( contents, FIELD_INTEGER ),
-	DEFINE_FIELD( cluster, FIELD_SHORT ),
-	DEFINE_BITFIELD( bf, FIELD_SHORT, 16 ),
-	DEFINE_ARRAY( mins, FIELD_SHORT, 3 ),
-	DEFINE_ARRAY( maxs, FIELD_SHORT, 3 ),
-	DEFINE_FIELD( firstleafface, FIELD_SHORT ),
-	DEFINE_FIELD( numleaffaces, FIELD_SHORT ),
-	DEFINE_FIELD( firstleafbrush, FIELD_SHORT ),
-	DEFINE_FIELD( numleafbrushes, FIELD_SHORT ),
-	DEFINE_FIELD( leafWaterDataID, FIELD_SHORT ),
+	DEFINE_FIELD( cluster, FIELD_INTEGER),
+	DEFINE_BITFIELD( bf, FIELD_INTEGER, 16 ),
+	DEFINE_ARRAY( mins, FIELD_INTEGER, 3 ),
+	DEFINE_ARRAY( maxs, FIELD_INTEGER, 3 ),
+	DEFINE_FIELD( firstleafface, FIELD_INTEGER),
+	DEFINE_FIELD( numleaffaces, FIELD_INTEGER),
+	DEFINE_FIELD( firstleafbrush, FIELD_INTEGER),
+	DEFINE_FIELD( numleafbrushes, FIELD_INTEGER),
+	DEFINE_FIELD( leafWaterDataID, FIELD_INTEGER),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( CompressedLightCube )	// array of 6 ColorRGBExp32 (3 bytes and 1 char)
@@ -100,8 +100,8 @@ BEGIN_BYTESWAP_DATADESC( CompressedLightCube )	// array of 6 ColorRGBExp32 (3 by
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dleafambientindex_t )
-	DEFINE_FIELD( ambientSampleCount, FIELD_SHORT ),
-	DEFINE_FIELD( firstAmbientSample, FIELD_SHORT ),
+	DEFINE_FIELD( ambientSampleCount, FIELD_INTEGER),
+	DEFINE_FIELD( firstAmbientSample, FIELD_INTEGER),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dleafambientlighting_t )	// array of 6 ColorRGBExp32 (3 bytes and 1 char)
@@ -119,18 +119,18 @@ END_BYTESWAP_DATADESC()
 BEGIN_BYTESWAP_DATADESC( dnode_t )
 	DEFINE_FIELD( planenum, FIELD_INTEGER ),
 	DEFINE_ARRAY( children, FIELD_INTEGER, 2 ),
-	DEFINE_ARRAY( mins, FIELD_SHORT, 3 ),
-	DEFINE_ARRAY( maxs, FIELD_SHORT, 3 ),
-	DEFINE_FIELD( firstface, FIELD_SHORT ),
-	DEFINE_FIELD( numfaces, FIELD_SHORT ),
-	DEFINE_FIELD( area, FIELD_SHORT ),
+	DEFINE_ARRAY( mins, FIELD_INTEGER, 3 ),
+	DEFINE_ARRAY( maxs, FIELD_INTEGER, 3 ),
+	DEFINE_FIELD( firstface, FIELD_INTEGER),
+	DEFINE_FIELD( numfaces, FIELD_INTEGER),
+	DEFINE_FIELD( area, FIELD_INTEGER),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( texinfo_t )
 	DEFINE_ARRAY( textureVecsTexelsPerWorldUnits, FIELD_FLOAT, 2 * 4 ),
 	DEFINE_ARRAY( lightmapVecsLuxelsPerWorldUnits, FIELD_FLOAT, 2 * 4 ),
-	DEFINE_FIELD( flags, FIELD_INTEGER ),
-	DEFINE_FIELD( texdata, FIELD_INTEGER ),
+	DEFINE_FIELD( flags, FIELD_INTEGER),
+	DEFINE_FIELD( texdata, FIELD_INTEGER),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dtexdata_t )
@@ -153,7 +153,7 @@ BEGIN_BYTESWAP_DATADESC( ddispinfo_t )
 #ifdef BSP23
 	DEFINE_FIELD( unknown1, FIELD_INTEGER),
 #endif
-	DEFINE_FIELD( m_iMapFace, FIELD_SHORT ),
+	DEFINE_FIELD( m_iMapFace, FIELD_INTEGER),
 	DEFINE_FIELD( m_iLightmapAlphaStart, FIELD_INTEGER ),
 	DEFINE_FIELD( m_iLightmapSamplePositionStart, FIELD_INTEGER ),
 #ifdef BSP23
@@ -169,12 +169,12 @@ BEGIN_BYTESWAP_DATADESC( CDispNeighbor )
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( CDispCornerNeighbors )
-	DEFINE_ARRAY( m_Neighbors, FIELD_SHORT, MAX_DISP_CORNER_NEIGHBORS ),
+	DEFINE_ARRAY( m_Neighbors, FIELD_INTEGER, MAX_DISP_CORNER_NEIGHBORS ),
 	DEFINE_FIELD( m_nNeighbors, FIELD_CHARACTER ),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( CDispSubNeighbor )
-	DEFINE_FIELD( m_iNeighbor, FIELD_SHORT ),
+	DEFINE_FIELD( m_iNeighbor, FIELD_INTEGER),
 	DEFINE_FIELD( m_NeighborOrientation, FIELD_CHARACTER ),
 	DEFINE_FIELD( m_Span, FIELD_CHARACTER ),
 	DEFINE_FIELD( m_NeighborSpan, FIELD_CHARACTER ),
@@ -187,19 +187,19 @@ BEGIN_BYTESWAP_DATADESC( CDispVert )
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( CDispTri )
-	DEFINE_FIELD( m_uiTags, FIELD_SHORT ),
+	DEFINE_FIELD( m_uiTags, FIELD_INTEGER),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( CFaceMacroTextureInfo )
-	DEFINE_FIELD( m_MacroTextureNameID, FIELD_SHORT ),
+	DEFINE_FIELD( m_MacroTextureNameID, FIELD_INTEGER),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dprimitive_t )
 	DEFINE_FIELD( type, FIELD_CHARACTER ),
-	DEFINE_FIELD( firstIndex, FIELD_SHORT ),
-	DEFINE_FIELD( indexCount, FIELD_SHORT ),
-	DEFINE_FIELD( firstVert, FIELD_SHORT ),
-	DEFINE_FIELD( vertCount, FIELD_SHORT ),
+	DEFINE_FIELD( firstIndex, FIELD_INTEGER),
+	DEFINE_FIELD( indexCount, FIELD_INTEGER),
+	DEFINE_FIELD( firstVert, FIELD_INTEGER),
+	DEFINE_FIELD( vertCount, FIELD_INTEGER),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dprimvert_t )
@@ -207,27 +207,27 @@ BEGIN_BYTESWAP_DATADESC( dprimvert_t )
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dface_t )
-	DEFINE_FIELD( planenum, FIELD_SHORT ),
+	DEFINE_FIELD( planenum, FIELD_INTEGER),
 	DEFINE_FIELD( side, FIELD_CHARACTER ),
 	DEFINE_FIELD( onNode, FIELD_CHARACTER ),
 	DEFINE_FIELD( firstedge, FIELD_INTEGER ),
-	DEFINE_FIELD( numedges, FIELD_SHORT ),
-	DEFINE_FIELD( texinfo, FIELD_SHORT ),
-	DEFINE_FIELD( dispinfo, FIELD_SHORT ),
-	DEFINE_FIELD( surfaceFogVolumeID, FIELD_SHORT ),
+	DEFINE_FIELD( numedges, FIELD_INTEGER),
+	DEFINE_FIELD( texinfo, FIELD_INTEGER),
+	DEFINE_FIELD( dispinfo, FIELD_INTEGER),
+	DEFINE_FIELD( surfaceFogVolumeID, FIELD_INTEGER),
 	DEFINE_ARRAY( styles, FIELD_CHARACTER, MAXLIGHTMAPS ),
 	DEFINE_FIELD( lightofs, FIELD_INTEGER ),
 	DEFINE_FIELD( area, FIELD_FLOAT ),
 	DEFINE_ARRAY( m_LightmapTextureMinsInLuxels, FIELD_INTEGER, 2 ),
 	DEFINE_ARRAY( m_LightmapTextureSizeInLuxels, FIELD_INTEGER, 2 ),
 	DEFINE_FIELD( origFace, FIELD_INTEGER ),
-	DEFINE_FIELD( m_NumPrims, FIELD_SHORT ),
-	DEFINE_FIELD( firstPrimID, FIELD_SHORT ),
+	DEFINE_FIELD( m_NumPrims, FIELD_INTEGER),
+	DEFINE_FIELD( firstPrimID, FIELD_INTEGER),
 	DEFINE_FIELD( smoothingGroups, FIELD_INTEGER ),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dfaceid_t )
-	DEFINE_FIELD( hammerfaceid, FIELD_SHORT ),
+	DEFINE_FIELD( hammerfaceid, FIELD_INTEGER),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dbrush_t )
@@ -237,14 +237,14 @@ BEGIN_BYTESWAP_DATADESC( dbrush_t )
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dbrushside_t )
-	DEFINE_FIELD( planenum, FIELD_SHORT ),
-	DEFINE_FIELD( texinfo, FIELD_SHORT ),
-	DEFINE_FIELD( dispinfo, FIELD_SHORT ),
-	DEFINE_FIELD( bevel, FIELD_SHORT ),
+	DEFINE_FIELD( planenum, FIELD_INTEGER),
+	DEFINE_FIELD( texinfo, FIELD_INTEGER),
+	DEFINE_FIELD( dispinfo, FIELD_INTEGER),
+	DEFINE_FIELD( bevel, FIELD_INTEGER),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dedge_t )
-	DEFINE_ARRAY( v, FIELD_SHORT, 2 ),
+	DEFINE_ARRAY( v, FIELD_INTEGER, 2 ),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dmodel_t )
@@ -264,7 +264,7 @@ BEGIN_BYTESWAP_DATADESC( dphysmodel_t )
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dphysdisp_t )
-	DEFINE_FIELD( numDisplacements, FIELD_SHORT ),
+	DEFINE_FIELD( numDisplacements, FIELD_INTEGER),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( darea_t )
@@ -273,10 +273,10 @@ BEGIN_BYTESWAP_DATADESC( darea_t )
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dareaportal_t )
-	DEFINE_FIELD( m_PortalKey, FIELD_SHORT ),
-	DEFINE_FIELD( otherarea, FIELD_SHORT ),
-	DEFINE_FIELD( m_FirstClipPortalVert, FIELD_SHORT ),
-	DEFINE_FIELD( m_nClipPortalVerts, FIELD_SHORT ),
+	DEFINE_FIELD( m_PortalKey, FIELD_INTEGER),
+	DEFINE_FIELD( otherarea, FIELD_INTEGER),
+	DEFINE_FIELD( m_FirstClipPortalVert, FIELD_INTEGER),
+	DEFINE_FIELD( m_nClipPortalVerts, FIELD_INTEGER),
 	DEFINE_FIELD( planenum, FIELD_INTEGER ),
 END_BYTESWAP_DATADESC()
 
@@ -322,7 +322,7 @@ END_BYTESWAP_DATADESC()
 BEGIN_BYTESWAP_DATADESC( dleafwaterdata_t )
 	DEFINE_FIELD( surfaceZ, FIELD_FLOAT ),
 	DEFINE_FIELD( minZ, FIELD_FLOAT ),
-	DEFINE_FIELD( surfaceTexInfoID, FIELD_SHORT ),
+	DEFINE_FIELD( surfaceTexInfoID, FIELD_INTEGER),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( doccluderdata_t )
@@ -347,8 +347,8 @@ END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC(doverlay_t)
     DEFINE_FIELD(nId, FIELD_INTEGER),
-    DEFINE_FIELD(nTexInfo, FIELD_SHORT),
-	DEFINE_FIELD(m_nFaceCountAndRenderOrder, FIELD_SHORT),
+    DEFINE_FIELD(nTexInfo, FIELD_INTEGER),
+	DEFINE_FIELD(m_nFaceCountAndRenderOrder, FIELD_INTEGER),
 	DEFINE_ARRAY(aFaces, FIELD_INTEGER, OVERLAY_BSP_FACE_COUNT),
 #ifdef BSP23
 	DEFINE_FIELD(unknown, FIELD_INTEGER),
@@ -362,8 +362,8 @@ END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dwateroverlay_t )
 	DEFINE_FIELD( nId, FIELD_INTEGER ),
-	DEFINE_FIELD( nTexInfo, FIELD_SHORT ),
-	DEFINE_FIELD( m_nFaceCountAndRenderOrder, FIELD_SHORT ),
+	DEFINE_FIELD( nTexInfo, FIELD_INTEGER),
+	DEFINE_FIELD( m_nFaceCountAndRenderOrder, FIELD_INTEGER),
 	DEFINE_ARRAY( aFaces, FIELD_INTEGER, WATEROVERLAY_BSP_FACE_COUNT ),
 	DEFINE_ARRAY( flU, FIELD_FLOAT, 2 ),
 	DEFINE_ARRAY( flV, FIELD_FLOAT, 2 ),
@@ -383,7 +383,7 @@ END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( dgamelump_t )
 	DEFINE_FIELD( id, FIELD_INTEGER ),	// GameLumpId_t
-	DEFINE_FIELD( flags, FIELD_SHORT ),
+	DEFINE_FIELD( flags, FIELD_INTEGER ),
 	DEFINE_FIELD( version, FIELD_SHORT ),
 	DEFINE_FIELD( fileofs, FIELD_INTEGER ),
 	DEFINE_FIELD( filelen, FIELD_INTEGER ),
@@ -565,7 +565,7 @@ END_BYTESWAP_DATADESC()
 
 
 BEGIN_BYTESWAP_DATADESC( StaticPropLeafLump_t )
-	DEFINE_FIELD( m_Leaf, FIELD_SHORT ),
+	DEFINE_FIELD( m_Leaf, FIELD_INTEGER),
 END_BYTESWAP_DATADESC()
 
 BEGIN_BYTESWAP_DATADESC( DetailObjectDictLump_t )
@@ -576,7 +576,7 @@ BEGIN_BYTESWAP_DATADESC( DetailObjectLump_t )
 	DEFINE_FIELD( m_Origin, FIELD_VECTOR ),
 	DEFINE_FIELD( m_Angles, FIELD_VECTOR ),			// QAngle
 	DEFINE_FIELD( m_DetailModel, FIELD_SHORT ),
-	DEFINE_FIELD( m_Leaf, FIELD_SHORT ),
+	DEFINE_FIELD( m_Leaf, FIELD_INTEGER),
 	DEFINE_ARRAY( m_Lighting, FIELD_CHARACTER, 4 ),	// ColorRGBExp32
 	DEFINE_FIELD( m_LightStyles, FIELD_INTEGER ),
 	DEFINE_FIELD( m_LightStyleCount, FIELD_CHARACTER ),
@@ -742,7 +742,7 @@ CUtlVector<dleafambientlighting_t> g_LeafAmbientLightingLDR;
 CUtlVector<dleafambientlighting_t> g_LeafAmbientLightingHDR;
 CUtlVector<dleafambientlighting_t> *g_pLeafAmbientLighting = NULL;
 
-unsigned short  g_LeafMinDistToWater[MAX_MAP_LEAFS];
+unsigned int  g_LeafMinDistToWater[MAX_MAP_LEAFS];
 
 int			numplanes;
 dplane_t	dplanes[MAX_MAP_PLANES];
@@ -752,7 +752,7 @@ int			numvertexes;
 dvertex_t	dvertexes[MAX_MAP_VERTS];
 
 int				g_numvertnormalindices;	// dfaces reference these. These index g_vertnormals.
-unsigned short	g_vertnormalindices[MAX_MAP_VERTNORMALS];
+unsigned int	g_vertnormalindices[MAX_MAP_VERTNORMALS];
 
 int				g_numvertnormals;	
 Vector			g_vertnormals[MAX_MAP_VERTNORMALS];
@@ -785,7 +785,7 @@ int				g_numprimverts = 0;
 dprimvert_t		g_primverts[MAX_MAP_PRIMVERTS];
 
 int				g_numprimindices = 0;
-unsigned short	g_primindices[MAX_MAP_PRIMINDICES];
+unsigned int	g_primindices[MAX_MAP_PRIMINDICES];
 
 int			numfaces;
 dface_t		dfaces[MAX_MAP_FACES];
@@ -800,10 +800,10 @@ int			numedges;
 dedge_t		dedges[MAX_MAP_EDGES];
 
 int			numleaffaces;
-unsigned short		dleaffaces[MAX_MAP_LEAFFACES];
+unsigned int		dleaffaces[MAX_MAP_LEAFFACES];
 
 int			numleafbrushes;
-unsigned short		dleafbrushes[MAX_MAP_LEAFBRUSHES];
+unsigned int		dleafbrushes[MAX_MAP_LEAFBRUSHES];
 
 int			numsurfedges;
 int			dsurfedges[MAX_MAP_SURFEDGES];
@@ -821,13 +821,13 @@ int			numareaportals;
 dareaportal_t	dareaportals[MAX_MAP_AREAPORTALS];
 
 int			numworldlightsLDR;
-dworldlight_t dworldlightsLDR[MAX_MAP_WORLDLIGHTS];
+dworldlight_t dworldlightsLDR[MAX_MAP_WORLDLIGHTS]; //enderzip: todo: make this infinite
 
 int			numworldlightsHDR;
-dworldlight_t dworldlightsHDR[MAX_MAP_WORLDLIGHTS];
+dworldlight_t dworldlightsHDR[MAX_MAP_WORLDLIGHTS]; //enderzip: todo: make this infinite
 
 int			*pNumworldlights = &numworldlightsLDR;
-dworldlight_t *dworldlights = dworldlightsLDR;
+dworldlight_t* dworldlights = dworldlightsLDR;
 
 int			numleafwaterdata = 0;
 dleafwaterdata_t dleafwaterdata[MAX_MAP_LEAFWATERDATA]; 
@@ -2027,14 +2027,14 @@ static void SwapPhysdispLump( byte *pDest, byte *pSrc, int count )
 	// followed by an array of variable length (each element is the length of the corresponding entry in the
 	// previous table) byte-stream data structure of the displacement collision models
 	// these byte-stream structs are endian-neutral because each element is byte-sized
-	unsigned short dispCount = *(unsigned short*)pSrc;
+	unsigned int dispCount = *(unsigned int*)pSrc;
 	if ( g_bSwapOnLoad )
 	{
 		g_Swap.SwapBufferToTargetEndian( &dispCount );
 	}
-	g_Swap.SwapBufferToTargetEndian( (unsigned short*)pDest, (unsigned short*)pSrc, dispCount + 1 );
+	g_Swap.SwapBufferToTargetEndian( (unsigned int*)pDest, (unsigned int*)pSrc, dispCount + 1 );
 
-	const int nBytes = (dispCount + 1) * sizeof( unsigned short );
+	const int nBytes = (dispCount + 1) * sizeof( unsigned int);
 	pSrc += nBytes;
 	pDest += nBytes;
 	count -= nBytes;
@@ -2535,10 +2535,10 @@ void LoadBSPFile( const char *filename )
 
 	g_numprimitives = CopyLump( LUMP_PRIMITIVES, g_primitives );
 	g_numprimverts = CopyLump( LUMP_PRIMVERTS, g_primverts );
-	g_numprimindices = CopyLump( FIELD_SHORT, LUMP_PRIMINDICES, g_primindices );
+	g_numprimindices = CopyLump( FIELD_INTEGER, LUMP_PRIMINDICES, g_primindices );
     numorigfaces = CopyLump( LUMP_ORIGINALFACES, dorigfaces );   // original faces
-	numleaffaces = CopyLump( FIELD_SHORT, LUMP_LEAFFACES, dleaffaces );
-	numleafbrushes = CopyLump( FIELD_SHORT, LUMP_LEAFBRUSHES, dleafbrushes );
+	numleaffaces = CopyLump(FIELD_INTEGER, LUMP_LEAFFACES, dleaffaces );
+	numleafbrushes = CopyLump(FIELD_INTEGER, LUMP_LEAFBRUSHES, dleafbrushes );
 	numsurfedges = CopyLump( FIELD_INTEGER, LUMP_SURFEDGES, dsurfedges );
 	numedges = CopyLump( LUMP_EDGES, dedges );
 	numbrushes = CopyLump( LUMP_BRUSHES, dbrushes );
@@ -2564,7 +2564,7 @@ void LoadBSPFile( const char *filename )
 	g_PhysDispSize = CopyVariableLump<byte>( FIELD_CHARACTER, LUMP_PHYSDISP, (void**)&g_pPhysDisp );
 
 	g_numvertnormals = CopyLump( FIELD_VECTOR, LUMP_VERTNORMALS, (float*)g_vertnormals );
-	g_numvertnormalindices = CopyLump( FIELD_SHORT, LUMP_VERTNORMALINDICES, g_vertnormalindices );
+	g_numvertnormalindices = CopyLump(FIELD_INTEGER, LUMP_VERTNORMALINDICES, g_vertnormalindices );
 
 	g_nClipPortalVerts = CopyLump( FIELD_VECTOR, LUMP_CLIPPORTALVERTS, (float*)g_ClipPortalVerts );
 	g_nCubemapSamples = CopyLump( LUMP_CUBEMAPS, g_CubemapSamples );	
@@ -2587,7 +2587,7 @@ void LoadBSPFile( const char *filename )
 
 	LoadOcclusionLump();
 
-	CopyLump( FIELD_SHORT, LUMP_LEAFMINDISTTOWATER, g_LeafMinDistToWater );
+	CopyLump(FIELD_INTEGER, LUMP_LEAFMINDISTTOWATER, g_LeafMinDistToWater );
 
 	/*
 	int crap;
@@ -2934,7 +2934,7 @@ void WriteBSPFile( const char *filename, char *pUnused )
 
 	g_pBSPHeader->ident = IDBSPHEADER;
 
-	g_pBSPHeader->version = BSPVERSION - 1; //21 
+	g_pBSPHeader->version = BSPVERSION; //25
 
 	g_pBSPHeader->mapRevision = g_MapRevision;
 
@@ -3546,13 +3546,13 @@ void BuildFaceCalcWindingData( dface_t *pFace, int *points )
 
 
 void TriStripToTriList( 
-	unsigned short const *pTriStripIndices,
+	unsigned int const *pTriStripIndices,
 	int nTriStripIndices,
-	unsigned short **pTriListIndices,
+	unsigned int **pTriListIndices,
 	int *pnTriListIndices )
 {
 	int nMaxTriListIndices = (nTriStripIndices - 2) * 3;
-	*pTriListIndices = new unsigned short[ nMaxTriListIndices ];
+	*pTriListIndices = new unsigned int[ nMaxTriListIndices ];
 	*pnTriListIndices = 0;
 
 	for( int i=0; i < nTriStripIndices - 2; i++ )
@@ -4038,13 +4038,11 @@ bool EnumerateNodesAlongRay( Ray_t const& ray, IBSPNodeEnumerator* pEnum, intp c
 // Helps us find all leaves associated with a particular cluster
 //-----------------------------------------------------------------------------
 CUtlVector<clusterlist_t> g_ClusterLeaves;
-
+int	leafList[MAX_MAP_LEAFS]; //enderzip: stack overflowing again
 void BuildClusterTable( void )
 {
 	int i, j;
 	int leafCount;
-	int	leafList[MAX_MAP_LEAFS];
-
 	g_ClusterLeaves.SetCount( dvis->numclusters );
 	for ( i = 0; i < dvis->numclusters; i++ )
 	{
@@ -5293,10 +5291,10 @@ bool SwapBSPFile( const char *pInFilename, const char *pOutFilename, bool bSwapO
 	SwapLumpToDisk<CFaceMacroTextureInfo>( LUMP_FACE_MACRO_TEXTURE_INFO );
 	SwapLumpToDisk<dprimitive_t>( LUMP_PRIMITIVES );
 	SwapLumpToDisk<dprimvert_t>( LUMP_PRIMVERTS );
-	SwapLumpToDisk<unsigned short>( FIELD_SHORT, LUMP_PRIMINDICES );
+	SwapLumpToDisk<unsigned int>( FIELD_INTEGER, LUMP_PRIMINDICES );
     SwapLumpToDisk<dface_t>( LUMP_ORIGINALFACES );
-	SwapLumpToDisk<unsigned short>( FIELD_SHORT, LUMP_LEAFFACES );
-	SwapLumpToDisk<unsigned short>( FIELD_SHORT, LUMP_LEAFBRUSHES );
+	SwapLumpToDisk<unsigned int>(FIELD_INTEGER, LUMP_LEAFFACES );
+	SwapLumpToDisk<unsigned int>(FIELD_INTEGER, LUMP_LEAFBRUSHES );
 	SwapLumpToDisk<int>( FIELD_INTEGER, LUMP_SURFEDGES );
 	SwapLumpToDisk<dedge_t>( LUMP_EDGES );
 	SwapLumpToDisk<dbrush_t>( LUMP_BRUSHES );
@@ -5306,14 +5304,14 @@ bool SwapBSPFile( const char *pInFilename, const char *pOutFilename, bool bSwapO
 	SwapLumpToDisk<char>( FIELD_CHARACTER, LUMP_ENTITIES );
 	SwapLumpToDisk<dleafwaterdata_t>( LUMP_LEAFWATERDATA );
 	SwapLumpToDisk<float>( FIELD_VECTOR, LUMP_VERTNORMALS );
-	SwapLumpToDisk<short>( FIELD_SHORT, LUMP_VERTNORMALINDICES );
+	SwapLumpToDisk<int>(FIELD_INTEGER, LUMP_VERTNORMALINDICES );
 	SwapLumpToDisk<float>( FIELD_VECTOR, LUMP_CLIPPORTALVERTS );
 	SwapLumpToDisk<dcubemapsample_t>( LUMP_CUBEMAPS );	
 	SwapLumpToDisk<char>( FIELD_CHARACTER, LUMP_TEXDATA_STRING_DATA );
 	SwapLumpToDisk<int>( FIELD_INTEGER, LUMP_TEXDATA_STRING_TABLE );
 	SwapLumpToDisk<doverlay_t>( LUMP_OVERLAYS );
 	SwapLumpToDisk<dwateroverlay_t>( LUMP_WATEROVERLAYS );
-	SwapLumpToDisk<unsigned short>( FIELD_SHORT, LUMP_LEAFMINDISTTOWATER );
+	SwapLumpToDisk<unsigned int>(FIELD_INTEGER, LUMP_LEAFMINDISTTOWATER );
 	SwapLumpToDisk<doverlayfade_t>( LUMP_OVERLAY_FADES );
 
 

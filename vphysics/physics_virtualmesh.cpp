@@ -361,7 +361,7 @@ private:
 	virtualmeshparams_t m_params;
 	virtualmeshhull_t *m_pHull;
 	memhandle_t		m_hMemory;
-	short			m_ledgeCount;
+	int 			m_ledgeCount;
 };
 
 static void FlushFrameLocks()

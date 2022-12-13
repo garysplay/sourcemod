@@ -554,10 +554,10 @@ void CollisionBSPData_LoadLeafBrushes( CCollisionBSPData *pBSPData )
 	CMapLoadHelper lh( LUMP_LEAFBRUSHES );
 
 	int			i;
-	unsigned short 	*in;
+	unsigned int*in;
 	int			count;
 	
-	in = (unsigned short *)lh.LumpBase();
+	in = (unsigned int*)lh.LumpBase();
 	if (lh.LumpSize() % sizeof(*in))
 	{
 		Sys_Error( "CMod_LoadLeafBrushes: funny lump size");
@@ -575,7 +575,7 @@ void CollisionBSPData_LoadLeafBrushes( CCollisionBSPData *pBSPData )
 		Sys_Error( "Map has too many leafbrushes");
 	}
 
-	pBSPData->map_leafbrushes.Attach( count, (unsigned short*)Hunk_Alloc( count * sizeof(unsigned short), false ) );
+	pBSPData->map_leafbrushes.Attach( count, (unsigned int*)Hunk_Alloc( count * sizeof(unsigned int), false ) );
 	pBSPData->numleafbrushes = count;
 
 	for ( i=0 ; i<count ; i++, in++)

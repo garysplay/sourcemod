@@ -776,8 +776,8 @@ void Shader_DrawChainsDynamic( const CMSurfaceSortList &sortList, int nSortGroup
 
 struct vertexformatlist_t
 {
-	unsigned short numbatches;
-	unsigned short firstbatch;
+	unsigned int numbatches;
+	unsigned int firstbatch;
 #ifdef NEWMESH
 	IVertexBuffer *pVertexBuffer;
 #else
@@ -788,8 +788,8 @@ struct vertexformatlist_t
 struct batchlist_t
 {
 	SurfaceHandle_t	surfID;		// material and lightmap info
-	unsigned short firstIndex;
-	unsigned short numIndex;
+	unsigned int firstIndex;
+	unsigned int numIndex;
 };
 
 void Shader_DrawChainsStatic( const CMSurfaceSortList &sortList, int nSortGroup, bool bShadowDepth )
@@ -1758,7 +1758,7 @@ static void Shader_WorldZFillSurfChain( const CMSurfaceSortList &sortList, const
 
 		int nSurfTriangleCount = MSurf_VertCount( nSurfID ) - 2;
 
-		unsigned short *pVertIndex = &(host_state.worldbrush->vertindices[MSurf_FirstVertIndex( nSurfID )]);
+		unsigned int *pVertIndex = &(host_state.worldbrush->vertindices[MSurf_FirstVertIndex( nSurfID )]);
 
 		// add surface to this batch
 		if ( SurfaceHasPrims(nSurfID) )
@@ -1816,7 +1816,7 @@ static void Shader_WorldZFillSurfChain( const CMSurfaceSortList &sortList, const
 
 			default:
 				{
-					for ( unsigned short v = 0; v < nSurfTriangleCount; ++v )
+					for ( unsigned int v = 0; v < nSurfTriangleCount; ++v )
 					{
 						meshBuilder.Position3fv( pWorldVerts[*pVertIndex++].position.Base() );
 						meshBuilder.AdvanceVertex();
@@ -3611,15 +3611,15 @@ public:
 	// These structs contain ONLY the opaque surfaces of a brush model.
 	struct brushrendersurface_t
 	{
-		short	surfaceIndex;
-		short	planeIndex;
+		int	surfaceIndex;
+		int	planeIndex;
 	};
 
 	// a batch is a list of surfaces with the same material - they can be drawn with one call to the materialsystem
 	struct brushrenderbatch_t
 	{
-		short	firstSurface;
-		short	surfaceCount;
+		int	firstSurface;
+		int	surfaceCount;
 		IMaterial *pMaterial;
 		int		sortID;
 		int		indexCount;
@@ -3628,8 +3628,8 @@ public:
 	// a mesh is a list of batches with the same vertex format.
 	struct brushrendermesh_t
 	{
-		short		firstBatch;
-		short		batchCount;
+		int		firstBatch;
+		int		batchCount;
 	};
 
 	// This is the top-level struct containing all data necessary to render an opaque brush model in optimal order
@@ -3653,20 +3653,20 @@ public:
 		brushrendermesh_t		*pMeshes;			
 		brushrenderbatch_t		*pBatches;
 		brushrendersurface_t	*pSurfaces;
-		short planeCount;
-		short meshCount;
-		short batchCount;
-		short surfaceCount;
-		short totalIndexCount;
-		short totalVertexCount;
+		int planeCount;
+		int meshCount;
+		int batchCount;
+		int surfaceCount;
+		int totalIndexCount;
+		int totalVertexCount;
 	};
 
 	// Surfaces are stored in a list like this temporarily for sorting purposes only.  The compact structs do not store these.
 	struct surfacelist_t
 	{
 		SurfaceHandle_t surfID;
-		short	surfaceIndex;
-		short	planeIndex;
+		int	surfaceIndex;
+		int	planeIndex;
 	};
 	
 	// These are the compact structs produced for translucent brush models.  These structs contain
@@ -3675,8 +3675,8 @@ public:
 	// a batch is a list of surfaces with the same material - they can be drawn with one call to the materialsystem
 	struct transbatch_t
 	{
-		short	firstSurface;
-		short	surfaceCount;
+		int	firstSurface;
+		int	surfaceCount;
 		IMaterial *pMaterial;
 		int		sortID;
 		int		indexCount;
@@ -3685,18 +3685,18 @@ public:
 	// This is a list of surfaces that have decals.
 	struct transdecal_t
 	{
-		short firstSurface;
-		short surfaceCount;
+		int firstSurface;
+		int surfaceCount;
 	};
 
 	// A node is the list of batches that can be drawn without sorting errors.  When no decals are present, surfaces
 	// from the next node may be appended to this one to improve performance without causing sorting errors.
 	struct transnode_t
 	{
-		short			firstBatch;
-		short			batchCount;
-		short			firstDecalSurface;
-		short			decalSurfaceCount;
+		int			firstBatch;
+		int			batchCount;
+		int			firstDecalSurface;
+		int			decalSurfaceCount;
 	};
 
 	// This is the top-level struct containing all data necessary to render a translucent brush model in optimal order.
@@ -3710,10 +3710,10 @@ public:
 		transbatch_t	batches[MAX_TRANS_BATCHES];
 		transbatch_t	*pLastBatch;	// These are used to append surfaces to existing batches across nodes.
 		transnode_t		*pLastNode;		// This improves performance.
-		short			nodeCount;
-		short			batchCount;
-		short			surfaceCount;
-		short			decalSurfaceCount;
+		int			nodeCount;
+		int			batchCount;
+		int			surfaceCount;
+		int			decalSurfaceCount;
 	};
 
 	// Builds a transrender_t, then executes it's drawing commands
@@ -4024,8 +4024,8 @@ void R_BrushBatchInit( void )
 
 void CBrushBatchRender::LevelInit()
 {
-	unsigned short iNext;
-	for( unsigned short i=m_renderList.Head(); i != m_renderList.InvalidIndex(); i=iNext )
+	unsigned int iNext;
+	for( unsigned int i=m_renderList.Head(); i != m_renderList.InvalidIndex(); i=iNext )
 	{
 		iNext = m_renderList.Next(i);
 		m_renderList.Element(i).Free();
@@ -4057,7 +4057,7 @@ CBrushBatchRender::brushrender_t *CBrushBatchRender::FindOrCreateRenderBatch( mo
 	if ( !pModel->brush.nummodelsurfaces )
 		return NULL;
 
-	unsigned short index = pModel->brush.renderHandle - 1;
+	unsigned int index = pModel->brush.renderHandle - 1;
 
 	if ( m_renderList.IsValidIndex( index ) )
 		return &m_renderList.Element(index);

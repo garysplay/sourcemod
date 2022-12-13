@@ -1751,6 +1751,8 @@ int CountClusters( void )
 RadWorld
 =============
 */
+float oldLightmapVecs[MAX_MAP_TEXINFO][2][4]; //enderzip: might cause stack overflow
+                                              //i have some feelings that im not doing this right
 void RadWorld_Start()
 {
 	unsigned	i;
@@ -1758,7 +1760,6 @@ void RadWorld_Start()
 	if (luxeldensity < 1.0)
 	{
 		// Remember the old lightmap vectors.
-		float oldLightmapVecs[MAX_MAP_TEXINFO][2][4];
 		for (i = 0; i < texinfo.Count(); i++)
 		{
 			for( int j=0; j < 2; j++ )

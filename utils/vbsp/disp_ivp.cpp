@@ -132,7 +132,7 @@ void Disp_AddCollisionModels( CUtlVector<CPhysCollisionEntry *> &collisionList, 
 			MaterialSystemMaterial_t matID = GetMatIDFromDisp( pMapDisp );
 
 			// Build a triangle list. This shares the tesselation code with the engine.
-			CUtlVector<unsigned short> indices;
+			CUtlVector<unsigned int> indices;
 			CVBSPTesselateHelper helper;
 			helper.m_pIndices = &indices;
 			helper.m_pActiveVerts = pDispInfo->GetAllowedVerts().Base();
@@ -196,17 +196,17 @@ void Disp_AddCollisionModels( CUtlVector<CPhysCollisionEntry *> &collisionList, 
 class CDispMeshEvent : public IVirtualMeshEvent
 {
 public:
-	CDispMeshEvent( unsigned short *pIndices, int indexCount, CCoreDispInfo *pDispInfo );
+	CDispMeshEvent( unsigned int *pIndices, int indexCount, CCoreDispInfo *pDispInfo );
 	virtual void GetVirtualMesh( void *userData, virtualmeshlist_t *pList );
 	virtual void GetWorldspaceBounds( void *userData, Vector *pMins, Vector *pMaxs );
 	virtual void GetTrianglesInSphere( void *userData, const Vector &center, float radius, virtualmeshtrianglelist_t *pList );
 
 	CUtlVector<Vector>		m_verts;
-	unsigned short			*m_pIndices;
+	unsigned int			*m_pIndices;
 	int						m_indexCount;
 };
 
-CDispMeshEvent::CDispMeshEvent( unsigned short *pIndices, int indexCount, CCoreDispInfo *pDispInfo )
+CDispMeshEvent::CDispMeshEvent( unsigned int *pIndices, int indexCount, CCoreDispInfo *pDispInfo )
 {
 	m_pIndices = pIndices;
 	m_indexCount = indexCount;
@@ -280,7 +280,7 @@ void Disp_BuildVirtualMesh( int contentsMask )
 			continue;
 
 		// Build a triangle list. This shares the tesselation code with the engine.
-		CUtlVector<unsigned short> indices;
+		CUtlVector<unsigned int> indices;
 		CVBSPTesselateHelper helper;
 		helper.m_pIndices = &indices;
 		helper.m_pActiveVerts = pDispInfo->GetAllowedVerts().Base();
@@ -350,7 +350,7 @@ void Disp_BuildVirtualMesh( int contentsMask )
 			buf.Put( dispBuf.Base(), outSize );
 		}
 	}
-	g_PhysDispSize = totalSize + sizeof(dphysdisp_t) + (sizeof(unsigned short) * header.numDisplacements);
+	g_PhysDispSize = totalSize + sizeof(dphysdisp_t) + (sizeof(unsigned int) * header.numDisplacements);
 	Assert( buf.TellMaxPut() == g_PhysDispSize );
 	g_PhysDispSize = buf.TellMaxPut();
 	g_pPhysDisp = new byte[g_PhysDispSize];

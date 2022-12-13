@@ -15,7 +15,7 @@
 
 int samplesAdded = 0;
 int patchSamplesAdded = 0;
-static unsigned short g_PatchIterationKey = 0;
+static unsigned int g_PatchIterationKey = 0;
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -152,9 +152,9 @@ void GetPatchSampleHashXYZ( const Vector &vOrigin, int &x, int &y, int &z )
 }
 
 
-unsigned short IncrementPatchIterationKey()
+unsigned int IncrementPatchIterationKey()
 {
-	if ( g_PatchIterationKey == 0xFFFF )
+	if ( g_PatchIterationKey == 0xFFFFFFFF )
 	{
 		g_PatchIterationKey = 1;
 		for ( int i=0; i < g_Patches.Count(); i++ )

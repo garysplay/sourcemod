@@ -104,10 +104,10 @@ struct EntityInfo_t
 	Vector						m_vecMax;
 	Voxel_t						m_voxelMax;
 	IHandleEntity *				m_pHandleEntity;	// Entity handle.
-	unsigned short				m_fList;			// Which lists is it in?
+	unsigned int				m_fList;			// Which lists is it in?
 	uint8						m_flags;
 	char						m_nLevel[NUM_TREES];	// Which level voxel tree is it in?
-	unsigned short				m_nVisitBit[NUM_TREES];
+	unsigned int				m_nVisitBit[NUM_TREES];
 	intp						m_iLeafList[NUM_TREES];	// Index into the leaf pool - leaf list for entity (m_aLeafList).
 };
 
@@ -311,11 +311,11 @@ private:
 	int									m_nLevelCount;
 	CVoxelHash*							m_pVoxelHash;
 	CLeafList							m_aLeafList;								// Pool - Linked list(multilist) of leaves per entity.
-	int									m_TreeId;
+	unsigned int						m_TreeId;
 	CPartitionVisits *                  m_pVisits[MAX_THREADS_SUPPORTED];
 	CSpatialPartition *					m_pOwner;
-	CUtlVector<unsigned short>			m_AvailableVisitBits;
-	unsigned short						m_nNextVisitBit;
+	CUtlVector<unsigned int>			m_AvailableVisitBits;
+	unsigned int						m_nNextVisitBit;
 	CTSPool<CPartitionVisits>			m_FreeVisits;
 	CThreadSpinRWLock					m_lock;
 };
@@ -2082,7 +2082,7 @@ void CVoxelTree::RemoveFromTree( SpatialPartitionHandle_t hPartition )
 		m_lock.LockForWrite();
 		m_pVoxelHash[nLevel].RemoveFromTree( hPartition );
 		m_AvailableVisitBits.AddToTail( info.m_nVisitBit[m_TreeId] );
-		info.m_nVisitBit[m_TreeId] = (unsigned short)-1;
+		info.m_nVisitBit[m_TreeId] = (unsigned int)-1;
 		m_lock.UnlockWrite();
 
 		if ( bWasReading )

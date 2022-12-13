@@ -41,7 +41,7 @@ CCollisionCounts  g_CollisionCounts;						// collision test counters
 
 csurface_t CCollisionBSPData::nullsurface = { "**empty**", 0, 0 };				// generic null collision model surface
 
-csurface_t *CCollisionBSPData::GetSurfaceAtIndex( unsigned short surfaceIndex )
+csurface_t *CCollisionBSPData::GetSurfaceAtIndex( unsigned int surfaceIndex )
 {
 	if ( surfaceIndex == SURFACE_INDEX_INVALID )
 	{
@@ -196,7 +196,7 @@ int CM_BrushContents_r( CCollisionBSPData *pBSPData, int nodenum )
 			
 			for ( int i = 0; i < leaf.numleafbrushes; i++ )
 			{
-				unsigned short brushIndex = pBSPData->map_leafbrushes[ leaf.firstleafbrush + i ];
+				unsigned int brushIndex = pBSPData->map_leafbrushes[ leaf.firstleafbrush + i ];
 				contents |= pBSPData->map_brushes[brushIndex].contents;
 			}
 
@@ -1536,7 +1536,7 @@ void FASTCALL CM_TraceToLeaf( TraceInfo_t * RESTRICT pTraceInfo, int ndxLeaf, fl
 	//
 	const int numleafbrushes = pLeaf->numleafbrushes;
 	const int lastleafbrush = pLeaf->firstleafbrush + numleafbrushes;
-	const CRangeValidatedArray<unsigned short> &map_leafbrushes = pTraceInfo->m_pBSPData->map_leafbrushes;
+	const CRangeValidatedArray<unsigned int> &map_leafbrushes = pTraceInfo->m_pBSPData->map_leafbrushes;
 	CRangeValidatedArray<cbrush_t> & 			map_brushes = pTraceInfo->m_pBSPData->map_brushes;
 	TraceCounter_t * RESTRICT pCounters = pTraceInfo->GetBrushCounters();
 	TraceCounter_t count = pTraceInfo->GetCount();
