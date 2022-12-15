@@ -127,7 +127,7 @@ public:
 		}
 	}
 	int GetDispListCount() { return m_dispList.Count(); }
-	void WriteLeafList( unsigned int*pLeafList )
+	void WriteLeafList( int*pLeafList )
 	{
 		// clear current count if any
 		for ( int i = 0; i < m_pBSPData->numleafs; i++ )
@@ -143,7 +143,7 @@ public:
 			pLeaf->dispCount++;
 		}
 		// point each leaf at the start of it's output range in the output array
-		unsigned int firstDispIndex = 0;
+		int firstDispIndex = 0;
 		for ( int i = 0; i < m_pBSPData->numleafs; i++ )
 		{
 			cleaf_t *pLeaf = &m_pBSPData->map_leafs[i];
@@ -173,11 +173,11 @@ public:
 private:
 	CCollisionBSPData *m_pBSPData;
 	// this is a list of all of the leaf indices for each displacement
-	CUtlVector<unsigned int> m_dispList;
+	CUtlVector<int> m_dispList;
 	// this is the first entry into dispList for each displacement
 	CUtlVector<int> m_firstIndex;
 	// this is the # of leaf entries for each displacement
-	CUtlVector<unsigned int> m_leafCount;
+	CUtlVector<int> m_leafCount;
 };
 
 //-----------------------------------------------------------------------------
@@ -202,7 +202,7 @@ void CM_DispTreeLeafnum( CCollisionBSPData *pBSPData )
 		leafBuilder.BuildLeafListForDisplacement( i );
 	}
 	int count = leafBuilder.GetDispListCount();
-	pBSPData->map_dispList.Attach( count, (unsigned int*)Hunk_Alloc( sizeof(unsigned int) * count, false ) );
+	pBSPData->map_dispList.Attach( count, (int*)Hunk_Alloc( sizeof(int) * count, false ) );
 	leafBuilder.WriteLeafList( pBSPData->map_dispList.Base() );
 }
 
@@ -264,10 +264,10 @@ public:
 		m_dispHullOffset.SetCount(g_DispCollTreeCount);
 		Assert(pLump->numDisplacements==g_DispCollTreeCount);
 		// count the size of the lump
-		unsigned int *pDataSize = (unsigned int*)(pLump+1);
+		int *pDataSize = (int*)(pLump+1);
 		for ( int i = 0; i < pLump->numDisplacements; i++ )
 		{
-			if ( pDataSize[i] == (unsigned int)-1 )
+			if ( pDataSize[i] == (int)-1 )
 			{
 				m_dispHullOffset[i] = -1;
 				continue;

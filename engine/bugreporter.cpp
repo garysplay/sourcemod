@@ -1711,481 +1711,481 @@ bool CBugUIPanel::AddFileToZip( char const *relative )
 
 void CBugUIPanel::OnSubmit()
 {
-	if ( !m_bCanSubmit )
-	{
-		return;
-	}
-
-	if ( !IsValidSubmission( true ) )
-	{
-		// Play deny sound
-		DenySound();
-		return;
-	}
-
-	bool isPublic = m_pBugReporter->IsPublicUI();
-
-	char title[ 80 ];
-	char desc[ 4096 ];
-	char severity[ 128 ];
-	char area[ 128 ];
-	char mapnumber[ 128 ];
-	char priority[ 128 ];
-	char assignedto[ 128 ];
-	char level[ 128 ];
-	char position[ 128 ];
-	char orientation[ 128 ];
-	char build[ 128 ];
-	char reporttype[ 128 ];
-	char email[ 80 ];
-
-	title[ 0 ] = 0;
-	desc[ 0 ] = 0;
-	severity[ 0 ] = 0;
-	area[ 0 ] = 0;
-	mapnumber[ 0] = 0;
-	priority[ 0 ] = 0;
-	assignedto[ 0 ] = 0;
-	level[ 0 ] = 0;
-	orientation[ 0 ] = 0;
-	position[ 0 ] = 0;
-	build[ 0 ] = 0;
-	reporttype [ 0 ] = 0;
-	email[ 0 ] = 0;
-
-	Assert( m_pBugReporter );
-
-	// Stuff bug data files up to server
-	m_pBugReporter->StartNewBugReport();
-
-
-	char temp[ 80 ];
-	m_pTitle->GetText( temp, sizeof( temp ) );
-
-	if ( host_state.worldmodel )
-	{
-		char mapname[256];
-		CL_SetupMapName( modelloader->GetName( host_state.worldmodel ), mapname, sizeof( mapname ) );
-
-		Q_snprintf( title, sizeof( title ), "%s: %s", mapname, temp );
-	}
-	else
-	{
-		Q_snprintf( title, sizeof( title ), "%s", temp );
-	}
-
-	Msg( "title:  %s\n", title );
-
-	m_pDescription->GetText( desc, sizeof( desc ) );
-
-	Msg( "description:  %s\n", desc );
-
-	m_pLevelName->GetText( level, sizeof( level ) );
-	m_pPosition->GetText( position, sizeof( position ) );
-	m_pOrientation->GetText( orientation, sizeof( orientation ) );
-	m_pBuildNumber->GetText( build, sizeof( build ) );
-
-	Q_strncat( build, " (Steam)", sizeof(build), COPY_ALL_CHARACTERS );
-
-	MaterialAdapterInfo_t info;
-	materials->GetDisplayAdapterInfo( materials->GetCurrentAdapter(), info );
-	char driverinfo[ 2048 ];
-
-	char const *dxlevel = "Unk";
-	if ( g_pMaterialSystemHardwareConfig )
-	{
-		dxlevel = COM_DXLevelToString( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() ) ;
-	}
-
-	char osversion[ 256 ];
-	DisplaySystemVersion( osversion, sizeof( osversion ) );
-
-	Q_snprintf( driverinfo, sizeof( driverinfo ), 
-		"OS Version:  %s\n"
-		"Driver Name:  %s\n"
-		"VendorId / DeviceId:  0x%x / 0x%x\n"
-		"SubSystem / Rev:  0x%x / 0x%x\n"
-		"DXLevel:  %s\nVid:  %i x %i\n"
-		"Framerate:  %.3f\n",
-		osversion,
-		info.m_pDriverName,
-		info.m_VendorID,
-		info.m_DeviceID,
-		info.m_SubSysID,
-		info.m_Revision,
-		dxlevel ? dxlevel : "Unk",
-		videomode->GetModeWidth(), videomode->GetModeHeight(),
-		g_fFramesPerSecond );
-
-	Msg( "%s", driverinfo );
-
-	int latency = 0;
-	if ( cl.m_NetChannel )
-	{
-		latency = (int)( 1000.0f * cl.m_NetChannel->GetAvgLatency( FLOW_OUTGOING ) );
-	}
-	
-	ConVarRef host_thread_mode( "host_thread_mode" );
-	ConVarRef sv_alternateticks( "sv_alternateticks" );
-	ConVarRef ai_strong_optimizations( "ai_strong_optimizations" );
-
-	char misc[ 1024 ];
-	Q_snprintf( misc, sizeof( misc ), "Convars:\n\tskill:  %i\n\tnet:  rate %i update %i cmd %i latency %i msec\n\thost_thread_mode:  %i\n\tsv_alternateticks:  %i\n\tai_strong_optimizations:  %i\n", 
-		skill.GetInt(),
-		cl_rate->GetInt(),
-		(int)cl_updaterate->GetFloat(),
-		(int)cl_cmdrate->GetFloat(),
-		latency,
-		host_thread_mode.GetInt(),
-		sv_alternateticks.GetInt(),
-		ai_strong_optimizations.GetInt()
-	);
-
-	if ( cl.IsActive() && g_ServerGlobalVariables.mapversion != 0 && host_state.worldmodel )
-	{
-		// Note, this won't work in multiplayer, oh well...
-		extern CGlobalVars g_ServerGlobalVariables;
-		char misc2[ 256 ];
-
-		long mapfiletime = g_pFileSystem->GetFileTime( modelloader->GetName( host_state.worldmodel ), "GAME" );
-		if ( !isPublic && mapfiletime != 0L )
-		{
-			char filetimebuf[ 64 ];
-			g_pFileSystem->FileTimeToString( filetimebuf, sizeof( filetimebuf ), mapfiletime );
-
-			Q_snprintf( misc2, sizeof( misc2 ), "Map version:  %i\nFile timestamp:  %s", g_ServerGlobalVariables.mapversion, filetimebuf );
-			Q_strncat( misc, misc2, sizeof( misc ), COPY_ALL_CHARACTERS );
-		}
-		else
-		{
-			Q_snprintf( misc2, sizeof( misc2 ), "Map version:  %i\n", g_ServerGlobalVariables.mapversion );
-			Q_strncat( misc, misc2, sizeof( misc ), COPY_ALL_CHARACTERS );
-		}
-	}
-
-	if ( sv.IsActive() && serverGameClients )
-	{
-		char gamedlldata[ 2048 ];
-		Q_memset( gamedlldata, 0, sizeof( gamedlldata ) );
-		serverGameClients->GetBugReportInfo( gamedlldata, sizeof( gamedlldata ) );
-		Q_strncat( misc, gamedlldata, sizeof( misc ), COPY_ALL_CHARACTERS );
-	}
-
-	{
-		char misc2[ 128 ];
-		Q_snprintf( misc2, sizeof( misc2 ), "gamedir:  %s\n", com_gamedir );
-		Q_strncat( misc, misc2, sizeof( misc ), COPY_ALL_CHARACTERS );
-		//Q_snprintf( misc2, sizeof( misc2 ), "game:  %s\n", COM_GetModDirectory() );
-		//Q_strncat( misc, misc2, sizeof( misc ), COPY_ALL_CHARACTERS );
-	}
-
-	Msg( "%s", misc );
-
-	if ( !isPublic )
-	{
-		m_pSeverity->GetText( severity, sizeof( severity ) );
-		Msg( "severity %s\n", severity );
-
-		m_pGameArea->GetText( area, sizeof( area ) );
-		Msg( "area %s\n", area );
-
-		m_pMapNumber->GetText( mapnumber, sizeof( mapnumber) );
-		Msg( "map number %s\n", mapnumber);
-
-		m_pPriority->GetText( priority, sizeof( priority ) );
-		Msg( "priority %s\n", priority );
-
-		m_pAssignTo->GetText( assignedto, sizeof( assignedto ) );
-		Msg( "owner %s\n", assignedto );
-	}
-
-	if ( isPublic )
-	{
-		m_pEmail->GetText( email, sizeof( email ) );
-		if ( Q_strlen( email ) > 0 )
-		{
-			Msg( "email %s\n", email );
-		}
-		else
-		{
-			Msg( "Not sending email address\n" );
-		}
-
-		m_pBugReporter->SetOwner( email );
-		char submitter[ 80 ];
-		m_pSubmitterLabel->GetText( submitter, sizeof( submitter ) );
-		m_pBugReporter->SetSubmitter( submitter );
-	}
-	else
-	{
-		m_pBugReporter->SetOwner( m_pBugReporter->GetUserNameForDisplayName( assignedto ) );
-
-		if ( m_bUseNameForSubmitter )
-		{
-			char submitter[ 80 ];
-			m_pSubmitter->GetText( submitter, sizeof( submitter ) );
-			m_pBugReporter->SetSubmitter( submitter );
-		}
-		else
-		{
-			m_pBugReporter->SetSubmitter( NULL );
-		}
-	}
-
-	m_pReportType->GetText( reporttype, sizeof( reporttype ) );
-	Msg( "report type %s\n", reporttype );
-
-	Msg( "submitter %s\n", m_pBugReporter->GetUserName() );
-
-	Msg( "level %s\n", level );
-	Msg( "position %s\n", position );
-	Msg( "orientation %s\n", orientation );
-	Msg( "build %s\n", build );
-	
-	if ( m_szSaveGameName[ 0 ] )
-	{
-		Msg( "save file save/%s.sav\n", m_szSaveGameName );
-	}
-	else
-	{
-		Msg( "no save game\n" );
-	}
-
-	if ( m_szScreenShotName[ 0 ] )
-	{
-		Msg( "screenshot screenshots/%s.jpg\n", m_szScreenShotName );
-	}
-	else
-	{
-		Msg( "no screenshot\n" );
-	}
-
-	if ( !isPublic )
-	{
-		if ( m_szBSPName[ 0 ] )
-		{
-			Msg( "bsp file maps/%s.bsp\n", m_szBSPName );
-		}
-
-		if ( m_szVMFName[ 0 ] )
-		{
-			Msg( "vmf file maps/%s.vmf\n", m_szVMFName );
-		}
-
-		if ( m_IncludedFiles.Count() > 0 )
-		{
-			for ( int i = 0; i < m_IncludedFiles.Count(); ++i )
-			{
-				Msg( "Include:  %s\n", m_IncludedFiles[ i ].name );
-			}
-		}
-	}
-
-
-	m_pBugReporter->SetTitle( title );
-	m_pBugReporter->SetDescription( desc );
-	m_pBugReporter->SetLevel( level );
-	m_pBugReporter->SetPosition( position );
-	m_pBugReporter->SetOrientation( orientation );
-	m_pBugReporter->SetBuildNumber( build );
-
-	m_pBugReporter->SetSeverity( severity );
-	m_pBugReporter->SetPriority( priority );
-	m_pBugReporter->SetArea( area );
-	m_pBugReporter->SetMapNumber( mapnumber );
-	m_pBugReporter->SetReportType( reporttype );
-	m_pBugReporter->SetDriverInfo( driverinfo );
-	m_pBugReporter->SetMiscInfo( misc );
-
-	m_pBugReporter->SetCSERAddress( m_cserIP );
-	m_pBugReporter->SetExeName( "hl2.exe" );
-	m_pBugReporter->SetGameDirectory( com_gamedir );
-
-	const CPUInformation& pi = *GetCPUInformation();
-
-	m_pBugReporter->SetRAM( GetRam() );
-
-	double fFrequency = pi.m_Speed / 1000000.0;
-
-	m_pBugReporter->SetCPU( (int)fFrequency );
-
-	m_pBugReporter->SetProcessor( pi.m_szProcessorID );
-
-	int nDxLevel = g_pMaterialSystemHardwareConfig->GetDXSupportLevel();
-	int vHigh = nDxLevel / 10;
-	int vLow = nDxLevel - vHigh * 10;
-
-	m_pBugReporter->SetDXVersion( vHigh, vLow, info.m_VendorID, info.m_DeviceID );
-
-	m_pBugReporter->SetOSVersion( osversion );
-
-	m_pBugReporter->ResetIncludedFiles();
-	m_pBugReporter->SetZipAttachmentName( "" );
-
-	char fn[ 512 ];
-	if ( m_pBugReporter->IsPublicUI() )
-	{
-		bool attachedSave = false;
-		bool attachedScreenshot = false;
-
-		CUtlBuffer buginfo( 0, 0, CUtlBuffer::TEXT_BUFFER );
-
-		buginfo.Printf( "Title:  %s\n", title );
-		buginfo.Printf( "Description:  %s\n\n", desc );
-		buginfo.Printf( "Level:  %s\n", level );
-		buginfo.Printf( "Position:  %s\n", position );
-		buginfo.Printf( "Orientation:  %s\n", orientation );
-		buginfo.Printf( "BuildNumber:  %s\n", build );
-		buginfo.Printf( "DriverInfo:  %s\n", driverinfo );
-		buginfo.Printf( "Misc:  %s\n", misc );
-		buginfo.Printf( "Exe:  %s\n", "hl2.exe" );
-		char gd[ 256 ];
-		Q_FileBase( com_gamedir, gd, sizeof( gd ) );
-		buginfo.Printf( "GameDirectory:  %s\n", gd );
-		buginfo.Printf( "Ram:  %lu\n", GetRam() );
-		buginfo.Printf( "CPU:  %i\n", (int)fFrequency );
-		buginfo.Printf( "Processor:  %s\n", pi.m_szProcessorID );
-		buginfo.Printf( "DXLevel:  %d\n", nDxLevel );
-		buginfo.Printf( "OSVersion:  %s\n", osversion );
-		// Terminate it
-		buginfo.PutChar( 0 );
-
-
-		int maxlen = buginfo.TellPut() * 2 + 1;
-		char *fixed = new char [ maxlen ];
-		Assert( fixed );
-		if ( fixed )
-		{
-			Q_memset( fixed, 0, maxlen );
-
-			char *i = (char *)buginfo.Base();
-			char *o = fixed;
-			while ( *i && ( o - fixed ) < maxlen - 1 )
-			{
-				if ( *i == '\n' )
-				{
-					*o++ = '\r';
-				}
-				*o++ = *i++;
-			}
-			*o = '\0';
-
-			AddBugTextToZip( "info.txt", fixed, Q_strlen( fixed ) + 1 );
-
-			delete[] fixed;
-		}
-		else
-		{
-			Sys_Error( "Unable to allocate %i bytes for bug description\n", maxlen );
-		}
-
-		// Only attach .sav files in single player
-		if ( ( cl.m_nMaxClients == 1 ) && m_szSaveGameName[ 0 ] )
-		{
-			Q_snprintf( fn, sizeof( fn ), "save/%s.sav", m_szSaveGameName );
-			Q_FixSlashes( fn );
-			attachedSave = AddFileToZip( fn );
-		}
-		if ( m_szScreenShotName[ 0 ] )
-		{
-			Q_snprintf( fn, sizeof( fn ), "screenshots/%s.jpg", m_szScreenShotName );
-			Q_FixSlashes( fn );
-			attachedScreenshot = AddFileToZip( fn );
-		}
-
-		// End users can only send save games and screenshots to valve
-		// Don't bother uploading any attachment if it's just the info.txt file, either...
-		if ( m_hZip && ( attachedSave || attachedScreenshot ) )
-		{
-			Assert( m_hZip );
-			void *mem;
-			unsigned long len;
-
-			ZipGetMemory( m_hZip, &mem, &len );
-			if ( mem != NULL 
-				 && len > 0 )
-			{
-				// Store .zip file
-				FileHandle_t fh = g_pFileSystem->Open( "bug.zip", "wb" );
-				if ( FILESYSTEM_INVALID_HANDLE != fh )
-				{
-					g_pFileSystem->Write( mem, len, fh );
-					g_pFileSystem->Close( fh );
-
-					m_pBugReporter->SetZipAttachmentName( "bug.zip" );
-				}
-			}
-		}
-
-		if ( m_hZip )
-		{
-			CloseZip( m_hZip );
-			m_hZip = (HZIP)0;
-		}
-
-		uint64 un64SteamID = m_SteamID.ConvertToUint64();
-		m_pBugReporter->SetSteamUserID( &un64SteamID, sizeof( un64SteamID ) );
-	}
-	else
-	{
-		// Notify other players that we've submitted a bug
-		if ( cl.IsActive() && cl.m_nMaxClients > 1 )
-		{
-			char buf[256];
-			Q_snprintf( buf, sizeof(buf), "say \"Bug Submitted: \'%s\'\"", title );
-			Cbuf_AddText( buf );
-		}
-
-		if ( m_szSaveGameName[ 0 ] )
-		{
-			Q_snprintf( fn, sizeof( fn ), "%s/BugId/%s.sav", GetRepositoryURL(), m_szSaveGameName );
-			Q_FixSlashes( fn );
-			m_pBugReporter->SetSaveGame( fn );
-		}
-		if ( m_szScreenShotName[ 0 ] )
-		{
-			Q_snprintf( fn, sizeof( fn ), "%s/BugId/%s.jpg", GetRepositoryURL(), m_szScreenShotName );
-			Q_FixSlashes( fn );
-			m_pBugReporter->SetScreenShot( fn );
-		}
-		if ( m_szBSPName[ 0 ] )
-		{
-			Q_snprintf( fn, sizeof( fn ), "%s/BugId/%s.bsp", GetRepositoryURL(), m_szBSPName );
-			Q_FixSlashes( fn );
-			m_pBugReporter->SetBSPName( fn );
-		}
-		if ( m_szVMFName[ 0 ] )
-		{
-			Q_snprintf( fn, sizeof( fn ), "%s/BugId/%s.vmf", GetRepositoryURL(), m_szVMFName );
-			Q_FixSlashes( fn );
-			m_pBugReporter->SetVMFName( fn );
-		}
-
-
-		if ( m_IncludedFiles.Count() > 0 )
-		{
-			for ( int i = 0; i < m_IncludedFiles.Count(); ++i )
-			{
-				Q_snprintf( fn, sizeof( fn ), "%s/BugId/%s", GetRepositoryURL(), m_IncludedFiles[ i ].fixedname );
-				Q_FixSlashes( fn );
-				m_pBugReporter->AddIncludedFile( fn );
-			}
-		}
-	}
-
-	Q_strncpy( m_szLevel, level, sizeof( m_szLevel ) );
-
-	if ( m_pBugReporter->IsPublicUI() )
-	{
-		m_pProgressDialog = new CBugReportUploadProgressDialog(NULL, "ProgressDialog", "#Steam_SubmittingBug_WorkingTitle", "#Steam_SubmittingBug_WorkingText"  );
-		m_pProgressDialog->Activate();
-		vgui::input()->SetAppModalSurface(m_pProgressDialog->GetVPanel());
-		m_flPauseTime = (float)system()->GetFrameTime() + PUBLIC_BUGREPORT_WAIT_TIME;
-	}
-	else
-	{
-		OnFinishBugReport();
-	}
+	//if ( !m_bCanSubmit )
+	//{
+	//	return;
+	//}
+
+	//if ( !IsValidSubmission( true ) )
+	//{
+	//	// Play deny sound
+	//	DenySound();
+	//	return;
+	//}
+
+	//bool isPublic = m_pBugReporter->IsPublicUI();
+
+	//char title[ 80 ];
+	//char desc[ 4096 ];
+	//char severity[ 128 ];
+	//char area[ 128 ];
+	//char mapnumber[ 128 ];
+	//char priority[ 128 ];
+	//char assignedto[ 128 ];
+	//char level[ 128 ];
+	//char position[ 128 ];
+	//char orientation[ 128 ];
+	//char build[ 128 ];
+	//char reporttype[ 128 ];
+	//char email[ 80 ];
+
+	//title[ 0 ] = 0;
+	//desc[ 0 ] = 0;
+	//severity[ 0 ] = 0;
+	//area[ 0 ] = 0;
+	//mapnumber[ 0] = 0;
+	//priority[ 0 ] = 0;
+	//assignedto[ 0 ] = 0;
+	//level[ 0 ] = 0;
+	//orientation[ 0 ] = 0;
+	//position[ 0 ] = 0;
+	//build[ 0 ] = 0;
+	//reporttype [ 0 ] = 0;
+	//email[ 0 ] = 0;
+
+	//Assert( m_pBugReporter );
+
+	//// Stuff bug data files up to server
+	//m_pBugReporter->StartNewBugReport();
+
+
+	//char temp[ 80 ];
+	//m_pTitle->GetText( temp, sizeof( temp ) );
+
+	//if ( host_state.worldmodel )
+	//{
+	//	char mapname[256];
+	//	CL_SetupMapName( modelloader->GetName( host_state.worldmodel ), mapname, sizeof( mapname ) );
+
+	//	Q_snprintf( title, sizeof( title ), "%s: %s", mapname, temp );
+	//}
+	//else
+	//{
+	//	Q_snprintf( title, sizeof( title ), "%s", temp );
+	//}
+
+	//Msg( "title:  %s\n", title );
+
+	//m_pDescription->GetText( desc, sizeof( desc ) );
+
+	//Msg( "description:  %s\n", desc );
+
+	//m_pLevelName->GetText( level, sizeof( level ) );
+	//m_pPosition->GetText( position, sizeof( position ) );
+	//m_pOrientation->GetText( orientation, sizeof( orientation ) );
+	//m_pBuildNumber->GetText( build, sizeof( build ) );
+
+	//Q_strncat( build, " (Steam)", sizeof(build), COPY_ALL_CHARACTERS );
+
+	//MaterialAdapterInfo_t info;
+	//materials->GetDisplayAdapterInfo( materials->GetCurrentAdapter(), info );
+	//char driverinfo[ 2048 ];
+
+	//char const *dxlevel = "Unk";
+	//if ( g_pMaterialSystemHardwareConfig )
+	//{
+	//	dxlevel = COM_DXLevelToString( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() ) ;
+	//}
+
+	//char osversion[ 256 ];
+	//DisplaySystemVersion( osversion, sizeof( osversion ) );
+
+	//Q_snprintf( driverinfo, sizeof( driverinfo ), 
+	//	"OS Version:  %s\n"
+	//	"Driver Name:  %s\n"
+	//	"VendorId / DeviceId:  0x%x / 0x%x\n"
+	//	"SubSystem / Rev:  0x%x / 0x%x\n"
+	//	"DXLevel:  %s\nVid:  %i x %i\n"
+	//	"Framerate:  %.3f\n",
+	//	osversion,
+	//	info.m_pDriverName,
+	//	info.m_VendorID,
+	//	info.m_DeviceID,
+	//	info.m_SubSysID,
+	//	info.m_Revision,
+	//	dxlevel ? dxlevel : "Unk",
+	//	videomode->GetModeWidth(), videomode->GetModeHeight(),
+	//	g_fFramesPerSecond );
+
+	//Msg( "%s", driverinfo );
+
+	//int latency = 0;
+	//if ( cl.m_NetChannel )
+	//{
+	//	latency = (int)( 1000.0f * cl.m_NetChannel->GetAvgLatency( FLOW_OUTGOING ) );
+	//}
+	//
+	//ConVarRef host_thread_mode( "host_thread_mode" );
+	//ConVarRef sv_alternateticks( "sv_alternateticks" );
+	//ConVarRef ai_strong_optimizations( "ai_strong_optimizations" );
+
+	//char misc[ 1024 ];
+	//Q_snprintf( misc, sizeof( misc ), "Convars:\n\tskill:  %i\n\tnet:  rate %i update %i cmd %i latency %i msec\n\thost_thread_mode:  %i\n\tsv_alternateticks:  %i\n\tai_strong_optimizations:  %i\n", 
+	//	skill.GetInt(),
+	//	cl_rate->GetInt(),
+	//	(int)cl_updaterate->GetFloat(),
+	//	(int)cl_cmdrate->GetFloat(),
+	//	latency,
+	//	host_thread_mode.GetInt(),
+	//	sv_alternateticks.GetInt(),
+	//	ai_strong_optimizations.GetInt()
+	//);
+
+	//if ( cl.IsActive() && g_ServerGlobalVariables.mapversion != 0 && host_state.worldmodel )
+	//{
+	//	// Note, this won't work in multiplayer, oh well...
+	//	extern CGlobalVars g_ServerGlobalVariables;
+	//	char misc2[ 256 ];
+
+	//	long mapfiletime = g_pFileSystem->GetFileTime( modelloader->GetName( host_state.worldmodel ), "GAME" );
+	//	if ( !isPublic && mapfiletime != 0L )
+	//	{
+	//		char filetimebuf[ 64 ];
+	//		g_pFileSystem->FileTimeToString( filetimebuf, sizeof( filetimebuf ), mapfiletime );
+
+	//		Q_snprintf( misc2, sizeof( misc2 ), "Map version:  %i\nFile timestamp:  %s", g_ServerGlobalVariables.mapversion, filetimebuf );
+	//		Q_strncat( misc, misc2, sizeof( misc ), COPY_ALL_CHARACTERS );
+	//	}
+	//	else
+	//	{
+	//		Q_snprintf( misc2, sizeof( misc2 ), "Map version:  %i\n", g_ServerGlobalVariables.mapversion );
+	//		Q_strncat( misc, misc2, sizeof( misc ), COPY_ALL_CHARACTERS );
+	//	}
+	//}
+
+	//if ( sv.IsActive() && serverGameClients )
+	//{
+	//	char gamedlldata[ 2048 ];
+	//	Q_memset( gamedlldata, 0, sizeof( gamedlldata ) );
+	//	serverGameClients->GetBugReportInfo( gamedlldata, sizeof( gamedlldata ) );
+	//	Q_strncat( misc, gamedlldata, sizeof( misc ), COPY_ALL_CHARACTERS );
+	//}
+
+	//{
+	//	char misc2[ 128 ];
+	//	Q_snprintf( misc2, sizeof( misc2 ), "gamedir:  %s\n", com_gamedir );
+	//	Q_strncat( misc, misc2, sizeof( misc ), COPY_ALL_CHARACTERS );
+	//	//Q_snprintf( misc2, sizeof( misc2 ), "game:  %s\n", COM_GetModDirectory() );
+	//	//Q_strncat( misc, misc2, sizeof( misc ), COPY_ALL_CHARACTERS );
+	//}
+
+	//Msg( "%s", misc );
+
+	//if ( !isPublic )
+	//{
+	//	m_pSeverity->GetText( severity, sizeof( severity ) );
+	//	Msg( "severity %s\n", severity );
+
+	//	m_pGameArea->GetText( area, sizeof( area ) );
+	//	Msg( "area %s\n", area );
+
+	//	m_pMapNumber->GetText( mapnumber, sizeof( mapnumber) );
+	//	Msg( "map number %s\n", mapnumber);
+
+	//	m_pPriority->GetText( priority, sizeof( priority ) );
+	//	Msg( "priority %s\n", priority );
+
+	//	m_pAssignTo->GetText( assignedto, sizeof( assignedto ) );
+	//	Msg( "owner %s\n", assignedto );
+	//}
+
+	//if ( isPublic )
+	//{
+	//	m_pEmail->GetText( email, sizeof( email ) );
+	//	if ( Q_strlen( email ) > 0 )
+	//	{
+	//		Msg( "email %s\n", email );
+	//	}
+	//	else
+	//	{
+	//		Msg( "Not sending email address\n" );
+	//	}
+
+	//	m_pBugReporter->SetOwner( email );
+	//	char submitter[ 80 ];
+	//	m_pSubmitterLabel->GetText( submitter, sizeof( submitter ) );
+	//	m_pBugReporter->SetSubmitter( submitter );
+	//}
+	//else
+	//{
+	//	m_pBugReporter->SetOwner( m_pBugReporter->GetUserNameForDisplayName( assignedto ) );
+
+	//	if ( m_bUseNameForSubmitter )
+	//	{
+	//		char submitter[ 80 ];
+	//		m_pSubmitter->GetText( submitter, sizeof( submitter ) );
+	//		m_pBugReporter->SetSubmitter( submitter );
+	//	}
+	//	else
+	//	{
+	//		m_pBugReporter->SetSubmitter( NULL );
+	//	}
+	//}
+
+	//m_pReportType->GetText( reporttype, sizeof( reporttype ) );
+	//Msg( "report type %s\n", reporttype );
+
+	//Msg( "submitter %s\n", m_pBugReporter->GetUserName() );
+
+	//Msg( "level %s\n", level );
+	//Msg( "position %s\n", position );
+	//Msg( "orientation %s\n", orientation );
+	//Msg( "build %s\n", build );
+	//
+	//if ( m_szSaveGameName[ 0 ] )
+	//{
+	//	Msg( "save file save/%s.sav\n", m_szSaveGameName );
+	//}
+	//else
+	//{
+	//	Msg( "no save game\n" );
+	//}
+
+	//if ( m_szScreenShotName[ 0 ] )
+	//{
+	//	Msg( "screenshot screenshots/%s.jpg\n", m_szScreenShotName );
+	//}
+	//else
+	//{
+	//	Msg( "no screenshot\n" );
+	//}
+
+	//if ( !isPublic )
+	//{
+	//	if ( m_szBSPName[ 0 ] )
+	//	{
+	//		Msg( "bsp file maps/%s.bsp\n", m_szBSPName );
+	//	}
+
+	//	if ( m_szVMFName[ 0 ] )
+	//	{
+	//		Msg( "vmf file maps/%s.vmf\n", m_szVMFName );
+	//	}
+
+	//	if ( m_IncludedFiles.Count() > 0 )
+	//	{
+	//		for ( int i = 0; i < m_IncludedFiles.Count(); ++i )
+	//		{
+	//			Msg( "Include:  %s\n", m_IncludedFiles[ i ].name );
+	//		}
+	//	}
+	//}
+
+
+	//m_pBugReporter->SetTitle( title );
+	//m_pBugReporter->SetDescription( desc );
+	//m_pBugReporter->SetLevel( level );
+	//m_pBugReporter->SetPosition( position );
+	//m_pBugReporter->SetOrientation( orientation );
+	//m_pBugReporter->SetBuildNumber( build );
+
+	//m_pBugReporter->SetSeverity( severity );
+	//m_pBugReporter->SetPriority( priority );
+	//m_pBugReporter->SetArea( area );
+	//m_pBugReporter->SetMapNumber( mapnumber );
+	//m_pBugReporter->SetReportType( reporttype );
+	//m_pBugReporter->SetDriverInfo( driverinfo );
+	//m_pBugReporter->SetMiscInfo( misc );
+
+	//m_pBugReporter->SetCSERAddress( m_cserIP );
+	//m_pBugReporter->SetExeName( "hl2.exe" );
+	//m_pBugReporter->SetGameDirectory( com_gamedir );
+
+	//const CPUInformation& pi = *GetCPUInformation();
+
+	//m_pBugReporter->SetRAM( GetRam() );
+
+	//double fFrequency = pi.m_Speed / 1000000.0;
+
+	//m_pBugReporter->SetCPU( (int)fFrequency );
+
+	//m_pBugReporter->SetProcessor( pi.m_szProcessorID );
+
+	//int nDxLevel = g_pMaterialSystemHardwareConfig->GetDXSupportLevel();
+	//int vHigh = nDxLevel / 10;
+	//int vLow = nDxLevel - vHigh * 10;
+
+	//m_pBugReporter->SetDXVersion( vHigh, vLow, info.m_VendorID, info.m_DeviceID );
+
+	//m_pBugReporter->SetOSVersion( osversion );
+
+	//m_pBugReporter->ResetIncludedFiles();
+	//m_pBugReporter->SetZipAttachmentName( "" );
+
+	//char fn[ 512 ];
+	//if ( m_pBugReporter->IsPublicUI() )
+	//{
+	//	bool attachedSave = false;
+	//	bool attachedScreenshot = false;
+
+	//	CUtlBuffer buginfo( 0, 0, CUtlBuffer::TEXT_BUFFER );
+
+	//	buginfo.Printf( "Title:  %s\n", title );
+	//	buginfo.Printf( "Description:  %s\n\n", desc );
+	//	buginfo.Printf( "Level:  %s\n", level );
+	//	buginfo.Printf( "Position:  %s\n", position );
+	//	buginfo.Printf( "Orientation:  %s\n", orientation );
+	//	buginfo.Printf( "BuildNumber:  %s\n", build );
+	//	buginfo.Printf( "DriverInfo:  %s\n", driverinfo );
+	//	buginfo.Printf( "Misc:  %s\n", misc );
+	//	buginfo.Printf( "Exe:  %s\n", "hl2.exe" );
+	//	char gd[ 256 ];
+	//	Q_FileBase( com_gamedir, gd, sizeof( gd ) );
+	//	buginfo.Printf( "GameDirectory:  %s\n", gd );
+	//	buginfo.Printf( "Ram:  %lu\n", GetRam() );
+	//	buginfo.Printf( "CPU:  %i\n", (int)fFrequency );
+	//	buginfo.Printf( "Processor:  %s\n", pi.m_szProcessorID );
+	//	buginfo.Printf( "DXLevel:  %d\n", nDxLevel );
+	//	buginfo.Printf( "OSVersion:  %s\n", osversion );
+	//	// Terminate it
+	//	buginfo.PutChar( 0 );
+
+
+	//	int maxlen = buginfo.TellPut() * 2 + 1;
+	//	char *fixed = new char [ maxlen ];
+	//	Assert( fixed );
+	//	if ( fixed )
+	//	{
+	//		Q_memset( fixed, 0, maxlen );
+
+	//		char *i = (char *)buginfo.Base();
+	//		char *o = fixed;
+	//		while ( *i && ( o - fixed ) < maxlen - 1 )
+	//		{
+	//			if ( *i == '\n' )
+	//			{
+	//				*o++ = '\r';
+	//			}
+	//			*o++ = *i++;
+	//		}
+	//		*o = '\0';
+
+	//		AddBugTextToZip( "info.txt", fixed, Q_strlen( fixed ) + 1 );
+
+	//		delete[] fixed;
+	//	}
+	//	else
+	//	{
+	//		Sys_Error( "Unable to allocate %i bytes for bug description\n", maxlen );
+	//	}
+
+	//	// Only attach .sav files in single player
+	//	if ( ( cl.m_nMaxClients == 1 ) && m_szSaveGameName[ 0 ] )
+	//	{
+	//		Q_snprintf( fn, sizeof( fn ), "save/%s.sav", m_szSaveGameName );
+	//		Q_FixSlashes( fn );
+	//		attachedSave = AddFileToZip( fn );
+	//	}
+	//	if ( m_szScreenShotName[ 0 ] )
+	//	{
+	//		Q_snprintf( fn, sizeof( fn ), "screenshots/%s.jpg", m_szScreenShotName );
+	//		Q_FixSlashes( fn );
+	//		attachedScreenshot = AddFileToZip( fn );
+	//	}
+
+	//	// End users can only send save games and screenshots to valve
+	//	// Don't bother uploading any attachment if it's just the info.txt file, either...
+	//	if ( m_hZip && ( attachedSave || attachedScreenshot ) )
+	//	{
+	//		Assert( m_hZip );
+	//		void *mem;
+	//		unsigned long len;
+
+	//		ZipGetMemory( m_hZip, &mem, &len );
+	//		if ( mem != NULL 
+	//			 && len > 0 )
+	//		{
+	//			// Store .zip file
+	//			FileHandle_t fh = g_pFileSystem->Open( "bug.zip", "wb" );
+	//			if ( FILESYSTEM_INVALID_HANDLE != fh )
+	//			{
+	//				g_pFileSystem->Write( mem, len, fh );
+	//				g_pFileSystem->Close( fh );
+
+	//				m_pBugReporter->SetZipAttachmentName( "bug.zip" );
+	//			}
+	//		}
+	//	}
+
+	//	if ( m_hZip )
+	//	{
+	//		CloseZip( m_hZip );
+	//		m_hZip = (HZIP)0;
+	//	}
+
+	//	uint64 un64SteamID = m_SteamID.ConvertToUint64();
+	//	m_pBugReporter->SetSteamUserID( &un64SteamID, sizeof( un64SteamID ) );
+	//}
+	//else
+	//{
+	//	// Notify other players that we've submitted a bug
+	//	if ( cl.IsActive() && cl.m_nMaxClients > 1 )
+	//	{
+	//		char buf[256];
+	//		Q_snprintf( buf, sizeof(buf), "say \"Bug Submitted: \'%s\'\"", title );
+	//		Cbuf_AddText( buf );
+	//	}
+
+	//	if ( m_szSaveGameName[ 0 ] )
+	//	{
+	//		Q_snprintf( fn, sizeof( fn ), "%s/BugId/%s.sav", GetRepositoryURL(), m_szSaveGameName );
+	//		Q_FixSlashes( fn );
+	//		m_pBugReporter->SetSaveGame( fn );
+	//	}
+	//	if ( m_szScreenShotName[ 0 ] )
+	//	{
+	//		Q_snprintf( fn, sizeof( fn ), "%s/BugId/%s.jpg", GetRepositoryURL(), m_szScreenShotName );
+	//		Q_FixSlashes( fn );
+	//		m_pBugReporter->SetScreenShot( fn );
+	//	}
+	//	if ( m_szBSPName[ 0 ] )
+	//	{
+	//		Q_snprintf( fn, sizeof( fn ), "%s/BugId/%s.bsp", GetRepositoryURL(), m_szBSPName );
+	//		Q_FixSlashes( fn );
+	//		m_pBugReporter->SetBSPName( fn );
+	//	}
+	//	if ( m_szVMFName[ 0 ] )
+	//	{
+	//		Q_snprintf( fn, sizeof( fn ), "%s/BugId/%s.vmf", GetRepositoryURL(), m_szVMFName );
+	//		Q_FixSlashes( fn );
+	//		m_pBugReporter->SetVMFName( fn );
+	//	}
+
+
+	//	if ( m_IncludedFiles.Count() > 0 )
+	//	{
+	//		for ( int i = 0; i < m_IncludedFiles.Count(); ++i )
+	//		{
+	//			Q_snprintf( fn, sizeof( fn ), "%s/BugId/%s", GetRepositoryURL(), m_IncludedFiles[ i ].fixedname );
+	//			Q_FixSlashes( fn );
+	//			m_pBugReporter->AddIncludedFile( fn );
+	//		}
+	//	}
+	//}
+
+	//Q_strncpy( m_szLevel, level, sizeof( m_szLevel ) );
+
+	//if ( m_pBugReporter->IsPublicUI() )
+	//{
+	//	m_pProgressDialog = new CBugReportUploadProgressDialog(NULL, "ProgressDialog", "#Steam_SubmittingBug_WorkingTitle", "#Steam_SubmittingBug_WorkingText"  );
+	//	m_pProgressDialog->Activate();
+	//	vgui::input()->SetAppModalSurface(m_pProgressDialog->GetVPanel());
+	//	m_flPauseTime = (float)system()->GetFrameTime() + PUBLIC_BUGREPORT_WAIT_TIME;
+	//}
+	//else
+	//{
+	//	OnFinishBugReport();
+	//}
 }
 
 void CBugUIPanel::OnFinishBugReport()
@@ -3021,7 +3021,7 @@ CON_COMMAND_F( bug, "Show/hide the bug reporting UI.", FCVAR_DONTRECORD )
 
 int CBugUIPanel::GetArea()
 {
-	char mapname[256] = "";
+	/*char mapname[256] = "";
 	int iNewTitleLength = 80;
 
 	if ( host_state.worldmodel )
@@ -3076,6 +3076,6 @@ int CBugUIPanel::GetArea()
 				return i+1;
 			}
 		}		
-	}
+	}*/
 	return 0;
 }

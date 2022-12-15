@@ -280,7 +280,7 @@ The created portals will face the global outside_node
 void MakeHeadnodePortals (tree_t *tree)
 {
 	Vector		bounds[2];
-	unsigned int			i, j, n;
+	int			i, j, n;
 	portal_t	*p, *portals[6];
 	plane_t		bplanes[6], *pl;
 	node_t *node;
@@ -743,7 +743,7 @@ Marks all nodes that can be reached by entites
 */
 qboolean FloodEntities (tree_t *tree)
 {
-	unsigned int		i;
+	int		i;
 	Vector	origin;
 	char	*cl;
 	qboolean	inside;

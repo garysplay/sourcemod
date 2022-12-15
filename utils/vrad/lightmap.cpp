@@ -324,10 +324,9 @@ void PairEdges (void)
     }
 }
 
-
 void SaveVertexNormals( void )
 {
-	faceneighbor_t *fn;
+	faceneighbor_t* fn;
 	int i, j;
 	dface_t *f;
 	CNormalList normalList;
@@ -338,7 +337,6 @@ void SaveVertexNormals( void )
 	{
 		fn = &faceneighbor[i];
 		f = &g_pFaces[i];
-
 		for( j = 0; j < f->numedges; j++ )
 		{
 			Vector vNormal; 
@@ -351,21 +349,21 @@ void SaveVertexNormals( void )
 				// original faces don't have normals
 				vNormal.Init( 0, 0, 0 );
 			}
+			//
+			//if( g_numvertnormalindices == MAX_MAP_VERTNORMALINDICES )
+			//{
+			//	Error( "g_numvertnormalindices == MAX_MAP_VERTNORMALINDICES" );
+			//}
 			
-			if( g_numvertnormalindices == MAX_MAP_VERTNORMALINDICES )
-			{
-				Error( "g_numvertnormalindices == MAX_MAP_VERTNORMALINDICES" );
-			}
-			
-			g_vertnormalindices[g_numvertnormalindices] = (unsigned short)normalList.FindOrAddNormal( vNormal );
+			g_vertnormalindices[g_numvertnormalindices] = (unsigned int)normalList.FindOrAddNormal( vNormal );
 			g_numvertnormalindices++;
 		}
 	}
 
-	if( normalList.m_Normals.Size() > MAX_MAP_VERTNORMALS )
-	{
-		Error( "g_numvertnormals > MAX_MAP_VERTNORMALS" );
-	}
+	//if( normalList.m_Normals.Size() > MAX_MAP_VERTNORMALS )
+	//{
+	//	Error( "g_numvertnormals > MAX_MAP_VERTNORMALS" );
+	//}
 
 	// Copy the list of unique vert normals into g_vertnormals.
 	g_numvertnormals = normalList.m_Normals.Size();
@@ -1340,7 +1338,9 @@ bool CanLeafTraceToSky( int iLeaf )
 
 	return false;
 }
-
+// Second pass to set flags on leaves that don't contain sky, but touch leaves that
+// contain sky.
+byte pvs[MAX_MAP_CLUSTERS / 8];
 void BuildVisForLightEnvironment( void )
 {
 	// Create the vis.
@@ -1370,13 +1370,9 @@ void BuildVisForLightEnvironment( void )
 		}
 	}
 
-	// Second pass to set flags on leaves that don't contain sky, but touch leaves that
-	// contain sky.
-	byte pvs[MAX_MAP_CLUSTERS / 8];
-
 	int nLeafBytes = (numleafs >> 3) + 1;
-	unsigned char *pLeafBits = (unsigned char *)stackalloc( nLeafBytes * sizeof(unsigned char) );
-	unsigned char *pLeaf2DBits = (unsigned char *)stackalloc( nLeafBytes * sizeof(unsigned char) );
+	unsigned char *pLeafBits = (unsigned char *)_malloca( nLeafBytes * sizeof(unsigned char) );
+	unsigned char *pLeaf2DBits = (unsigned char *)_malloca( nLeafBytes * sizeof(unsigned char) );
 	memset( pLeafBits, 0, nLeafBytes );
 	memset( pLeaf2DBits, 0, nLeafBytes );
 
@@ -1634,10 +1630,10 @@ void ExportDirectLightsToWorldLights()
 	{
 		dworldlight_t *wl = &dworldlights[(*pNumworldlights)++];
 
-		if (*pNumworldlights > MAX_MAP_WORLDLIGHTS)
+		/*if (*pNumworldlights > MAX_MAP_WORLDLIGHTS)
 		{
 			Error("too many lights %d / %d\n", *pNumworldlights, MAX_MAP_WORLDLIGHTS );
-		}
+		}*/
 
 		wl->cluster	= dl->light.cluster;
 		wl->type	= dl->light.type;
@@ -2872,13 +2868,13 @@ static void BuildSupersampleFaceLights( lightinfo_t& l, SSE_SampleInfo_t& info, 
 
 	// This is used to make sure we don't supersample a light sample more than once
 	int processedSampleSize = info.m_LightmapSize * sizeof(bool);
-	bool* pHasProcessedSample = (bool*)stackalloc( processedSampleSize );
+	bool* pHasProcessedSample = (bool*)_malloca( processedSampleSize );
 	memset( pHasProcessedSample, 0, processedSampleSize );
 
 	// This is used to compute a simple gradient computation of the light samples
 	// We're going to store the maximum intensity of all bumped samples at each sample location
-	float* pGradient = (float*)stackalloc( info.m_pFaceLight->numsamples * sizeof(float) );
-	float* pSampleIntensity = (float*)stackalloc( info.m_NormalCount * info.m_LightmapSize * sizeof(float) );
+	float* pGradient = (float*)_malloca( info.m_pFaceLight->numsamples * sizeof(float) );
+	float* pSampleIntensity = (float*)_malloca( info.m_NormalCount * info.m_LightmapSize * sizeof(float) );
 
 	// Compute the maximum intensity of all lighting associated with this lightstyle
 	// for all bumped lighting
@@ -2889,7 +2885,7 @@ static void BuildSupersampleFaceLights( lightinfo_t& l, SSE_SampleInfo_t& info, 
 	if (debug_extra)
 	{
 		int visualizationSize = info.m_pFaceLight->numsamples * sizeof(Vector);
-		pVisualizePass = (Vector*)stackalloc( visualizationSize );
+		pVisualizePass = (Vector*)_malloca( visualizationSize );
 		memset( pVisualizePass, 0, visualizationSize ); 
 	}
 

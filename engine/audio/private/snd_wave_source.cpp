@@ -176,12 +176,12 @@ int CAudioSourceWave::GetType( void )
 {
 	return AUDIO_SOURCE_WAV;
 }
+	byte tempbuf[ 32768 ];
 
 void CAudioSourceWave::GetCacheData( CAudioSourceCachedInfo *info )
 {
 	Assert( info->Type() == CAudioSource::AUDIO_SOURCE_WAV );
 
-	byte tempbuf[ 32768 ];
 	int datalen = 0;
 	// NOTE GetStartupData has side-effects (...) hence the unconditional call
 	if ( GetStartupData( tempbuf, sizeof( tempbuf ), datalen ) &&

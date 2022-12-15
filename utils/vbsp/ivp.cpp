@@ -1519,7 +1519,7 @@ void EmitPhysCollision()
 
 	Msg("Building Physics collision data...\n" );
 
-	unsigned int i, j;
+	int i, j;
 	for ( i = 0; i < nummodels; i++ )
 	{
 		// Build a list of collision models for this brush model section

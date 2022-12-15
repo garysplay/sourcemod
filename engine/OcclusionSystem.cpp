@@ -2498,8 +2498,8 @@ void COcclusionSystem::RecomputeOccluderEdgeList()
 				continue;
 
 			// Clip to the near plane (has to be done in world space)
-			Vector **ppSurfVerts = (Vector**)stackalloc( ( nVertexCount ) * sizeof(Vector*) );
-			Vector **ppClipVerts = (Vector**)stackalloc( ( nVertexCount * 2 ) * sizeof(Vector*) );
+			Vector **ppSurfVerts = (Vector**)_malloca( ( nVertexCount ) * sizeof(Vector*) );
+			Vector **ppClipVerts = (Vector**)_malloca( ( nVertexCount * 2 ) * sizeof(Vector*) );
 			for ( k = 0; k < nVertexCount; ++k )
 			{
 				int nVertIndex = pIndices[nFirstVertexIndex + k];

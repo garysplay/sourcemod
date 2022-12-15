@@ -742,7 +742,7 @@ CUtlVector<dleafambientlighting_t> g_LeafAmbientLightingLDR;
 CUtlVector<dleafambientlighting_t> g_LeafAmbientLightingHDR;
 CUtlVector<dleafambientlighting_t> *g_pLeafAmbientLighting = NULL;
 
-unsigned int  g_LeafMinDistToWater[MAX_MAP_LEAFS];
+int  g_LeafMinDistToWater[MAX_MAP_LEAFS];
 
 int			numplanes;
 dplane_t	dplanes[MAX_MAP_PLANES];
@@ -752,7 +752,7 @@ int			numvertexes;
 dvertex_t	dvertexes[MAX_MAP_VERTS];
 
 int				g_numvertnormalindices;	// dfaces reference these. These index g_vertnormals.
-unsigned int	g_vertnormalindices[MAX_MAP_VERTNORMALS];
+int	g_vertnormalindices[MAX_MAP_VERTNORMALS];
 
 int				g_numvertnormals;	
 Vector			g_vertnormals[MAX_MAP_VERTNORMALS];
@@ -785,7 +785,7 @@ int				g_numprimverts = 0;
 dprimvert_t		g_primverts[MAX_MAP_PRIMVERTS];
 
 int				g_numprimindices = 0;
-unsigned int	g_primindices[MAX_MAP_PRIMINDICES];
+int	g_primindices[MAX_MAP_PRIMINDICES];
 
 int			numfaces;
 dface_t		dfaces[MAX_MAP_FACES];
@@ -800,10 +800,10 @@ int			numedges;
 dedge_t		dedges[MAX_MAP_EDGES];
 
 int			numleaffaces;
-unsigned int		dleaffaces[MAX_MAP_LEAFFACES];
+int		dleaffaces[MAX_MAP_LEAFFACES];
 
 int			numleafbrushes;
-unsigned int		dleafbrushes[MAX_MAP_LEAFBRUSHES];
+int		dleafbrushes[MAX_MAP_LEAFBRUSHES];
 
 int			numsurfedges;
 int			dsurfedges[MAX_MAP_SURFEDGES];
@@ -3546,13 +3546,13 @@ void BuildFaceCalcWindingData( dface_t *pFace, int *points )
 
 
 void TriStripToTriList( 
-	unsigned int const *pTriStripIndices,
+	int const *pTriStripIndices,
 	int nTriStripIndices,
-	unsigned int **pTriListIndices,
+	int **pTriListIndices,
 	int *pnTriListIndices )
 {
 	int nMaxTriListIndices = (nTriStripIndices - 2) * 3;
-	*pTriListIndices = new unsigned int[ nMaxTriListIndices ];
+	*pTriListIndices = new int[ nMaxTriListIndices ];
 	*pnTriListIndices = 0;
 
 	for( int i=0; i < nTriStripIndices - 2; i++ )

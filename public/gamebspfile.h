@@ -325,8 +325,8 @@ struct StaticPropLumpV11_t
 	Vector			m_Origin;
 	QAngle			m_Angles;
 	unsigned short	m_PropType;
-	unsigned int	m_FirstLeaf;
-	unsigned int	m_LeafCount;
+	unsigned short	m_FirstLeaf;
+	unsigned short	m_LeafCount;
 	unsigned char	m_Solid;
 	unsigned char	m_Flags;
 	int				m_Skin;
@@ -350,21 +350,21 @@ struct StaticPropLump_t
 	DECLARE_BYTESWAP_DATADESC();
 	Vector			m_Origin;
 	QAngle			m_Angles;
-	unsigned short	m_PropType;
-	unsigned int	m_FirstLeaf;
-	unsigned int	m_LeafCount;
+	int           	m_PropType;
+	int	            m_FirstLeaf;
+	int          	m_LeafCount;
 	unsigned char	m_Solid;
 	int				m_Skin;
 	float			m_FadeMinDist;
 	float			m_FadeMaxDist;
 	Vector			m_LightingOrigin;
 	float			m_flForcedFadeScale;
-	unsigned short	m_nMinDXLevel;
-	unsigned short	m_nMaxDXLevel;
+	int         	m_nMinDXLevel;
+	int         	m_nMaxDXLevel;
 	//	int				m_Lighting;			// index into the GAMELUMP_STATIC_PROP_LIGHTING lump
 	unsigned int	m_Flags;
-	unsigned short  m_nLightmapResolutionX;
-	unsigned short  m_nLightmapResolutionY;
+	int             m_nLightmapResolutionX;
+	int             m_nLightmapResolutionY;
 	float			m_Scale;
 	color32			m_DiffuseModulation;	// per instance color and alpha modulation
 
@@ -485,7 +485,7 @@ struct StaticPropLump_t
 struct StaticPropLeafLump_t
 {
 	DECLARE_BYTESWAP_DATADESC();
-	unsigned int	m_Leaf;
+	int     	m_Leaf;
 };
 
 //-----------------------------------------------------------------------------

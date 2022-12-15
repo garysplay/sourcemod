@@ -104,10 +104,10 @@ struct EntityInfo_t
 	Vector						m_vecMax;
 	Voxel_t						m_voxelMax;
 	IHandleEntity *				m_pHandleEntity;	// Entity handle.
-	unsigned int				m_fList;			// Which lists is it in?
+	int            				m_fList;			// Which lists is it in?
 	uint8						m_flags;
 	char						m_nLevel[NUM_TREES];	// Which level voxel tree is it in?
-	unsigned int				m_nVisitBit[NUM_TREES];
+	int32          				m_nVisitBit[NUM_TREES];
 	intp						m_iLeafList[NUM_TREES];	// Index into the leaf pool - leaf list for entity (m_aLeafList).
 };
 
@@ -120,7 +120,7 @@ struct LeafListData_t
 
 typedef CUtlFixedLinkedList<LeafListData_t>	CLeafList;
 
-typedef CVarBitVec CPartitionVisits;
+typedef CLargeVarBitVec CPartitionVisits;
 
 //-----------------------------------------------------------------------------
 // Used when rendering the various levels of the voxel hash
@@ -159,7 +159,7 @@ class CSpatialEntry
 {
 public:
 	SpatialPartitionHandle_t m_handle;
-	uint16 m_nListMask;
+	int32 m_nListMask;
 };
 //-----------------------------------------------------------------------------
 // A single voxel hash
@@ -311,11 +311,11 @@ private:
 	int									m_nLevelCount;
 	CVoxelHash*							m_pVoxelHash;
 	CLeafList							m_aLeafList;								// Pool - Linked list(multilist) of leaves per entity.
-	unsigned int						m_TreeId;
+	int						            m_TreeId;
 	CPartitionVisits *                  m_pVisits[MAX_THREADS_SUPPORTED];
 	CSpatialPartition *					m_pOwner;
-	CUtlVector<unsigned int>			m_AvailableVisitBits;
-	unsigned int						m_nNextVisitBit;
+	CUtlVector<int>			            m_AvailableVisitBits;
+	int32					            m_nNextVisitBit;
 	CTSPool<CPartitionVisits>			m_FreeVisits;
 	CThreadSpinRWLock					m_lock;
 };
@@ -392,7 +392,7 @@ public:
 	CVoxelTree * VoxelTreeForHandle( SpatialPartitionHandle_t handle );
 
 protected:
-	void UpdateListMask( SpatialPartitionHandle_t hPartition, uint16 nListMask );
+	void UpdateListMask( SpatialPartitionHandle_t hPartition, int32 nListMask );
 	// Invokes the pre-query callbacks.
 	void InvokeQueryCallbacks( SpatialPartitionListMask_t listMask, bool = false );
 
@@ -707,7 +707,7 @@ void CVoxelHash::InsertIntoTree( SpatialPartitionHandle_t hPartition, Voxel_t vo
 	CLeafList &leafList = m_pTree->LeafList();
 	int treeId = m_pTree->GetTreeId();
 
-	uint16 nListMask = m_pTree->EntityInfo( hPartition ).m_fList;
+	int32 nListMask = m_pTree->EntityInfo( hPartition ).m_fList;
 
 	// Set the voxel level
 	info.m_nLevel[m_pTree->GetTreeId()] = m_nLevel;
@@ -828,7 +828,7 @@ void CVoxelHash::RemoveFromTree( SpatialPartitionHandle_t hPartition )
 void CVoxelHash::UpdateListMask( SpatialPartitionHandle_t hPartition )
 {
 	EntityInfo_t &data = m_pTree->EntityInfo( hPartition );
-	uint16 nListMask = data.m_fList;
+	uint32 nListMask = data.m_fList;
 
 	Voxel_t vmin = data.m_voxelMin;
 	Voxel_t vmax = data.m_voxelMax;
@@ -2517,6 +2517,7 @@ bool CVoxelTree::EnumerateElementsAlongRay_ExtrudedRay( SpatialPartitionListMask
 	return true;
 }
 
+
 //#ifndef _PS3
 //#define THINK_TRACE_COUNTER_COMPILE_FUNCTIONS_ENGINE
 //#include "engine/thinktracecounter.h"
@@ -2866,7 +2867,7 @@ SpatialPartitionHandle_t CSpatialPartition::CreateHandle( IHandleEntity *pHandle
 }
 
 
-void CSpatialPartition::UpdateListMask( SpatialPartitionHandle_t hPartition, uint16 nListMask )
+void CSpatialPartition::UpdateListMask( SpatialPartitionHandle_t hPartition, int32 nListMask )
 {
 	EntityInfo_t &entityInfo = EntityInfo( hPartition );
 	if ( entityInfo.m_fList != nListMask )
@@ -2917,8 +2918,8 @@ void CSpatialPartition::RemoveAndInsert( SpatialPartitionListMask_t removeMask, 
 	Assert( m_aHandles.IsValidIndex( handle ) );
 	Assert( removeMask <= USHRT_MAX );
 	Assert( insertMask <= USHRT_MAX );
-	uint16 nOriginalListMask = m_aHandles[handle].m_fList;
-	uint16 nListMask = (nOriginalListMask & ~removeMask) | insertMask;
+	int32 nOriginalListMask = m_aHandles[handle].m_fList;
+	int32 nListMask = (nOriginalListMask & ~removeMask) | insertMask;
 	UpdateListMask( handle, nListMask );
 }
 

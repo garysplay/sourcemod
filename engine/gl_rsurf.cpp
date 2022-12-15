@@ -776,8 +776,8 @@ void Shader_DrawChainsDynamic( const CMSurfaceSortList &sortList, int nSortGroup
 
 struct vertexformatlist_t
 {
-	unsigned int numbatches;
-	unsigned int firstbatch;
+	int numbatches;
+	int firstbatch;
 #ifdef NEWMESH
 	IVertexBuffer *pVertexBuffer;
 #else
@@ -788,8 +788,8 @@ struct vertexformatlist_t
 struct batchlist_t
 {
 	SurfaceHandle_t	surfID;		// material and lightmap info
-	unsigned int firstIndex;
-	unsigned int numIndex;
+	int firstIndex;
+	int numIndex;
 };
 
 void Shader_DrawChainsStatic( const CMSurfaceSortList &sortList, int nSortGroup, bool bShadowDepth )
@@ -1758,7 +1758,7 @@ static void Shader_WorldZFillSurfChain( const CMSurfaceSortList &sortList, const
 
 		int nSurfTriangleCount = MSurf_VertCount( nSurfID ) - 2;
 
-		unsigned int *pVertIndex = &(host_state.worldbrush->vertindices[MSurf_FirstVertIndex( nSurfID )]);
+		int *pVertIndex = &(host_state.worldbrush->vertindices[MSurf_FirstVertIndex( nSurfID )]);
 
 		// add surface to this batch
 		if ( SurfaceHasPrims(nSurfID) )
@@ -1816,7 +1816,7 @@ static void Shader_WorldZFillSurfChain( const CMSurfaceSortList &sortList, const
 
 			default:
 				{
-					for ( unsigned int v = 0; v < nSurfTriangleCount; ++v )
+					for ( int v = 0; v < nSurfTriangleCount; ++v )
 					{
 						meshBuilder.Position3fv( pWorldVerts[*pVertIndex++].position.Base() );
 						meshBuilder.AdvanceVertex();
@@ -4024,8 +4024,8 @@ void R_BrushBatchInit( void )
 
 void CBrushBatchRender::LevelInit()
 {
-	unsigned int iNext;
-	for( unsigned int i=m_renderList.Head(); i != m_renderList.InvalidIndex(); i=iNext )
+	int iNext;
+	for( int i=m_renderList.Head(); i != m_renderList.InvalidIndex(); i=iNext )
 	{
 		iNext = m_renderList.Next(i);
 		m_renderList.Element(i).Free();
@@ -4057,7 +4057,7 @@ CBrushBatchRender::brushrender_t *CBrushBatchRender::FindOrCreateRenderBatch( mo
 	if ( !pModel->brush.nummodelsurfaces )
 		return NULL;
 
-	unsigned int index = pModel->brush.renderHandle - 1;
+	int index = pModel->brush.renderHandle - 1;
 
 	if ( m_renderList.IsValidIndex( index ) )
 		return &m_renderList.Element(index);

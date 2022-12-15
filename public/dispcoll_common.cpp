@@ -715,12 +715,12 @@ void CDispCollTree::AABBTree_TreeTrisRayTest( const Ray_t &ray, const Vector &ve
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-int CDispCollTree::AABBTree_GetTrisInSphere( const Vector &center, float radius, unsigned short *pIndexOut, int indexMax )
+int CDispCollTree::AABBTree_GetTrisInSphere( const Vector &center, float radius, int *pIndexOut, int indexMax )
 {
 	return AABBTree_BuildTreeTrisInSphere_r( center, radius, DISPCOLL_ROOTNODE_INDEX, pIndexOut, indexMax );
 }
 
-int CDispCollTree::AABBTree_BuildTreeTrisInSphere_r( const Vector &center, float radius, int iNode, unsigned short *pIndexOut, unsigned short indexMax )
+int CDispCollTree::AABBTree_BuildTreeTrisInSphere_r( const Vector &center, float radius, int iNode, int*pIndexOut, unsigned int indexMax )
 {
 	int nodeList[MAX_AABB_LIST];
 	nodeList[0] = iNode;
@@ -1113,7 +1113,7 @@ int CDispCollTree::AddPlane( const Vector &vecNormal )
 //-----------------------------------------------------------------------------
 bool CDispCollTree::Cache_EdgeCrossAxisX( const Vector &vecEdge, const Vector &vecOnEdge,
 										  const Vector &vecOffEdge, CDispCollTri *pTri,
-										  unsigned short &iPlane )
+	                                      int&iPlane )
 {
 	// Calculate the normal - edge x axisX = ( 0.0, edgeZ, -edgeY )
 	Vector vecNormal( 0.0f, vecEdge.z, -vecEdge.y );
@@ -1150,7 +1150,7 @@ bool CDispCollTree::Cache_EdgeCrossAxisX( const Vector &vecEdge, const Vector &v
 	}
 
 	// Add edge plane to edge plane list.
-	iPlane = static_cast<unsigned short>( AddPlane( vecNormal ) );
+	iPlane = ( AddPlane( vecNormal ) );
 
 	// Created the cached edge.
 	return true;
@@ -1163,7 +1163,7 @@ bool CDispCollTree::Cache_EdgeCrossAxisX( const Vector &vecEdge, const Vector &v
 //-----------------------------------------------------------------------------
 bool CDispCollTree::Cache_EdgeCrossAxisY( const Vector &vecEdge, const Vector &vecOnEdge,
 										  const Vector &vecOffEdge, CDispCollTri *pTri,
-										  unsigned short &iPlane )
+	                                      int&iPlane )
 {
 	// Calculate the normal - edge x axisY = ( -edgeZ, 0.0, edgeX )
 	Vector vecNormal( -vecEdge.z, 0.0f, vecEdge.x );
@@ -1200,7 +1200,7 @@ bool CDispCollTree::Cache_EdgeCrossAxisY( const Vector &vecEdge, const Vector &v
 	}
 
 	// Add edge plane to edge plane list.
-	iPlane = static_cast<unsigned short>( AddPlane( vecNormal ) );
+	iPlane = ( AddPlane( vecNormal ) );
 
 	// Created the cached edge.
 	return true;
@@ -1211,7 +1211,7 @@ bool CDispCollTree::Cache_EdgeCrossAxisY( const Vector &vecEdge, const Vector &v
 //-----------------------------------------------------------------------------
 bool CDispCollTree::Cache_EdgeCrossAxisZ( const Vector &vecEdge, const Vector &vecOnEdge,
 										  const Vector &vecOffEdge, CDispCollTri *pTri,
-										  unsigned short &iPlane )
+	                                      int&iPlane )
 {
 	// Calculate the normal - edge x axisY = ( edgeY, -edgeX, 0.0 )
 	Vector vecNormal( vecEdge.y, -vecEdge.x, 0.0f );
@@ -1248,7 +1248,7 @@ bool CDispCollTree::Cache_EdgeCrossAxisZ( const Vector &vecEdge, const Vector &v
 	}
 
 	// Add edge plane to edge plane list.
-	iPlane = static_cast<unsigned short>( AddPlane( vecNormal ) );
+	iPlane = ( AddPlane( vecNormal ) );
 
 	// Created the cached edge.
 	return true;
@@ -1258,7 +1258,7 @@ bool CDispCollTree::Cache_EdgeCrossAxisZ( const Vector &vecEdge, const Vector &v
 // Purpose:
 //-----------------------------------------------------------------------------
 template <int AXIS>
-bool CDispCollTree::EdgeCrossAxis( const Ray_t &ray, unsigned short iPlane, CDispCollHelper *pHelper )
+bool CDispCollTree::EdgeCrossAxis( const Ray_t &ray, int iPlane, CDispCollHelper *pHelper )
 {
 	if ( iPlane == DISPCOLL_NORMAL_UNDEF )
 		return true;
@@ -1306,7 +1306,7 @@ bool CDispCollTree::EdgeCrossAxis( const Ray_t &ray, unsigned short iPlane, CDis
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-inline bool CDispCollTree::EdgeCrossAxisX( const Ray_t &ray, unsigned short iPlane, CDispCollHelper *pHelper )
+inline bool CDispCollTree::EdgeCrossAxisX( const Ray_t &ray, int iPlane, CDispCollHelper *pHelper )
 {
 	return EdgeCrossAxis<0>( ray, iPlane, pHelper );
 }
@@ -1314,7 +1314,7 @@ inline bool CDispCollTree::EdgeCrossAxisX( const Ray_t &ray, unsigned short iPla
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-inline bool CDispCollTree::EdgeCrossAxisY( const Ray_t &ray, unsigned short iPlane, CDispCollHelper *pHelper )
+inline bool CDispCollTree::EdgeCrossAxisY( const Ray_t &ray, int iPlane, CDispCollHelper *pHelper )
 {
 	return EdgeCrossAxis<1>( ray, iPlane, pHelper );
 }
@@ -1322,7 +1322,7 @@ inline bool CDispCollTree::EdgeCrossAxisY( const Ray_t &ray, unsigned short iPla
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-inline bool CDispCollTree::EdgeCrossAxisZ( const Ray_t &ray, unsigned short iPlane, CDispCollHelper *pHelper )
+inline bool CDispCollTree::EdgeCrossAxisZ( const Ray_t &ray, int iPlane, CDispCollHelper *pHelper )
 {
 	return EdgeCrossAxis<2>( ray, iPlane, pHelper );
 }

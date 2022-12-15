@@ -673,9 +673,9 @@ CPhysCollide* CEngineTrace::GetCollidableFromDisplacementsInAABB( const Vector& 
 					return NULL;
 				}
 
-				unsigned short i0 = meshTriList.indices[j+0];
-				unsigned short i1 = meshTriList.indices[j+1];
-				unsigned short i2 = meshTriList.indices[j+2];
+				int i0 = meshTriList.indices[j+0];
+				int i1 = meshTriList.indices[j+1];
+				int i2 = meshTriList.indices[j+2];
 
 				// Don't index past the end of the vert list
 				Assert ( i0 < meshTriList.vertexCount && i1 < meshTriList.vertexCount && i2 < meshTriList.vertexCount );

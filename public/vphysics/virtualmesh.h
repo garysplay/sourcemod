@@ -20,13 +20,13 @@ struct virtualmeshlist_t
 	int				vertexCount;
 	int				surfacePropsIndex;
 	byte			*pHull;
-	unsigned short	indices[MAX_VIRTUAL_TRIANGLES*3];
+	int         	indices[MAX_VIRTUAL_TRIANGLES*3];
 };
 
 struct virtualmeshtrianglelist_t
 {
 	int				triangleCount;
-	unsigned short	triangleIndices[MAX_VIRTUAL_TRIANGLES*3];
+	int         	triangleIndices[MAX_VIRTUAL_TRIANGLES*3];
 };
 
 class IVirtualMeshEvent

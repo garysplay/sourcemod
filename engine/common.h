@@ -28,7 +28,7 @@ struct cache_user_t;
 
 //============================================================================
 
-#define COM_COPY_CHUNK_SIZE 16384   // For copying operations
+#define COM_COPY_CHUNK_SIZE 4096   // For copying operations
 
 #ifndef NULL
 #define NULL ((void *)0)

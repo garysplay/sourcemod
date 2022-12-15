@@ -13,7 +13,7 @@
 #ifdef _WIN32
 #pragma once
 #endif
-
+//enderzip: can i talk my shirt now?
 #include "mathlib/vector4d.h"
 #include "tier0/dbg.h"
 #include "tier1/utlsymbol.h"
@@ -251,15 +251,15 @@ struct worldbrushdata_t
 	int			numoccludervertindices;
 	int			*occludervertindices;
 
-	int				numvertnormalindices;	// These index vertnormals.
-	unsigned int	*vertnormalindices;
+	int		    numvertnormalindices;	// These index vertnormals.
+	int	        *vertnormalindices;
 
 	int			numvertnormals;
 	Vector		*vertnormals;
 
 	int			numnodes;
 	mnode_t		*nodes;
-	unsigned int *m_LeafMinDistToWater;
+	int         *m_LeafMinDistToWater;
 
 	int			numtexinfo;
 	mtexinfo_t	*texinfo;
@@ -284,7 +284,7 @@ struct worldbrushdata_t
 	bool		unloadedlightmaps;
 
 	int			numvertindices;
-	unsigned int *vertindices;
+	int         *vertindices;
 
 	int nummarksurfaces;
 	SurfaceHandle_t *marksurfaces;
@@ -304,7 +304,7 @@ struct worldbrushdata_t
 	mprimvert_t *primverts;
 
 	int			numprimindices;
-	unsigned int *primindices;
+	int         *primindices;
 
 	int				m_nAreas;
 	darea_t			*m_pAreas;
@@ -319,7 +319,7 @@ struct worldbrushdata_t
 	int				   m_nCubemapSamples;
 
 	int				m_nDispInfoReferences;
-	unsigned int	*m_pDispInfoReferences;
+	int	            *m_pDispInfoReferences;
 
 	mleafambientindex_t		*m_pLeafAmbient;
 	mleafambientlighting_t	*m_pAmbientSamples;
@@ -343,8 +343,8 @@ struct brushdata_t
 	worldbrushdata_t	*pShared;
 	int			firstmodelsurface, nummodelsurfaces;
 
-	unsigned int	renderHandle;
-	unsigned int	firstnode;
+	int	        renderHandle;
+	int	        firstnode;
 };
 
 // only models with type "mod_sprite" have this data
@@ -448,8 +448,8 @@ struct msurface1_t
 
 	struct
 	{
-		unsigned int numPrims;
-		unsigned int firstPrimID;			// index into primitive list if numPrims > 0
+		int numPrims;
+		int firstPrimID;			// index into primitive list if numPrims > 0
 	} prims;
 };
 
@@ -470,9 +470,9 @@ struct msurfacelighting_t
 	ColorRGBExp32 *AvgLightColor( int nLightStyleIndex ) { return m_pSamples - (nLightStyleIndex + 1); }
 
 	// Lightmap info
-	short m_LightmapMins[2];
-	short m_LightmapExtents[2];
-	short m_OffsetIntoLightmapPage[2];
+	int m_LightmapMins[2];
+	int m_LightmapExtents[2];
+	int m_OffsetIntoLightmapPage[2];
 
 	int m_nLastComputedFrame;	// last frame the surface's lightmap was recomputed
 	int m_fDLightBits;			// Indicates which dlights illuminates this surface.
@@ -498,7 +498,7 @@ typedef unsigned short WorldDecalHandle_t;
 // NOTE: 32-bytes.  Aligned/indexed often
 struct msurface2_t
 {
-	unsigned int			flags;			// see SURFDRAW_ #defines (only 22-bits right now)
+	int			flags;			// see SURFDRAW_ #defines (only 22-bits right now)
 	// These are packed in to flags now
 	//unsigned char			vertCount;		// number of verts for this surface
 	//unsigned char			sortGroup;		// only uses 2 bits, subdivide?
@@ -508,17 +508,17 @@ struct msurface2_t
 	ShadowDecalHandle_t		m_ShadowDecals; // unsigned short
 	OverlayFragmentHandle_t m_nFirstOverlayFragment;	// First overlay fragment on the surface (short)
 	int					materialSortID;
-	unsigned int			vertBufferIndex;
+	int			vertBufferIndex;
 
-	unsigned int			m_bDynamicShadowsEnabled : 1;	// Can this surface receive dynamic shadows?
-	unsigned int			texinfo : 16;
+	int			m_bDynamicShadowsEnabled : 1;	// Can this surface receive dynamic shadows?
+	int			texinfo : 16;
 
 	IDispInfo				*pDispInfo;         // displacement map information
 	int						visframe;		// should be drawn when node is crossed
 };
 #pragma pack()
 
-inline unsigned int MSurf_AreDynamicShadowsEnabled( SurfaceHandle_t surfID )
+inline int MSurf_AreDynamicShadowsEnabled( SurfaceHandle_t surfID )
 {
 	return surfID->m_bDynamicShadowsEnabled;
 }
@@ -546,7 +546,7 @@ inline SurfaceHandle_t SurfaceHandleFromIndex( int surfaceIndex, worldbrushdata_
 #define ASSERT_SURF_VALID(surfID)
 #endif
 
-inline unsigned int& MSurf_Flags( SurfaceHandle_t surfID )
+inline int& MSurf_Flags( SurfaceHandle_t surfID )
 {
 	return surfID->flags;
 }
@@ -573,7 +573,7 @@ inline int MSurf_SortGroup( SurfaceHandle_t surfID )
 
 inline void MSurf_SetSortGroup( SurfaceHandle_t surfID, int sortGroup )
 {
-	unsigned int flags = (sortGroup << SURFDRAW_SORTGROUP_SHIFT) & SURFDRAW_SORTGROUP_MASK;
+	int flags = (sortGroup << SURFDRAW_SORTGROUP_SHIFT) & SURFDRAW_SORTGROUP_MASK;
 	surfID->flags |= flags;
 }
 
@@ -630,7 +630,7 @@ inline int *MSurf_TextureExtents( SurfaceHandle_t surfID, worldbrushdata_t *pDat
 	return pData->surfaces1[surfaceIndex].textureExtents;
 }
 
-inline short *MSurf_LightmapMins( SurfaceHandle_t surfID, worldbrushdata_t *pData = host_state.worldbrush )
+inline int*MSurf_LightmapMins( SurfaceHandle_t surfID, worldbrushdata_t *pData = host_state.worldbrush )
 {
 	int surfaceIndex = MSurf_Index(surfID,pData);
 //	ASSERT_SURF_VALID( surfID );
@@ -638,7 +638,7 @@ inline short *MSurf_LightmapMins( SurfaceHandle_t surfID, worldbrushdata_t *pDat
 	return pData->surfacelighting[surfaceIndex].m_LightmapMins;
 }
 
-inline short *MSurf_LightmapExtents( SurfaceHandle_t surfID, worldbrushdata_t *pData = host_state.worldbrush )
+inline int*MSurf_LightmapExtents( SurfaceHandle_t surfID, worldbrushdata_t *pData = host_state.worldbrush )
 {
 	int surfaceIndex = MSurf_Index(surfID,pData);
 //	ASSERT_SURF_VALID( surfID );
@@ -646,13 +646,13 @@ inline short *MSurf_LightmapExtents( SurfaceHandle_t surfID, worldbrushdata_t *p
 	return pData->surfacelighting[surfaceIndex].m_LightmapExtents;
 }
 
-inline short MSurf_MaxLightmapSizeWithBorder( SurfaceHandle_t surfID )
+inline int MSurf_MaxLightmapSizeWithBorder( SurfaceHandle_t surfID )
 {
 //	ASSERT_SURF_VALID( surfID );
 	return SurfaceHasDispInfo( surfID ) ? MAX_DISP_LIGHTMAP_DIM_INCLUDING_BORDER : MAX_BRUSH_LIGHTMAP_DIM_INCLUDING_BORDER;
 }
 
-inline short MSurf_MaxLightmapSizeWithoutBorder( SurfaceHandle_t surfID )
+inline int MSurf_MaxLightmapSizeWithoutBorder( SurfaceHandle_t surfID )
 {
 //	ASSERT_SURF_VALID( surfID );
 	return SurfaceHasDispInfo( surfID ) ? MAX_DISP_LIGHTMAP_DIM_WITHOUT_BORDER : MAX_BRUSH_LIGHTMAP_DIM_WITHOUT_BORDER;
@@ -755,7 +755,7 @@ inline unsigned int &MSurf_FirstVertNormal( SurfaceHandle_t surfID, worldbrushda
 	return pData->surfacenormals[surfaceIndex].firstvertnormal;
 }
 
-inline unsigned int &MSurf_VertBufferIndex( SurfaceHandle_t surfID )
+inline int &MSurf_VertBufferIndex( SurfaceHandle_t surfID )
 {
 	return surfID->vertBufferIndex;
 }
@@ -765,7 +765,7 @@ inline int& MSurf_MaterialSortID( SurfaceHandle_t surfID, worldbrushdata_t *pDat
 	return surfID->materialSortID;
 }
 
-inline short *MSurf_OffsetIntoLightmapPage( SurfaceHandle_t surfID, worldbrushdata_t *pData = host_state.worldbrush )
+inline int *MSurf_OffsetIntoLightmapPage( SurfaceHandle_t surfID, worldbrushdata_t *pData = host_state.worldbrush )
 {
 	int surfaceIndex = MSurf_Index(surfID,pData);
 //	ASSERT_SURF_VALID( surfID );

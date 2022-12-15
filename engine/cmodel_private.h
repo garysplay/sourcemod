@@ -94,8 +94,8 @@ extern TraceInfo_t g_PrimaryTraceInfo;
 struct cbrushside_t
 {
 	cplane_t	*plane;
-	unsigned int surfaceIndex;
-	unsigned int bBevel;							// is the side a bevel plane?
+	int         surfaceIndex;
+	int         bBevel;							// is the side a bevel plane?
 };
 
 #define NUMSIDES_BOXBRUSH	0xFFFF
@@ -103,8 +103,8 @@ struct cbrushside_t
 struct cbrush_t
 {
 	int				contents;
-	unsigned int	numsides;
-	unsigned int	firstbrushside;
+	int	numsides;
+	int	firstbrushside;
 
 	inline int GetBox() const { return firstbrushside; }
 	inline void SetBox( int boxID )
@@ -122,20 +122,20 @@ struct cboxbrush_t
 	VectorAligned	mins;
 	VectorAligned	maxs;
 
-	unsigned int	surfaceIndex[6];
-	unsigned int	pad2[2];
+	int	            surfaceIndex[6];
+	int          	pad2[2];
 };
 
 struct cleaf_t
 {
-	int			    contents;
+	int			contents;
 	int			cluster;
 	int			area : 9;
 	int			flags : 7;
-	unsigned int	firstleafbrush;
-	unsigned int	numleafbrushes;
-	unsigned int	dispListStart;
-	unsigned int	dispCount;
+	int     	firstleafbrush;
+	int	        numleafbrushes;
+	int       	dispListStart;
+	int      	dispCount;
 };
 
 struct carea_t
@@ -323,13 +323,13 @@ public:
 	CRangeValidatedArray<cleaf_t>		map_leafs;
 	int									emptyleaf, solidleaf;
 	int									numleafbrushes;
-	CRangeValidatedArray<unsigned int> map_leafbrushes;
+	CRangeValidatedArray<int>           map_leafbrushes;
 	int									numcmodels;
 	CRangeValidatedArray<cmodel_t>		map_cmodels;
 	int									numbrushes;
 	CRangeValidatedArray<cbrush_t>		map_brushes;
 	int									numdisplist;
-	CRangeValidatedArray<unsigned int> map_dispList;
+	CRangeValidatedArray<int>           map_dispList;
 	
 	// this points to the whole block of memory for vis data, but it is used to
 	// reference the header at the top of the block.
@@ -352,7 +352,7 @@ public:
 	int									numportalopen;
 	CRangeValidatedArray<bool>			portalopen;
 
-	csurface_t							*GetSurfaceAtIndex( unsigned int surfaceIndex );
+	csurface_t							*GetSurfaceAtIndex( int surfaceIndex );
 };
 
 //=============================================================================

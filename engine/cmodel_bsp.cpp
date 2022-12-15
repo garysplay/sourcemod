@@ -554,10 +554,10 @@ void CollisionBSPData_LoadLeafBrushes( CCollisionBSPData *pBSPData )
 	CMapLoadHelper lh( LUMP_LEAFBRUSHES );
 
 	int			i;
-	unsigned int*in;
+	int         *in;
 	int			count;
 	
-	in = (unsigned int*)lh.LumpBase();
+	in = (int*)lh.LumpBase();
 	if (lh.LumpSize() % sizeof(*in))
 	{
 		Sys_Error( "CMod_LoadLeafBrushes: funny lump size");
@@ -575,7 +575,7 @@ void CollisionBSPData_LoadLeafBrushes( CCollisionBSPData *pBSPData )
 		Sys_Error( "Map has too many leafbrushes");
 	}
 
-	pBSPData->map_leafbrushes.Attach( count, (unsigned int*)Hunk_Alloc( count * sizeof(unsigned int), false ) );
+	pBSPData->map_leafbrushes.Attach( count, (int*)Hunk_Alloc( count * sizeof(int), false ) );
 	pBSPData->numleafbrushes = count;
 
 	for ( i=0 ; i<count ; i++, in++)
@@ -1139,8 +1139,8 @@ void CollisionBSPData_LoadDispInfo( CCollisionBSPData *pBSPData )
 	g_pDispBounds = (alignedbbox_t *)Hunk_Alloc( g_DispCollTreeCount * sizeof(alignedbbox_t), false );
 
 	// Build the inverse mapping from disp index to face
-	int nMemSize = coreDispCount * sizeof(unsigned short);
-	unsigned short *pDispIndexToFaceIndex = (unsigned short*)stackalloc( nMemSize );
+	int nMemSize = coreDispCount * sizeof( int);
+	int*pDispIndexToFaceIndex = (int*)_malloca( nMemSize );
 	memset( pDispIndexToFaceIndex, 0xFF, nMemSize );
 	
 	int i;
@@ -1174,7 +1174,7 @@ void CollisionBSPData_LoadDispInfo( CCollisionBSPData *pBSPData )
 	for ( i = 0; i < coreDispCount; ++i )
 	{
 		// Find the face associated with this dispinfo
-		unsigned short nFaceIndex = pDispIndexToFaceIndex[i];
+		int nFaceIndex = pDispIndexToFaceIndex[i];
 		if ( nFaceIndex == 0xFFFF )
 			continue;
 

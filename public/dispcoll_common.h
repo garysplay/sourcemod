@@ -115,9 +115,9 @@ public:
 class CDispCollTriCache
 {
 public:
-	unsigned short m_iCrossX[3];
-	unsigned short m_iCrossY[3];
-	unsigned short m_iCrossZ[3];
+    int m_iCrossX[3];
+    int m_iCrossY[3];
+    int m_iCrossZ[3];
 };
 #pragma pack()
 #include "mathlib/ssemath.h"
@@ -132,7 +132,7 @@ public:
 class CDispCollLeaf
 {
 public:
-	short	m_tris[2];
+	int	m_tris[2];
 };
 
 // a power 4 displacement can have 341 nodes, pad out to 344 for 16-byte alignment
@@ -197,8 +197,8 @@ public:
 
 	inline void GetBounds( Vector &vecBoxMin, Vector &vecBoxMax )	{ vecBoxMin = m_mins; vecBoxMax = m_maxs; }
 	inline int GetContents( void )									{ return m_nContents; }
-	inline void SetSurfaceProps( int iProp, short nSurfProp )		{ Assert( ( iProp >= 0 ) && ( iProp < 2 ) ); m_nSurfaceProps[iProp] = nSurfProp; }
-	inline short GetSurfaceProps( int iProp )						{ return m_nSurfaceProps[iProp]; }
+	inline void SetSurfaceProps( int iProp, int nSurfProp )		    { Assert( ( iProp >= 0 ) && ( iProp < 2 ) ); m_nSurfaceProps[iProp] = nSurfProp; }
+	inline int GetSurfaceProps( int iProp )						    { return m_nSurfaceProps[iProp]; }
 
 	inline unsigned int GetMemorySize( void )						{ return m_nSize; }
 	inline unsigned int GetCacheMemorySize( void )					{ return ( m_aTrisCache.Count() * sizeof(CDispCollTriCache) + m_aEdgePlanes.Count() * sizeof(Vector) ); }
@@ -206,7 +206,7 @@ public:
 	inline bool IsCached( void )									{ return m_aTrisCache.Count() == m_aTris.Count(); }
 
 	void GetVirtualMeshList( struct virtualmeshlist_t *pList );
-	int AABBTree_GetTrisInSphere( const Vector &center, float radius, unsigned short *pIndexOut, int indexMax );
+	int AABBTree_GetTrisInSphere( const Vector &center, float radius, int *pIndexOut, int indexMax );
 
 public:
 
@@ -259,7 +259,7 @@ protected:
 	void AABBTree_GenerateBoxes_r( int nodeIndex, Vector *pMins, Vector *pMaxs );
 	void AABBTree_CalcBounds( void );
 
-	int AABBTree_BuildTreeTrisInSphere_r( const Vector &center, float radius, int iNode, unsigned short *pIndexOut, unsigned short indexMax );
+	int AABBTree_BuildTreeTrisInSphere_r( const Vector &center, float radius, int iNode, int *pIndexOut, unsigned int indexMax );
 
 	void AABBTree_TreeTrisRayTest( const Ray_t &ray, const Vector &vecInvDelta, int iNode, CBaseTrace *pTrace, bool bSide, CDispCollTri **pImpactTri );
 	void AABBTree_TreeTrisRayBarycentricTest( const Ray_t &ray, const Vector &vecInvDelta, int iNode, RayDispOutput_t &output, CDispCollTri **pImpactTri );
@@ -281,20 +281,20 @@ protected:
 	void SweepAABBTriIntersect( const Ray_t &ray, const Vector &rayDir, int iTri, CDispCollTri *pTri, CBaseTrace *pTrace );
 
 	void Cache_Create( CDispCollTri *pTri, int iTri );		// Testing!
-	bool Cache_EdgeCrossAxisX( const Vector &vecEdge, const Vector &vecOnEdge, const Vector &vecOffEdge, CDispCollTri *pTri, unsigned short &iPlane );
-	bool Cache_EdgeCrossAxisY( const Vector &vecEdge, const Vector &vecOnEdge, const Vector &vecOffEdge, CDispCollTri *pTri, unsigned short &iPlane );
-	bool Cache_EdgeCrossAxisZ( const Vector &vecEdge, const Vector &vecOnEdge, const Vector &vecOffEdge, CDispCollTri *pTri, unsigned short &iPlane );
+	bool Cache_EdgeCrossAxisX( const Vector &vecEdge, const Vector &vecOnEdge, const Vector &vecOffEdge, CDispCollTri *pTri, int&iPlane );
+	bool Cache_EdgeCrossAxisY( const Vector &vecEdge, const Vector &vecOnEdge, const Vector &vecOffEdge, CDispCollTri *pTri, int&iPlane );
+	bool Cache_EdgeCrossAxisZ( const Vector &vecEdge, const Vector &vecOnEdge, const Vector &vecOffEdge, CDispCollTri *pTri, int&iPlane );
 
 	inline bool FacePlane( const Ray_t &ray, const Vector &rayDir, CDispCollTri *pTri, CDispCollHelper *pHelper );
 	bool FORCEINLINE AxisPlanesXYZ( const Ray_t &ray, CDispCollTri *pTri, CDispCollHelper *pHelper );
-	inline bool EdgeCrossAxisX( const Ray_t &ray, unsigned short iPlane, CDispCollHelper *pHelper );
-	inline bool EdgeCrossAxisY( const Ray_t &ray, unsigned short iPlane, CDispCollHelper *pHelper );
-	inline bool EdgeCrossAxisZ( const Ray_t &ray, unsigned short iPlane, CDispCollHelper *pHelper );
+	inline bool EdgeCrossAxisX( const Ray_t &ray, int iPlane, CDispCollHelper *pHelper );
+	inline bool EdgeCrossAxisY( const Ray_t &ray, int iPlane, CDispCollHelper *pHelper );
+	inline bool EdgeCrossAxisZ( const Ray_t &ray, int iPlane, CDispCollHelper *pHelper );
 
 	bool ResolveRayPlaneIntersect( float flStart, float flEnd, const Vector &vecNormal, float flDist, CDispCollHelper *pHelper );
 	template <int AXIS> bool FORCEINLINE TestOneAxisPlaneMin( const Ray_t &ray, CDispCollTri *pTri );
 	template <int AXIS> bool FORCEINLINE TestOneAxisPlaneMax( const Ray_t &ray, CDispCollTri *pTri );
-	template <int AXIS>	bool EdgeCrossAxis( const Ray_t &ray, unsigned short iPlane, CDispCollHelper *pHelper );
+	template <int AXIS>	bool EdgeCrossAxis( const Ray_t &ray, int iPlane, CDispCollHelper *pHelper );
 
 	// Utility
 	inline void CalcClosestBoxPoint( const Vector &vecPlaneNormal, const Vector &vecBoxStart, const Vector &vecBoxExtents, Vector &vecBoxPoint );
@@ -318,7 +318,7 @@ protected:
 	Vector							m_vecSurfPoints[4];						// Base surface points.
 	// Collision data.
 	Vector							m_vecStabDir;							// Direction to stab for this displacement surface (is the base face normal)
-	short							m_nSurfaceProps[2];						// Surface properties (save off from texdata for impact responses)
+	int 							m_nSurfaceProps[2];						// Surface properties (save off from texdata for impact responses)
 
 protected:
 	CDispVector<Vector>				m_aVerts;								// Displacement verts.
