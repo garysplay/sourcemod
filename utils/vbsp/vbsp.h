@@ -163,7 +163,7 @@ struct mapdispinfo_t
 };
 
 extern int              nummapdispinfo;
-extern CUtlVector<mapdispinfo_t>    mapdispinfo;
+extern CUtlBlockVector<mapdispinfo_t>    mapdispinfo;
 
 extern float			g_defaultLuxelSize;
 extern float			g_luxelScale;

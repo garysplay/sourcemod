@@ -303,13 +303,13 @@ BuildVisRow
 Calc vis bits from a single patch
 ==============
 */
+byte	face_tested[MAX_MAP_FACES];
+byte	disp_tested[MAX_MAP_FACES];
 void BuildVisRow (int patchnum, byte *pvs, int head, transfer_t *transfers, CTransferMaker &transferMaker, int iThread )
 {
 	int		j, k, l, leafIndex;
 	CPatch	*patch;
 	dleaf_t	*leaf;
-	byte	face_tested[MAX_MAP_FACES];
-	byte	disp_tested[MAX_MAP_FACES];
 
 	patch = &g_Patches.Element( patchnum );
 
@@ -381,7 +381,7 @@ transfer_t* BuildVisLeafs_Start()
 	return (transfer_t *)calloc( 1,  MAX_PATCHES * sizeof( transfer_t ) );
 }
 
-
+byte	b_pvs[(MAX_MAP_CLUSTERS + 7) / 8];
 // If PatchCB is non-null, it is called after each row is generated (used by MPI).
 void BuildVisLeafs_Cluster( 
 	int threadnum,
@@ -390,12 +390,11 @@ void BuildVisLeafs_Cluster(
 	void (*PatchCB)(int iThread, int patchnum, CPatch *patch)
 	)
 {
-	byte	pvs[(MAX_MAP_CLUSTERS+7)/8];
 	CPatch	*patch;
 	int		head;
 	unsigned	patchnum;
 	
-	DecompressVis( &dvisdata[ dvis->bitofs[ iCluster ][DVIS_PVS] ], pvs);
+	DecompressVis( &dvisdata[ dvis->bitofs[ iCluster ][DVIS_PVS] ], b_pvs);
 	head = 0;
 
 	CTransferMaker transferMaker( transfers );
@@ -418,7 +417,7 @@ void BuildVisLeafs_Cluster(
 			patchnum = patch - g_Patches.Base();
 
 			// build to all other world clusters
-			BuildVisRow (patchnum, pvs, head, transfers, transferMaker, threadnum );
+			BuildVisRow (patchnum, b_pvs, head, transfers, transferMaker, threadnum );
 			transferMaker.Finish();
 			
 			// do the transfers

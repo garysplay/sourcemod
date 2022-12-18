@@ -1628,7 +1628,8 @@ void ExportDirectLightsToWorldLights()
 
 	for (dl = activelights; dl != NULL; dl = dl->next )
 	{
-		dworldlight_t *wl = &dworldlights[(*pNumworldlights)++];
+		dworldlight_t *wl = new dworldlight_t[(*pNumworldlights)++];
+		memset(wl, 0, sizeof(dworldlight_t*));
 
 		/*if (*pNumworldlights > MAX_MAP_WORLDLIGHTS)
 		{
@@ -1650,6 +1651,8 @@ void ExportDirectLightsToWorldLights()
 		wl->linear_attn = dl->light.linear_attn;
 		wl->quadratic_attn = dl->light.quadratic_attn;
 		wl->flags = 0;
+
+		delete[] wl;
 	}
 }
 

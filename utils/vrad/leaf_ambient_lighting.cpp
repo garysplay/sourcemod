@@ -98,11 +98,16 @@ void AddEmitSurfaceLights( const Vector &vStart, Vector lightBoxColor[6] )
 
 	for ( int iLight=0; iLight < *pNumworldlights; iLight++ )
 	{
-		dworldlight_t *wl = &dworldlights[iLight];
+		iLight++;
+		dworldlight_t *wl = new dworldlight_t[(iLight++)];
+		//Q_memset(wl, 0, sizeof(dworldlight_t));
 
 		// Should this light even go in the ambient cubes?
-		if ( !( wl->flags & DWL_FLAGS_INAMBIENTCUBE ) )
-			continue;
+		//if (iLight > 0)
+		{
+			if (!(wl->flags & DWL_FLAGS_INAMBIENTCUBE))
+				continue;
+		}
 
 		Assert( wl->type == emit_surface );
 
@@ -132,6 +137,8 @@ void AddEmitSurfaceLights( const Vector &vStart, Vector lightBoxColor[6] )
 				lightBoxColor[i] += wl->intensity * (t * ratio);
 			}
 		}
+
+		delete[] wl;
 	}	
 }
 
@@ -624,8 +631,9 @@ void ComputePerLeafAmbientLighting()
 	int nSurfaceLights = 0;
 	for ( int i=0; i < *pNumworldlights; i++ )
 	{
-		dworldlight_t *wl = &dworldlights[i];
-		
+		dworldlight_t *wl = new dworldlight_t[i];
+		//memset(wl, 0, sizeof(dworldlight_t));
+
 		if ( IsLeafAmbientSurfaceLight( wl ) )
 			wl->flags |= DWL_FLAGS_INAMBIENTCUBE;
 		else
@@ -636,6 +644,8 @@ void ComputePerLeafAmbientLighting()
 
 		if ( wl->flags & DWL_FLAGS_INAMBIENTCUBE )
 			++nInAmbientCube;
+
+		delete[] wl;
 	}
 
 	Msg( "%d of %d (%d%% of) surface lights went in leaf ambient cubes.\n", nInAmbientCube, nSurfaceLights, nSurfaceLights ? ((nInAmbientCube*100) / nSurfaceLights) : 0 );
