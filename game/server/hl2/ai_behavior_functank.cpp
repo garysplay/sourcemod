@@ -589,7 +589,7 @@ CBaseEntity *CAI_FuncTankBehavior::BestEnemy( void )
 		return BaseClass::BestEnemy();
 
 	CBaseEntity *pBestEnemy	= NULL;
-	int	iBestDistSq	= MAX_COORD_RANGE * MAX_COORD_RANGE;	// so first visible entity will become the closest.
+	unsigned int	iBestDistSq	= MAX_COORD_RANGE * MAX_COORD_RANGE;	// so first visible entity will become the closest.
 	int	iBestPriority = -1000;
 	bool bBestUnreachable = false;							// Forces initial check
 	bool bBestSeen = false;

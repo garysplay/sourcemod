@@ -7691,7 +7691,7 @@ CBaseEntity *CAI_BaseNPC::BestEnemy( void )
 	// TODO - may want to consider distance, attack types, back turned, etc.
 
 	CBaseEntity*	pBestEnemy			= NULL;
-	int				iBestDistSq			= MAX_COORD_RANGE * MAX_COORD_RANGE;// so first visible entity will become the closest.
+	unsigned int	iBestDistSq			= MAX_COORD_RANGE * MAX_COORD_RANGE;// so first visible entity will become the closest.
 	int				iBestPriority		= -1000;
 	bool			bBestUnreachable	= true;			  // Forces initial check
 	ThreeState_t	fBestSeen			= TRS_NONE;
