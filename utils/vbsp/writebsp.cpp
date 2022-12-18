@@ -43,12 +43,13 @@ There is no oportunity to discard planes, because all of the original
 brushes will be saved in the map.
 ============
 */
+int		planetranslate[MAX_MAP_PLANES];
+
 void EmitPlanes (void)
 {
 	int			i;
 	dplane_t	*dp;
 	plane_t		*mp;
-	int		planetranslate[MAX_MAP_PLANES];
 
 	mp = g_MainMap->mapplanes;
 	for (i=0 ; i<g_MainMap->nummapplanes ; i++, mp++)

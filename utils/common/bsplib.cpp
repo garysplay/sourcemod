@@ -5317,10 +5317,10 @@ bool SwapBSPFile( const char *pInFilename, const char *pOutFilename, bool bSwapO
 	SwapLumpToDisk<CFaceMacroTextureInfo>( LUMP_FACE_MACRO_TEXTURE_INFO );
 	SwapLumpToDisk<dprimitive_t>( LUMP_PRIMITIVES );
 	SwapLumpToDisk<dprimvert_t>( LUMP_PRIMVERTS );
-	SwapLumpToDisk<unsigned int>( FIELD_INTEGER, LUMP_PRIMINDICES );
+	SwapLumpToDisk<int>( FIELD_INTEGER, LUMP_PRIMINDICES );
     SwapLumpToDisk<dface_t>( LUMP_ORIGINALFACES );
-	SwapLumpToDisk<unsigned int>(FIELD_INTEGER, LUMP_LEAFFACES );
-	SwapLumpToDisk<unsigned int>(FIELD_INTEGER, LUMP_LEAFBRUSHES );
+	SwapLumpToDisk<int>(FIELD_INTEGER, LUMP_LEAFFACES );
+	SwapLumpToDisk<int>(FIELD_INTEGER, LUMP_LEAFBRUSHES );
 	SwapLumpToDisk<int>( FIELD_INTEGER, LUMP_SURFEDGES );
 	SwapLumpToDisk<dedge_t>( LUMP_EDGES );
 	SwapLumpToDisk<dbrush_t>( LUMP_BRUSHES );
@@ -5337,7 +5337,7 @@ bool SwapBSPFile( const char *pInFilename, const char *pOutFilename, bool bSwapO
 	SwapLumpToDisk<int>( FIELD_INTEGER, LUMP_TEXDATA_STRING_TABLE );
 	SwapLumpToDisk<doverlay_t>( LUMP_OVERLAYS );
 	SwapLumpToDisk<dwateroverlay_t>( LUMP_WATEROVERLAYS );
-	SwapLumpToDisk<unsigned int>(FIELD_INTEGER, LUMP_LEAFMINDISTTOWATER );
+	SwapLumpToDisk<int>(FIELD_INTEGER, LUMP_LEAFMINDISTTOWATER );
 	SwapLumpToDisk<doverlayfade_t>( LUMP_OVERLAY_FADES );
 
 

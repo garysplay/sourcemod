@@ -865,8 +865,11 @@ ChunkFileResult_t LoadDispInfoCallback(CChunkFile *pFile, mapdispinfo_t **ppMapD
 	}
 
     // get a pointer to the next available displacement info slot
-    mapdispinfo_t *pMapDispInfo = &mapdispinfo[nummapdispinfo];
+    mapdispinfo.AddToTail();
+	mapdispinfo_t *pMapDispInfo = &mapdispinfo.Tail();
+	V_memset( pMapDispInfo, 0, sizeof( *pMapDispInfo ) );
     nummapdispinfo++;
+	pMapDispInfo->flags = 0;
 
 	//
 	// Set up handlers for the subchunks that we are interested in.

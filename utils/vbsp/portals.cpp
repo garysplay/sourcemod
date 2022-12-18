@@ -635,7 +635,17 @@ FLOOD ENTITIES
 // Input  : node - 
 //			dist - 
 //-----------------------------------------------------------------------------
-void FloodPortals_r (node_t *node, int dist)
+#define VBSP_COMPILE_FLOOD_PORTALS_NORECURSE 1
+#if VBSP_COMPILE_FLOOD_PORTALS_NORECURSE
+struct FloodPortalsParams_t
+{
+	node_t *node;
+	int dist;
+};
+void FloodPortals_r( node_t *node, int dist, CUtlVector< FloodPortalsParams_t > &arrPendingFlood )
+#else
+void FloodPortals_r( node_t *node, int dist )
+#endif
 {
 	portal_t	*p;
 	int			s;
@@ -654,7 +664,26 @@ void FloodPortals_r (node_t *node, int dist)
 		if (!Portal_EntityFlood (p, s))
 			continue;
 
+#if VBSP_COMPILE_FLOOD_PORTALS_NORECURSE
+		bool bAlreadyPending = false;
+		FOR_EACH_VEC( arrPendingFlood, idxPendingFlood )
+		{
+			if ( arrPendingFlood[idxPendingFlood].node == p->nodes[!s] )
+			{
+				bAlreadyPending = true;
+				break;
+			}
+		}
+		if ( bAlreadyPending )
+			continue;
+
+		FloodPortalsParams_t params = {};
+		params.node = p->nodes[!s];
+		params.dist = dist+1;
+		arrPendingFlood.AddToTail( params );
+#else
 		FloodPortals_r (p->nodes[!s], dist+1);
+#endif
 	}
 }
 
@@ -729,7 +758,18 @@ qboolean PlaceOccupant (node_t *headnode, Vector& origin, entity_t *occupant)
 	node->occupant = occupant;
 
 	// Flood outward from here to see if this entity leaks.
+#if VBSP_COMPILE_FLOOD_PORTALS_NORECURSE
+	CUtlVector< FloodPortalsParams_t > arrPendingFlood;
+	FloodPortals_r( node, 1, arrPendingFlood );
+	while ( arrPendingFlood.Count() )
+	{
+		FloodPortals_r( arrPendingFlood.Head().node, arrPendingFlood.Head().dist, arrPendingFlood );
+		arrPendingFlood.RemoveMultipleFromHead( 1 );
+	}
+#else
+	// Flood outward from here to see if this entity leaks.
 	FloodPortals_r (node, 1);
+#endif
 
 	return true;
 }
