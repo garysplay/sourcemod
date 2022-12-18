@@ -70,7 +70,7 @@
 #define	MAX_MAP_MODELS					65536	
 #define	MAX_MAP_BRUSHES					131072	
 #define	MAX_MAP_ENTITIES				8192	
-#define	MAX_MAP_TEXINFO					8388608	
+#define	MAX_MAP_TEXINFO					4096000	
 #define MAX_MAP_TEXDATA					16384	
 #define MAX_MAP_DISPINFO				262144	
 #define MAX_MAP_DISP_VERTS				( MAX_MAP_DISPINFO * ((1<<MAX_MAP_DISP_POWER)+1) * ((1<<MAX_MAP_DISP_POWER)+1) )	
@@ -85,10 +85,10 @@
 #define	MAX_MAP_NODES					1048576
 #define	MAX_MAP_BRUSHSIDES				655360
 #define	MAX_MAP_LEAFS					1048576
-#define	MAX_MAP_VERTS					131072
-#define MAX_MAP_VERTNORMALS				131072	
-#define MAX_MAP_VERTNORMALINDICES		131072
-#define	MAX_MAP_FACES					65536
+#define	MAX_MAP_VERTS					1048576
+#define MAX_MAP_VERTNORMALS				1048576	
+#define MAX_MAP_VERTNORMALINDICES		1048576
+#define	MAX_MAP_FACES					1048576
 #define	MAX_MAP_LEAFFACES				1048576
 #define	MAX_MAP_LEAFBRUSHES 			1048576
 #define	MAX_MAP_PORTALS					1048576	
@@ -508,8 +508,8 @@ struct dnode_t
 	int			children[2];	// negative numbers are -(leafs+1), not nodes
 	int	    	mins[3];		// for frustom culling
 	int  		maxs[3];
-	unsigned int	firstface;
-	unsigned int	numfaces;	// counting both sides
+    int         firstface;
+    int	        numfaces;	// counting both sides
 	int			area;		// If all leaves below this node are in the same area, then
 								// this is the area index. If not, this is -1.
 };

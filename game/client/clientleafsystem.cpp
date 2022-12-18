@@ -117,7 +117,7 @@ public:
 	virtual void EnableAlternateSorting( ClientRenderHandle_t handle, bool bEnable );
 
 	// Adds a renderable to a set of leaves
-	virtual void AddRenderableToLeaves( ClientRenderHandle_t handle, int nLeafCount, unsigned short *pLeaves );
+	virtual void AddRenderableToLeaves( ClientRenderHandle_t handle, int nLeafCount, int *pLeaves );
 
 	// The following methods are related to shadows...
 	virtual ClientLeafShadowHandle_t AddShadow( ClientShadowHandle_t userId, unsigned short flags );
@@ -1167,7 +1167,7 @@ void CClientLeafSystem::AddRenderableToLeaf( int leaf, ClientRenderHandle_t rend
 //-----------------------------------------------------------------------------
 // Adds a renderable to a set of leaves
 //-----------------------------------------------------------------------------
-void CClientLeafSystem::AddRenderableToLeaves( ClientRenderHandle_t handle, int nLeafCount, unsigned short *pLeaves )
+void CClientLeafSystem::AddRenderableToLeaves( ClientRenderHandle_t handle, int nLeafCount, int *pLeaves )
 { 
 	for (int j = 0; j < nLeafCount; ++j)
 	{
@@ -1385,7 +1385,7 @@ void CClientLeafSystem::ComputeTranslucentRenderLeaf( int count, const LeafIndex
 
 	static CUtlVector<RenderableInfo_t *> orderedList; // @MULTICORE (toml 8/30/2006): will need to make non-static if thread this function
 	static CUtlVector<IClientRenderable *> renderablesToUpdate;
-	int leaf = 0;
+	intp leaf = 0;
 	for ( i = 0; i < count; ++i )
 	{
 		leaf = pLeafList[i];
@@ -1472,7 +1472,7 @@ inline void AddRenderableToRenderList( CClientRenderablesList &renderList, IClie
 	int &curCount = renderList.m_RenderGroupCounts[group];
 	if ( curCount < CClientRenderablesList::MAX_GROUP_ENTITIES )
 	{
-		Assert( (iLeaf >= 0) && (iLeaf <= 65535) );
+		Assert( (iLeaf >= 0) && (iLeaf <= 131072) );
 
 		CClientRenderablesList::CEntry *pEntry = &renderList.m_RenderGroups[group][curCount];
 		pEntry->m_pRenderable = pRenderable;

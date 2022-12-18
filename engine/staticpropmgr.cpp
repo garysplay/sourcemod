@@ -1644,7 +1644,7 @@ void CStaticPropMgr::LevelInitClient()
 		if ( prop.LeafCount() > 0 )
 		{
 			// Add the prop to all the leaves it lies in
-			clientleafsystem->AddRenderableToLeaves( handle, prop.LeafCount(), (unsigned short*)&m_StaticPropLeaves[prop.FirstLeaf()] ); 
+			clientleafsystem->AddRenderableToLeaves( handle, prop.LeafCount(), (int*)&m_StaticPropLeaves[prop.FirstLeaf()] ); 
 		}
 		else
 		{

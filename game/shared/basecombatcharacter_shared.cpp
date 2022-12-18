@@ -275,7 +275,7 @@ private:
 		}
 	};
 
-	CUtlRBTree< VisCacheEntry_t, unsigned short, CVisCacheEntryLess > m_VisCache;
+	CUtlRBTree< VisCacheEntry_t, int, CVisCacheEntryLess > m_VisCache;
 
 	mutable int m_nTestCount;
 	mutable int m_nHitCount;

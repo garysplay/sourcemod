@@ -68,7 +68,7 @@ private:
 	struct HandleInfo_t
 	{
 		int					m_UserId;		// Client-defined id
-		unsigned short		m_LeafList;		// What leafs is it in?
+		int        	    	m_LeafList;		// What leafs is it in?
 	};
 
 	// The leaf contains an index into a list of elements

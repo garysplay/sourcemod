@@ -240,7 +240,7 @@ void CClientEntityList::AddPVSNotifier( IClientUnknown *pUnknown )
 		IPVSNotify *pNotify = pRen->GetPVSNotifyInterface();
 		if ( pNotify )
 		{
-			unsigned short index = m_PVSNotifyInfos.AddToTail();
+			int index = m_PVSNotifyInfos.AddToTail();
 			CPVSNotifyInfo *pInfo = &m_PVSNotifyInfos[index];
 			pInfo->m_pNotify = pNotify;
 			pInfo->m_pRenderable = pRen;
@@ -261,7 +261,7 @@ void CClientEntityList::RemovePVSNotifier( IClientUnknown *pUnknown )
 		IPVSNotify *pNotify = pRenderable->GetPVSNotifyInterface();
 		if ( pNotify )
 		{
-			unsigned short index = m_PVSNotifierMap.Find( pUnknown );
+			int index = m_PVSNotifierMap.Find( pUnknown );
 			if ( !m_PVSNotifierMap.IsValidIndex( index ) )
 			{
 				Warning( "PVS notifier not in m_PVSNotifierMap\n" );
@@ -269,7 +269,7 @@ void CClientEntityList::RemovePVSNotifier( IClientUnknown *pUnknown )
 				return;
 			}
 
-			unsigned short indexIntoPVSNotifyInfos = m_PVSNotifierMap[index];
+			int indexIntoPVSNotifyInfos = m_PVSNotifierMap[index];
 			
 			Assert( m_PVSNotifyInfos[indexIntoPVSNotifyInfos].m_pNotify == pNotify );
 			Assert( m_PVSNotifyInfos[indexIntoPVSNotifyInfos].m_pRenderable == pRenderable );

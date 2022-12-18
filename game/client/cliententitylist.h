@@ -168,11 +168,11 @@ public:
 		IPVSNotify *m_pNotify;
 		IClientRenderable *m_pRenderable;
 		unsigned char m_InPVSStatus;				// Combination of the INPVS_ flags.
-		unsigned short m_PVSNotifiersLink;			// Into m_PVSNotifyInfos.
+		int m_PVSNotifiersLink;			// Into m_PVSNotifyInfos.
 	};
 
 	// Get the list of all PVS notifiers.
-	CUtlLinkedList<CPVSNotifyInfo,unsigned short>& GetPVSNotifiers();
+	CUtlLinkedList<CPVSNotifyInfo, int>& GetPVSNotifiers();
 
 	CUtlVector<IClientEntityListener *>	m_entityListeners;
 
@@ -190,7 +190,7 @@ private:
 	{
 		// Cached off because GetClientNetworkable is called a *lot*
 		IClientNetworkable *m_pNetworkable;
-		unsigned short m_BaseEntitiesIndex;	// Index into m_BaseEntities (or m_BaseEntities.InvalidIndex() if none).
+		int m_BaseEntitiesIndex;	// Index into m_BaseEntities (or m_BaseEntities.InvalidIndex() if none).
 	};
 
 	// Current count
@@ -207,7 +207,7 @@ private:
 	EntityCacheInfo_t	m_EntityCacheInfo[NUM_ENT_ENTRIES];
 
 	// For fast iteration.
-	CUtlLinkedList<C_BaseEntity*, unsigned short> m_BaseEntities;
+	CUtlLinkedList<C_BaseEntity*, int> m_BaseEntities;
 
 
 private:
@@ -218,8 +218,8 @@ private:
 	// These entities want to know when they enter and leave the PVS (server entities
 	// already can get the equivalent notification with NotifyShouldTransmit, but client
 	// entities have to get it this way).
-	CUtlLinkedList<CPVSNotifyInfo,unsigned short> m_PVSNotifyInfos;
-	CUtlMap<IClientUnknown*,unsigned short,unsigned short> m_PVSNotifierMap;	// Maps IClientUnknowns to indices into m_PVSNotifyInfos.
+	CUtlLinkedList<CPVSNotifyInfo,int> m_PVSNotifyInfos;
+	CUtlMap<IClientUnknown*, int, int> m_PVSNotifierMap;	// Maps IClientUnknowns to indices into m_PVSNotifyInfos.
 };
 
 
@@ -233,7 +233,7 @@ public:
 	C_BaseEntity* Next();	// keep calling this until it returns null.
 
 private:
-	unsigned short m_CurBaseEntity;
+	int m_CurBaseEntity;
 };
 
 class C_BaseEntityIterator
@@ -245,7 +245,7 @@ public:
 	C_BaseEntity* Next();	// keep calling this until it returns null.
 
 private:
-	unsigned short m_CurBaseEntity;
+	int m_CurBaseEntity;
 };
 
 //-----------------------------------------------------------------------------
@@ -266,7 +266,7 @@ inline IClientUnknown* CClientEntityList::GetClientUnknownFromHandle( ClientEnti
 	return (IClientUnknown*)LookupEntity( hEnt );
 }
 
-inline CUtlLinkedList<CClientEntityList::CPVSNotifyInfo,unsigned short>& CClientEntityList::GetPVSNotifiers()
+inline CUtlLinkedList<CClientEntityList::CPVSNotifyInfo,int>& CClientEntityList::GetPVSNotifiers()
 {
 	return m_PVSNotifyInfos;
 }

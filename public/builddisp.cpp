@@ -772,7 +772,7 @@ void CCoreDispInfo::InitDispInfo( int power, int minTess, float smoothingAngle,
 	m_pVerts = new CoreDispVert_t[size];
 
 	int nIndexCount = size * 2 * 3;
-	m_RenderIndices = new unsigned short[nIndexCount];
+	m_RenderIndices = new int[nIndexCount];
 
 	int nNodeCount = GetNodeCount(power);
 	m_Nodes = new CCoreDispNode[nNodeCount];

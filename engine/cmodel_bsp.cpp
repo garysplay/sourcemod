@@ -34,14 +34,14 @@ IPhysicsCollision	 *physcollision = NULL;
 
 // local forward declarations
 void CollisionBSPData_LoadTextures( CCollisionBSPData *pBSPData );
-void CollisionBSPData_LoadTexinfo( CCollisionBSPData *pBSPData, CUtlVector<unsigned short> &map_texinfo );
+void CollisionBSPData_LoadTexinfo( CCollisionBSPData *pBSPData, CUtlVector<int> &map_texinfo );
 void CollisionBSPData_LoadLeafs_Version_0( CCollisionBSPData *pBSPData );
 void CollisionBSPData_LoadLeafs_Version_1( CCollisionBSPData *pBSPData );
 void CollisionBSPData_LoadLeafs( CCollisionBSPData *pBSPData );
 void CollisionBSPData_LoadLeafBrushes( CCollisionBSPData *pBSPData );
 void CollisionBSPData_LoadPlanes( CCollisionBSPData *pBSPData );
 void CollisionBSPData_LoadBrushes( CCollisionBSPData *pBSPData );
-void CollisionBSPData_LoadBrushSides( CCollisionBSPData *pBSPData, CUtlVector<unsigned short> &map_texinfo );
+void CollisionBSPData_LoadBrushSides( CCollisionBSPData *pBSPData, CUtlVector<int> &map_texinfo );
 void CollisionBSPData_LoadSubmodels( CCollisionBSPData *pBSPData );
 void CollisionBSPData_LoadNodes( CCollisionBSPData *pBSPData );
 void CollisionBSPData_LoadAreas( CCollisionBSPData *pBSPData );
@@ -237,7 +237,7 @@ bool CollisionBSPData_Load( const char *pName, CCollisionBSPData *pBSPData )
 {
 	// This is a table that maps texinfo references to csurface_t
 	// It is freed after the map has been loaded
-	CUtlVector<unsigned short> 	map_texinfo;
+	CUtlVector<int> 	map_texinfo;
 
 	// copy map name
 	Q_strncpy( pBSPData->map_name, pName, sizeof( pBSPData->map_name ) );
@@ -367,12 +367,12 @@ void CollisionBSPData_LoadTextures( CCollisionBSPData *pBSPData )
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void CollisionBSPData_LoadTexinfo( CCollisionBSPData *pBSPData, 
-									CUtlVector<unsigned short> &map_texinfo )
+									CUtlVector<int> &map_texinfo )
 {
 	CMapLoadHelper lh( LUMP_TEXINFO );
 
 	texinfo_t	*in;
-	unsigned short	out;
+	int      	out;
 	int			i, count;
 
 	in = (texinfo_t *)lh.LumpBase();
@@ -381,8 +381,8 @@ void CollisionBSPData_LoadTexinfo( CCollisionBSPData *pBSPData,
 	count = lh.LumpSize() / sizeof(*in);
 	if (count < 1)
 		Sys_Error( "Map with no texinfo");
-	if (count > MAX_MAP_TEXINFO)
-		Sys_Error( "Map has too many surfaces");
+	//if (count > MAX_MAP_TEXINFO)
+	//	Sys_Error( "Map has too many surfaces");
 
 	MEM_ALLOC_CREDIT();
 	map_texinfo.RemoveAll();
@@ -691,7 +691,7 @@ inline bool IsBoxBrush( const cbrush_t &brush, dbrushside_t *pSides, cplane_t *p
 	return (countAxial == brush.numsides) ? true : false;
 }
 
-inline void ExtractBoxBrush( cboxbrush_t *pBox, const cbrush_t &brush, dbrushside_t *pSides, cplane_t *pPlanes, CUtlVector<unsigned short> &map_texinfo )
+inline void ExtractBoxBrush( cboxbrush_t *pBox, const cbrush_t &brush, dbrushside_t *pSides, cplane_t *pPlanes, CUtlVector<int> &map_texinfo )
 {
 	// brush.numsides is no longer valid.  Assume numsides == 6
 	for ( int i = 0; i < 6; i++ )
@@ -724,7 +724,7 @@ inline void ExtractBoxBrush( cboxbrush_t *pBox, const cbrush_t &brush, dbrushsid
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-void CollisionBSPData_LoadBrushSides( CCollisionBSPData *pBSPData, CUtlVector<unsigned short> &map_texinfo )
+void CollisionBSPData_LoadBrushSides( CCollisionBSPData *pBSPData, CUtlVector<int> &map_texinfo )
 {
 	CMapLoadHelper lh( LUMP_BRUSHSIDES );
 
@@ -1154,7 +1154,7 @@ void CollisionBSPData_LoadDispInfo( CCollisionBSPData *pBSPData )
 		if ( pFaces->dispinfo >= coreDispCount )
 			continue;
 
-		pDispIndexToFaceIndex[pFaces->dispinfo] = (unsigned short)i;
+		pDispIndexToFaceIndex[pFaces->dispinfo] = (int)i;
     }
 
 	// Load one dispinfo from disk at a time and set it up.

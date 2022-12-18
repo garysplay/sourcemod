@@ -878,7 +878,7 @@ public:
 
 	inline CoreDispVert_t *GetDispVert( int iVert )					{ return &m_pVerts[iVert]; }
 	inline CoreDispVert_t *GetDispVertList();
-	inline unsigned short *GetRenderIndexList( void );
+	inline int*GetRenderIndexList( void );
 
 	inline void SetTouched( bool touched );
 	inline bool IsTouched( void );
@@ -933,7 +933,7 @@ private:
 
 	// render specific data
 	int					m_RenderIndexCount;		// number of indices used in rendering
-	unsigned short		*m_RenderIndices;		// rendering index list (list of triangles)
+	int                 *m_RenderIndices;		// rendering index list (list of triangles)
 	int					m_RenderCounter;		// counter to verify surfaces are renderered/collided with only once per frame
 
 	// utility data
@@ -1423,7 +1423,7 @@ inline CoreDispVert_t *CCoreDispInfo::GetDispVertList()
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-inline unsigned short *CCoreDispInfo::GetRenderIndexList( void )
+inline int *CCoreDispInfo::GetRenderIndexList( void )
 {
 	return &m_RenderIndices[0];
 }

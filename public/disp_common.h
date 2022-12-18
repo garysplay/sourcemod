@@ -161,7 +161,7 @@ extern int			g_EdgeSideLenMul[4];// Multiply these by the side length to get the
 
 // Reference implementation to generate triangle indices for a displacement.
 int		DispCommon_GetNumTriIndices( int power );
-void	DispCommon_GenerateTriIndices( int power, unsigned short *indices );
+void	DispCommon_GenerateTriIndices( int power, unsigned short*indices );
 
 // Returns a NEIGHBOREDGE_ value for the edge that the index is on.
 // Returns -1 if the index is not on a side.

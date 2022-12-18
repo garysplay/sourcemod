@@ -616,10 +616,10 @@ static inline void SetupCoordXY( CNodeVert &out, CNodeVert const &bottomLeft, CN
 }
 
 
-static unsigned short* DispCommon_GenerateTriIndices_R( 
+static unsigned short* DispCommon_GenerateTriIndices_R(
 	CNodeVert const &bottomLeft, 
 	CNodeVert const &topRight,
-	unsigned short *indices, 
+	unsigned short*indices,
 	int power,
 	int sideLength )
 {
@@ -724,7 +724,7 @@ int DispCommon_GetNumTriIndices( int power )
 }
 
 
-void DispCommon_GenerateTriIndices( int power, unsigned short *indices )
+void DispCommon_GenerateTriIndices( int power, unsigned short*indices )
 {
 	int sideLength = 1 << power;
 	DispCommon_GenerateTriIndices_R(

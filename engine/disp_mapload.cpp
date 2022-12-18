@@ -469,7 +469,7 @@ bool DispInfo_CreateFromMapDisp( model_t *pWorld, int iDisp, const ddispinfo_t *
 	pDisp->m_iPointStart = pCoreDisp->GetSurface()->GetPointStartIndex();
 
 	// Now setup the CDispInfo.
-	pDisp->m_Index = static_cast<unsigned short>( iDisp );
+	pDisp->m_Index = static_cast<int>( iDisp );
 
 	// Store ddispinfo_t data.
 	pDisp->CopyMapDispData( pMapDisp );

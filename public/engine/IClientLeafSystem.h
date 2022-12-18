@@ -63,7 +63,7 @@ public:
 	// CreateRenderableHandle stores the handle inside pRenderable.
 	virtual void CreateRenderableHandle( IClientRenderable* pRenderable, bool bIsStaticProp = false ) = 0;
 	virtual void RemoveRenderable( ClientRenderHandle_t handle ) = 0;
-	virtual void AddRenderableToLeaves( ClientRenderHandle_t renderable, int nLeafCount, unsigned short *pLeaves ) = 0;
+	virtual void AddRenderableToLeaves( ClientRenderHandle_t renderable, int nLeafCount, int *pLeaves ) = 0;
 	virtual void ChangeRenderableRenderGroup( ClientRenderHandle_t handle, RenderGroup_t group ) = 0;
 };
 

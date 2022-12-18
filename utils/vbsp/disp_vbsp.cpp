@@ -19,7 +19,7 @@
 
 // map displacement info -- runs parallel to the dispinfos struct
 int              nummapdispinfo = 0;
-CUtlVector<mapdispinfo_t>    mapdispinfo;
+CUtlBlockVector<mapdispinfo_t>    mapdispinfo;
 
 CUtlVector<CCoreDispInfo*> g_CoreDispInfos;
 
@@ -64,7 +64,7 @@ bool FindTriIndexMapByUV( CCoreDispInfo *pCoreDisp, Vector2D const &lmCoords,
 	int nTriCount= pCoreDisp->GetTriCount();
 	for ( int iTri = 0; iTri < nTriCount; ++iTri )
 	{
-		int iVerts[3];
+		unsigned short iVerts[3];
 //		pCoreDisp->GetTriIndices( iTri, iVerts[0], iVerts[1], iVerts[2] );
 		CTriInfo *pTri = &pPowerInfo->m_pTriInfos[iTri];
 		iVerts[0] = pTri->m_Indices[0];
@@ -410,7 +410,7 @@ void ExportAllowedVertLists( CCoreDispInfo **ppListBase, ddispinfo_t *pBSPDispIn
 bool FindEnclosingTri( 
 	const Vector2D &vert,
 	CUtlVector<Vector2D> &vertCoords,
-	CUtlVector<int> &indices,
+	CUtlVector<unsigned short> &indices,
 	int *pStartVert,
 	float bcCoords[3] )
 {
@@ -438,7 +438,7 @@ bool FindEnclosingTri(
 void SnapRemainingVertsToSurface( CCoreDispInfo *pCoreDisp, ddispinfo_t *pDispInfo )
 {
 	// First, tesselate the displacement.
-	CUtlVector<int> indices;
+	CUtlVector<unsigned short> indices;
 	CVBSPTesselateHelper helper;
 	helper.m_pIndices = &indices;
 	helper.m_pActiveVerts = pCoreDisp->GetAllowedVerts().Base();
