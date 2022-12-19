@@ -38,7 +38,7 @@ public:
 	}
 	
 public:
-	CUtlVector<unsigned short> *m_pIndices;
+	CUtlVector<int> *m_pIndices;
 };
 
 

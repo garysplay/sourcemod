@@ -410,7 +410,7 @@ void ExportAllowedVertLists( CCoreDispInfo **ppListBase, ddispinfo_t *pBSPDispIn
 bool FindEnclosingTri( 
 	const Vector2D &vert,
 	CUtlVector<Vector2D> &vertCoords,
-	CUtlVector<unsigned short> &indices,
+	CUtlVector<int> &indices,
 	int *pStartVert,
 	float bcCoords[3] )
 {
@@ -438,7 +438,7 @@ bool FindEnclosingTri(
 void SnapRemainingVertsToSurface( CCoreDispInfo *pCoreDisp, ddispinfo_t *pDispInfo )
 {
 	// First, tesselate the displacement.
-	CUtlVector<unsigned short> indices;
+	CUtlVector<int> indices;
 	CVBSPTesselateHelper helper;
 	helper.m_pIndices = &indices;
 	helper.m_pActiveVerts = pCoreDisp->GetAllowedVerts().Base();
