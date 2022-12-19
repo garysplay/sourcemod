@@ -264,10 +264,10 @@ public:
 		m_dispHullOffset.SetCount(g_DispCollTreeCount);
 		Assert(pLump->numDisplacements==g_DispCollTreeCount);
 		// count the size of the lump
-		int *pDataSize = (int*)(pLump+1);
+		unsigned short *pDataSize = (unsigned short *)(pLump+1);
 		for ( int i = 0; i < pLump->numDisplacements; i++ )
 		{
-			if ( pDataSize[i] == (int)-1 )
+			if ( pDataSize[i] == (unsigned short)-1 )
 			{
 				m_dispHullOffset[i] = -1;
 				continue;

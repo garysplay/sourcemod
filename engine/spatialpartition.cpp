@@ -50,10 +50,10 @@ class CIntersectSweptBox;
 
 #define SPHASH_VOXEL_LARGE	131072.0f
 
-#define SPHASH_HANDLELIST_BLOCK		256
-#define SPHASH_LEAFLIST_BLOCK		512
-#define SPHASH_ENTITYLIST_BLOCK		256
-#define SPHASH_BUCKET_COUNT			512
+#define SPHASH_HANDLELIST_BLOCK		1024
+#define SPHASH_LEAFLIST_BLOCK		2048
+#define SPHASH_ENTITYLIST_BLOCK		1024
+#define SPHASH_BUCKET_COUNT			2048
 
 #define SPHASH_EPS					0.03125f
 
@@ -604,9 +604,9 @@ inline Voxel_t CVoxelHash::VoxelIndexFromPoint( const fltx4 &fl4WorldPoint )
 
 inline void CVoxelHash::VoxelIndexFromPoint( const Vector &vecWorldPoint, int pPoint[3] )
 {
-	pPoint[0] = static_cast<int>( vecWorldPoint.x - m_vecVoxelOrigin.x ) >> m_nLevelShift;
-	pPoint[1] = static_cast<int>( vecWorldPoint.y - m_vecVoxelOrigin.y ) >> m_nLevelShift;
-	pPoint[2] = static_cast<int>( vecWorldPoint.z - m_vecVoxelOrigin.z ) >> m_nLevelShift;
+	pPoint[0] = static_cast<unsigned int>( vecWorldPoint.x - m_vecVoxelOrigin.x ) >> m_nLevelShift;
+	pPoint[1] = static_cast<unsigned int>( vecWorldPoint.y - m_vecVoxelOrigin.y ) >> m_nLevelShift;
+	pPoint[2] = static_cast<unsigned int>( vecWorldPoint.z - m_vecVoxelOrigin.z ) >> m_nLevelShift;
 }
 
 
@@ -614,9 +614,9 @@ inline Voxel_t CVoxelHash::VoxelIndexFromPoint( const Vector &vecWorldPoint )
 {
 	Voxel_t voxel;
 
-	voxel.bitsVoxel.x = static_cast<int>( vecWorldPoint.x - m_vecVoxelOrigin.x ) >> m_nLevelShift;
-	voxel.bitsVoxel.y = static_cast<int>( vecWorldPoint.y - m_vecVoxelOrigin.y ) >> m_nLevelShift;
-	voxel.bitsVoxel.z = static_cast<int>( vecWorldPoint.z - m_vecVoxelOrigin.z ) >> m_nLevelShift;
+	voxel.bitsVoxel.x = static_cast<unsigned int>( vecWorldPoint.x - m_vecVoxelOrigin.x ) >> m_nLevelShift;
+	voxel.bitsVoxel.y = static_cast<unsigned int>( vecWorldPoint.y - m_vecVoxelOrigin.y ) >> m_nLevelShift;
+	voxel.bitsVoxel.z = static_cast<unsigned int>( vecWorldPoint.z - m_vecVoxelOrigin.z ) >> m_nLevelShift;
 
 	return voxel;
 }
@@ -2403,7 +2403,12 @@ bool CVoxelTree::EnumerateRayStartVoxels( SpatialPartitionListMask_t listMask, I
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-bool CVoxelTree::EnumerateElementsAlongRay_ExtrudedRay( SpatialPartitionListMask_t listMask, 
+
+//enderzip: ||     ||        MASSIVE DUMB WORKAROUND: stack (around voxelBounds according to /RTCs)
+//          ||     ||                                 keeps getting corrupted, i haven't figured out
+//         \||/   \||/                                why so this is the best i can do for now
+//          \/     \/        TODO:                    will fix this later 
+bool __declspec(safebuffers) CVoxelTree::EnumerateElementsAlongRay_ExtrudedRay( SpatialPartitionListMask_t listMask,
 													   const Ray_t &ray, const Vector &vecInvDelta, const Vector &vecEnd, IPartitionEnumerator *pIterator )
 {
 	// Check the starting position, then proceed with the sweep.

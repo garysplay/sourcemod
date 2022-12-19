@@ -1403,6 +1403,7 @@ static void DispInfo_DrawDebugInformation( SurfaceHandle_t *pList, int listCount
 #endif
 }
 
+CDispInfo* visibleDisps[MAX_MAP_DISPINFO];
 
 //-----------------------------------------------------------------------------
 // Renders all displacements in sorted order 
@@ -1416,7 +1417,6 @@ void DispInfo_RenderList( int nSortGroup, SurfaceHandle_t *pList, int listCount,
 	g_bDispOrthoRender = bOrtho;
 
 	// Build up the CPrimLists for all the displacements.
-	CDispInfo *visibleDisps[MAX_MAP_DISPINFO];
 	int nVisibleDisps;
 
 	DispInfo_BuildPrimLists( nSortGroup, pList, listCount, ( DepthMode != DEPTH_MODE_NORMAL ), visibleDisps, nVisibleDisps );

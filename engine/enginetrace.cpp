@@ -586,7 +586,7 @@ void CEngineTrace::GetBrushesInAABB( const Vector &vMins, const Vector &vMaxs, C
 		ptBBoxExtents[i].z = (i & (1<<2)) ? (vMaxs.z) : (vMins.z);
 	}	
 
-	int *pLeafList = (int *)stackalloc( pBSPData->numleafs * 2 * sizeof( int ) ); // *2 just in case
+	int *pLeafList = (int *)malloc( pBSPData->numleafs * 2 * sizeof( int ) ); // *2 just in case
 	int iNumLeafs = CM_BoxLeafnums( vMins, vMaxs, pLeafList, pBSPData->numleafs * 2, NULL );
 
 	CUtlVector<int> counters;
@@ -609,7 +609,7 @@ CPhysCollide* CEngineTrace::GetCollidableFromDisplacementsInAABB( const Vector& 
 {
 	CCollisionBSPData *pBSPData = GetCollisionBSPData();
 
-	int *pLeafList = (int *)stackalloc( pBSPData->numleafs * sizeof( int ) ); 
+	int *pLeafList = (int *)malloc( pBSPData->numleafs * sizeof( int ) ); 
 	int iLeafCount = CM_BoxLeafnums( vMins, vMaxs, pLeafList, pBSPData->numleafs, NULL );
 
 	// Get all the triangles for displacement surfaces in this box, add them to a polysoup
@@ -687,9 +687,9 @@ CPhysCollide* CEngineTrace::GetCollidableFromDisplacementsInAABB( const Vector& 
 					return NULL;
 				}
 
-				Vector v0 = meshTriList.pVerts[ i0 ];
-				Vector v1 = meshTriList.pVerts[ i1 ];
-				Vector v2 = meshTriList.pVerts[ i2 ];
+				Vector &v0 = meshTriList.pVerts[ i0 ];
+				Vector &v1 = meshTriList.pVerts[ i1 ];
+				Vector &v2 = meshTriList.pVerts[ i2 ];
 
 				Assert ( v0.IsValid() && v1.IsValid() && v2.IsValid() );
 

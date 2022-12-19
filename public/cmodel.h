@@ -50,7 +50,7 @@ struct cmodel_t
 struct csurface_t
 {
 	const char	*name;
-	short		surfaceProps;
+	int		surfaceProps;
 	unsigned short	flags;		// BUGBUG: These are declared per surface, not per material, but this database is per-material now
 };
 

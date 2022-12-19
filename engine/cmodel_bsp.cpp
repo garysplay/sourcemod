@@ -1175,7 +1175,7 @@ void CollisionBSPData_LoadDispInfo( CCollisionBSPData *pBSPData )
 	{
 		// Find the face associated with this dispinfo
 		int nFaceIndex = pDispIndexToFaceIndex[i];
-		if ( nFaceIndex == 0xFFFF )
+		if ( nFaceIndex == 0xFFFFFFF )
 			continue;
 
 		// Load up the dispinfo and create the CCoreDispInfo from it.
