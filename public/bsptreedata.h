@@ -29,7 +29,7 @@ struct Ray_t;
 // Handle to an renderable in the client leaf system
 //-----------------------------------------------------------------------------
 
-typedef unsigned short BSPTreeDataHandle_t;
+typedef int BSPTreeDataHandle_t;
 
 enum
 {

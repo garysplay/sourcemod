@@ -71,8 +71,8 @@ public:
 
 	int nClusters;
 	int originclusters[MAX_VIS_LEAVES];
-	CUtlVector< unsigned short > leaflist;
-	CUtlVector< unsigned short > nodelist;
+	CUtlVector< int > leaflist;
+	CUtlVector< int > nodelist;
 };
 
 
@@ -101,7 +101,7 @@ static void VisMark_Cached( const VisCacheEntry &cache, const worldbrushdata_t &
 	visframe = r_visframecount;
 
 	count = cache.leaflist.Count();
-	const unsigned short * RESTRICT pSrc = cache.leaflist.Base();
+	const int * RESTRICT pSrc = cache.leaflist.Base();
 
 #if _X360
 	const int offsetLeaf = offsetof(mleaf_t, visframe);

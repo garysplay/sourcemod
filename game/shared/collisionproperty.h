@@ -96,7 +96,7 @@ public:
 	// Spatial partition management
 	void			CreatePartitionHandle();
 	void			DestroyPartitionHandle();
-	unsigned short	GetPartitionHandle() const;
+	int         	GetPartitionHandle() const;
 
 	// Marks the spatial partition dirty
 	void			MarkPartitionHandleDirty();
@@ -306,7 +306,7 @@ inline const CBaseEntity *CCollisionProperty::GetOuter() const
 //-----------------------------------------------------------------------------
 // Spatial partition
 //-----------------------------------------------------------------------------
-inline unsigned short CCollisionProperty::GetPartitionHandle() const
+inline int CCollisionProperty::GetPartitionHandle() const
 {
 	return m_Partition;
 }

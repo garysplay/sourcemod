@@ -60,7 +60,7 @@ private:
 // in memory, but always operate on 32's or 64's in local scope.
 // The ideal parameter order would be TSMI (you are more likely to override M than I)
 // but since M depends on I we can't have the defaults in that order, alas.
-template <class T, class S = unsigned short, bool ML = false, class I = S, class M = CUtlMemory< UtlLinkedListElem_t<T, S>, I > > 
+template <class T, class S = unsigned short, bool ML = false, class I = S, class M = CUtlMemory< UtlLinkedListElem_t<T, S>, I > >
 class CUtlLinkedList
 {
 public:
@@ -415,12 +415,12 @@ private:
 };
 
 // this is kind of ugly, but until C++ gets templatized typedefs in C++0x, it's our only choice
-template < class T, class I = unsigned short >
-class CUtlBlockLinkedList : public CUtlLinkedList< T, I, true, I, CUtlBlockMemory< UtlLinkedListElem_t< T, I >, I > >
+template < class T, class I = int, bool Y = false, class S = I, class M = CUtlMemory< UtlLinkedListElem_t< T, S >, I >>
+class CUtlBlockLinkedList : public CUtlLinkedList< T, I, false, S, CUtlMemory< UtlLinkedListElem_t< T, S >, I >>
 {
 public:
 	CUtlBlockLinkedList( int growSize = 0, int initSize = 0 )
-		: CUtlLinkedList< T, I, true, I, CUtlBlockMemory< UtlLinkedListElem_t< T, I >, I > >( growSize, initSize ) {}
+		: CUtlLinkedList< T, I, false, S, CUtlMemory< UtlLinkedListElem_t< T, S >, I > >( growSize, initSize ) {}
 protected:
 	void ResetDbgInfo() {}
 };

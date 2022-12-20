@@ -93,7 +93,7 @@ struct mnode_t
 	int			visframe;		// node needs to be traversed if current
 
 	mnode_t		*parent;
-	short		area;			// If all leaves below this node are in the same area, then
+	int    		area;			// If all leaves below this node are in the same area, then
 	// this is the area index. If not, this is -1.
 	short		flags;
 
@@ -104,8 +104,8 @@ struct mnode_t
 	cplane_t	*plane;
 	mnode_t		*children[2];	
 
-	unsigned short		firstsurface;
-	unsigned short		numsurfaces;
+	int		firstsurface;
+	int		numsurfaces;
 };
 
 
@@ -119,24 +119,24 @@ public:
 
 	mnode_t		*parent;
 
-	short		area;
+	int		area;
 	short		flags;
 	VectorAligned		m_vecCenter;
 	VectorAligned		m_vecHalfDiagonal;
 
 
 // leaf specific
-	short		cluster;
-	short		leafWaterDataID;
+	int		cluster;
+	int		leafWaterDataID;
 
-	unsigned short		firstmarksurface;
-	unsigned short		nummarksurfaces;
+	int		firstmarksurface;
+	int		nummarksurfaces;
 
-	short		nummarknodesurfaces;
+	int		nummarknodesurfaces;
 	short		unused;
 
-	unsigned short	dispListStart;			// index into displist of first displacement
-	unsigned short	dispCount;				// number of displacements in the list for this leaf
+	int	dispListStart;			// index into displist of first displacement
+	int	dispCount;				// number of displacements in the list for this leaf
 };
 
 
@@ -159,17 +159,17 @@ struct mcubemapsample_t
 
 typedef struct mportal_s
 {
-	unsigned short	*vertList;
+	int*vertList;
 	int				numportalverts;
 	cplane_t		*plane;
-	unsigned short	cluster[2];
+	int	cluster[2];
 //	int				visframe;
 } mportal_t;
 
 
 typedef struct mcluster_s
 {
-	unsigned short	*portalList;
+	int*portalList;
 	int				numportals;
 } mcluster_t;
 
@@ -186,10 +186,10 @@ struct mmodel_t
 struct mprimitive_t
 {
 	int	type;
-	unsigned short	firstIndex;
-	unsigned short	indexCount;
-	unsigned short	firstVert;
-	unsigned short	vertCount;
+	int	firstIndex;
+	int	indexCount;
+	int	firstVert;
+	int	vertCount;
 };
 
 struct mprimvert_t
