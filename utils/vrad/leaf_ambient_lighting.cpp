@@ -100,7 +100,7 @@ void AddEmitSurfaceLights( const Vector &vStart, Vector lightBoxColor[6] )
 	{
 		iLight++;
 		dworldlight_t *wl = new dworldlight_t[(iLight++)];
-		//Q_memset(wl, 0, sizeof(dworldlight_t));
+		memset(wl, 0, sizeof(dworldlight_t));
 
 		// Should this light even go in the ambient cubes?
 		//if (iLight > 0)

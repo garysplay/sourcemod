@@ -824,7 +824,7 @@ dareaportal_t	dareaportals[MAX_MAP_AREAPORTALS];
 int			numworldlightsLDR;
 dworldlight_t **dworldlightsLDR = NULL; //enderzip: todo: make this infinite
 
-int			numworldlightsHDR;
+int		numworldlightsHDR;
 dworldlight_t **dworldlightsHDR = NULL; //enderzip: todo: make this infinite
 
 int InitWorldLights()

@@ -68,7 +68,7 @@ enum IterationRetval_t
 typedef int SpatialPartitionHandle_t;
 
 // A combination of the PARTITION_ flags above.
-typedef int SpatialPartitionListMask_t;	
+typedef unsigned int SpatialPartitionListMask_t;	
 
 typedef int SpatialTempHandle_t;
 

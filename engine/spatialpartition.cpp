@@ -46,7 +46,8 @@ class CIntersectSweptBox;
 #define SPHASH_LEVEL_SKIP	2
 
 #define SPHASH_VOXEL_SIZE	256			// must power of 2
-#define SPHASH_VOXEL_SHIFT	8			// shift for voxel size
+#define SPHASH_VOXEL_SHIFT	11			// shift for voxel size
+               //enderzip:  ^^  raising this to 11 fixed stack corruption, my god
 
 #define SPHASH_VOXEL_LARGE	131072.0f
 
@@ -2408,7 +2409,7 @@ bool CVoxelTree::EnumerateRayStartVoxels( SpatialPartitionListMask_t listMask, I
 //          ||     ||                                 keeps getting corrupted, i haven't figured out
 //         \||/   \||/                                why so this is the best i can do for now
 //          \/     \/        TODO:                    will fix this later 
-bool __declspec(safebuffers) CVoxelTree::EnumerateElementsAlongRay_ExtrudedRay( SpatialPartitionListMask_t listMask,
+bool /*__declspec(safebuffers)*/ CVoxelTree::EnumerateElementsAlongRay_ExtrudedRay(SpatialPartitionListMask_t listMask,
 													   const Ray_t &ray, const Vector &vecInvDelta, const Vector &vecEnd, IPartitionEnumerator *pIterator )
 {
 	// Check the starting position, then proceed with the sweep.
