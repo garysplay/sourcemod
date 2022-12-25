@@ -239,10 +239,10 @@ void ClusterMerge (int clusternum)
 	totalvis += numvis;
 }
 
+byte	bcompressed[MAX_MAP_LEAFS / 8];
 static int CompressAndCrosscheckClusterVis( int clusternum )
 {
 	int		optimized = 0;
-	byte	compressed[MAX_MAP_LEAFS/8];
 //
 // compress the bit string
 //
@@ -262,7 +262,7 @@ static int CompressAndCrosscheckClusterVis( int clusternum )
 			}
 		}
 	}
-	int numbytes = CompressVis( uncompressed, compressed );
+	int numbytes = CompressVis( uncompressed, bcompressed);
 
 	byte *dest = vismap_p;
 	vismap_p += numbytes;
@@ -272,10 +272,10 @@ static int CompressAndCrosscheckClusterVis( int clusternum )
 
 	dvis->bitofs[clusternum][DVIS_PVS] = dest-vismap;
 
-	memcpy( dest, compressed, numbytes );
+	memcpy( dest, bcompressed, numbytes );
 
 	// check vis data
-	DecompressVis( vismap + dvis->bitofs[clusternum][DVIS_PVS], compressed );
+	DecompressVis( vismap + dvis->bitofs[clusternum][DVIS_PVS], bcompressed);
 
 	return optimized;
 }
@@ -565,15 +565,15 @@ Calculate the PAS (Potentially Audible Set)
 by ORing together all the PVS visible from a leaf
 ================
 */
+byte	uncompresseds[MAX_MAP_LEAFS / 8];
+byte	compresseds[MAX_MAP_LEAFS / 8];
 void CalcPAS (void)
 {
 	int		i, j, k, l, index;
 	int		bitbyte;
-	long	*dest, *src;
+	unsigned long *dest, *src;
 	byte	*scan;
 	int		count;
-	byte	uncompressed[MAX_MAP_LEAFS/8];
-	byte	compressed[MAX_MAP_LEAFS/8];
 
 	Msg ("Building PAS...\n");
 
@@ -581,7 +581,7 @@ void CalcPAS (void)
 	for (i=0 ; i<portalclusters ; i++)
 	{
 		scan = uncompressedvis + i*leafbytes;
-		memcpy (uncompressed, scan, leafbytes);
+		memcpy (uncompresseds, scan, leafbytes);
 		for (j=0 ; j<leafbytes ; j++)
 		{
 			bitbyte = scan[j];
@@ -595,15 +595,15 @@ void CalcPAS (void)
 				index = ((j<<3)+k);
 				if (index >= portalclusters)
 					Error ("Bad bit in PVS");	// pad bits should be 0
-				src = (long *)(uncompressedvis + index*leafbytes);
-				dest = (long *)uncompressed;
+				src = (unsigned long *)(uncompressedvis + index*leafbytes);
+				dest = (unsigned long*)uncompresseds;
 				for (l=0 ; l<leaflongs ; l++)
-					((long *)uncompressed)[l] |= src[l];
+					((unsigned long*)uncompresseds)[l] |= src[l];
 			}
 		}
 		for (j=0 ; j<portalclusters ; j++)
 		{
-			if ( CheckBit( uncompressed, j ) )
+			if ( CheckBit(uncompresseds, j ) )
 			{
 				count++;
 			}
@@ -612,9 +612,9 @@ void CalcPAS (void)
 	//
 	// compress the bit string
 	//
-		j = CompressVis (uncompressed, compressed);
+		j = CompressVis (uncompresseds, compresseds);
 
-		dest = (long *)vismap_p;
+		dest = (unsigned long *)vismap_p;
 		vismap_p += j;
 		
 		if (vismap_p > vismap_end)
@@ -622,7 +622,7 @@ void CalcPAS (void)
 
 		dvis->bitofs[i][DVIS_PAS] = (byte *)dest-vismap;
 
-		memcpy (dest, compressed, j);	
+		memcpy (dest, compresseds, j);
 	}
 
 	Msg ("Average clusters audible: %i\n", count/portalclusters);
@@ -791,17 +791,16 @@ static void CalcDistanceFromLeavesToWater( void )
 	int i;
 	for( i = 0; i < numleafs; i++ )
 	{
-		g_LeafMinDistToWater[i] = ( unsigned short )CalcDistanceFromLeafToWater( i );
+		g_LeafMinDistToWater[i] = CalcDistanceFromLeafToWater( i );
 	}
 }
 
+byte	buncompressed[MAX_MAP_LEAFS / 8];
 //-----------------------------------------------------------------------------
 // Using the PVS, compute the visible fog volumes from each leaf
 //-----------------------------------------------------------------------------
 static void CalcVisibleFogVolumes()
 {
-	byte	uncompressed[MAX_MAP_LEAFS/8];
-
 	int i, j, k;
 
 	// Clear the contents flags for water testing
@@ -839,7 +838,7 @@ static void CalcVisibleFogVolumes()
 		if (cluster < 0)
 			continue;
 
-		DecompressVis( &dvisdata[dvis->bitofs[cluster][DVIS_PVS]], uncompressed );
+		DecompressVis( &dvisdata[dvis->bitofs[cluster][DVIS_PVS]], buncompressed);
 
 		// Iterate over all potentially visible clusters from this leaf
 		for (j = 0; j < dvis->numclusters; ++j)
@@ -848,7 +847,7 @@ static void CalcVisibleFogVolumes()
 			if (j == cluster)
 				continue;
 
-			if ( !CheckBit( uncompressed, j ) )
+			if ( !CheckBit(buncompressed, j ) )
 				continue;
 
 			// Found a visible cluster, now iterate over all leaves

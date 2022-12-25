@@ -12,7 +12,7 @@
 #include "bsplib.h"
 
 
-#define	MAX_PORTALS	65536
+#define	MAX_PORTALS	131072
 
 #define	PORTALFILE	"PRT1"
 
