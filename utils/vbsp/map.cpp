@@ -859,10 +859,10 @@ ChunkFileResult_t LoadDispInfoCallback(CChunkFile *pFile, mapdispinfo_t **ppMapD
     //
     // check to see if we exceeded the maximum displacement info list size
     //
-    if (nummapdispinfo > MAX_MAP_DISPINFO)
-	{
-        g_MapError.ReportError( "ParseDispInfoChunk: nummapdispinfo > MAX_MAP_DISPINFO" );
-	}
+ //   if (nummapdispinfo > MAX_MAP_DISPINFO)
+	//{
+ //       g_MapError.ReportError( "ParseDispInfoChunk: nummapdispinfo > MAX_MAP_DISPINFO" );
+	//}
 
     // get a pointer to the next available displacement info slot
     mapdispinfo.AddToTail();

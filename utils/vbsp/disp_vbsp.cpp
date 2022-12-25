@@ -64,7 +64,7 @@ bool FindTriIndexMapByUV( CCoreDispInfo *pCoreDisp, Vector2D const &lmCoords,
 	int nTriCount= pCoreDisp->GetTriCount();
 	for ( int iTri = 0; iTri < nTriCount; ++iTri )
 	{
-		unsigned short iVerts[3];
+		int iVerts[3];
 //		pCoreDisp->GetTriIndices( iTri, iVerts[0], iVerts[1], iVerts[2] );
 		CTriInfo *pTri = &pPowerInfo->m_pTriInfos[iTri];
 		iVerts[0] = pTri->m_Indices[0];

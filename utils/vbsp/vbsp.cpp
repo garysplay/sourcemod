@@ -70,7 +70,7 @@ char		g_szEmbedDir[MAX_PATH] = { 0 };
 
 // HLTOOLS: Introduce these calcs to make the block algorithm proportional to the proper 
 // world coordinate extents.  Assumes square spatial constraints.
-#define BLOCKS_SIZE		1024
+#define BLOCKS_SIZE		4096
 #define BLOCKS_SPACE	(COORD_EXTENT/BLOCKS_SIZE)
 #define BLOCKX_OFFSET	((BLOCKS_SPACE/2)+1)
 #define BLOCKY_OFFSET	((BLOCKS_SPACE/2)+1)
@@ -1416,6 +1416,8 @@ int RunVBSP( int argc, char **argv )
 
 	end = Plat_FloatTime();
 	
+	PrintBSPFileSizes();
+
 	char str[512];
 	GetHourMinuteSecondsString( (int)( end - start ), str, sizeof( str ) );
 	Msg( "%s elapsed\n", str );

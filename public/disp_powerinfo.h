@@ -32,7 +32,7 @@ struct DispNodeInfo_t
 
 
 	// Indicates which tesselation indices are associated with a node
-	unsigned short	m_FirstTesselationIndex;
+	int           	m_FirstTesselationIndex;
 	unsigned char	m_Count;
 	unsigned char	m_Flags;
 };
@@ -48,7 +48,7 @@ public:
 				CTesselateVert( CVertIndex const &index, int iNode );
 
 	CVertIndex	m_Index;
-	short			m_iNode;	// Which node this vert is a part of (-1 on left, right, up, and down).
+	int			m_iNode;	// Which node this vert is a part of (-1 on left, right, up, and down).
 };
 
 
@@ -56,7 +56,7 @@ class CTesselateWinding
 {
 public:
 	CTesselateVert	*m_Verts;
-	short			m_nVerts;	// (includes the last vert)
+	int			m_nVerts;	// (includes the last vert)
 };
 
 
@@ -78,7 +78,7 @@ public:
 
 	// This is -1 if the vert exists inside the source displacement.
 	// It is one of the NEIGHBOREDGE_ codes above if it reaches into a neighbor.
-	short		m_iNeighbor;
+	int 		m_iNeighbor;
 };
 
 
@@ -96,7 +96,7 @@ public:
 	enum			{ NUM_REVERSE_DEPENDENCIES=4 };
 	CVertDependency	m_ReverseDependencies[NUM_REVERSE_DEPENDENCIES];
 
-	short			m_iNodeLevel;		// -1 if this is not a node. Otherwise, the recursion level
+	int 			m_iNodeLevel;		// -1 if this is not a node. Otherwise, the recursion level
 										// of this node (root node = 1).
 	CVertIndex		m_iParent;			// x=-1 if this is a not a node or if it's the root node.
 };

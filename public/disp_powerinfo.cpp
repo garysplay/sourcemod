@@ -20,8 +20,8 @@
 class CVertCorners
 {
 public:
-	short	m_Corner1[2];
-	short	m_Corner2[2];
+	int	m_Corner1[2];
+	int	m_Corner2[2];
 };
 
 
@@ -30,7 +30,7 @@ public:
 // ------------------------------------------------------------------------ //
 
 // This points at vertices to the side of a node (north, south, east, west).
-static short g_SideVertMul[4][2] = { {1,0}, {0,1}, {-1,0}, {0,-1} };
+static int g_SideVertMul[4][2] = { {1,0}, {0,1}, {-1,0}, {0,-1} };
 
 static CVertCorners g_SideVertCorners[4] =
 {
@@ -340,7 +340,7 @@ static void InitPowerInfoTriInfos_R(
 	}
 	else
 	{
-		unsigned short indices[3];
+		int indices[3];
 		
 		int vertInc = 1 << ((iMaxPower - iLevel) - 1);
 
@@ -387,8 +387,8 @@ static void InitPowerInfo_R(
 	pPowerInfo->m_pVertInfo[iNodeIndex].m_iParent = iParent;
 	pPowerInfo->m_pVertInfo[iNodeIndex].m_iNodeLevel = iLevel + 1;
 
-	pPowerInfo->m_pErrorEdges[iNodeIndex].m_Values[0] = (unsigned short)(VertIndex( nodeEdge1, iMaxPower ));
-	pPowerInfo->m_pErrorEdges[iNodeIndex].m_Values[1] = (unsigned short)(VertIndex( nodeEdge2, iMaxPower ));
+	pPowerInfo->m_pErrorEdges[iNodeIndex].m_Values[0] = (VertIndex( nodeEdge1, iMaxPower ));
+	pPowerInfo->m_pErrorEdges[iNodeIndex].m_Values[1] = (VertIndex( nodeEdge2, iMaxPower ));
 	
 	// Add this node's dependencies.
 	AddDependency( pPowerInfo->m_pVertInfo, sideLength, nodeIndex, dependency1, iMaxPower, false, true );
@@ -413,8 +413,8 @@ static void InitPowerInfo_R(
 		pPowerInfo->m_pSideVertCorners[iNodeIndex].m_Verts[iSide] = sideVertCorner0;
 
 		// Write the side vert corners into the error-edges list.
-		pPowerInfo->m_pErrorEdges[iSideVert].m_Values[0] = (unsigned short)VertIndex( sideVertCorner0, iMaxPower );
-		pPowerInfo->m_pErrorEdges[iSideVert].m_Values[1] = (unsigned short)VertIndex( sideVertCorner1, iMaxPower );
+		pPowerInfo->m_pErrorEdges[iSideVert].m_Values[0] = VertIndex( sideVertCorner0, iMaxPower );
+		pPowerInfo->m_pErrorEdges[iSideVert].m_Values[1] = VertIndex( sideVertCorner1, iMaxPower );
 
 		AddDependency( 
 			pPowerInfo->m_pVertInfo, 
