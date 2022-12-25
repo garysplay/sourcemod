@@ -213,18 +213,18 @@ public:
 
 	// Precalculated for the static lighting from AddWorldLightToLightingState.
 	dworldlight_t		*m_StaticPrecalc_LocalLight[MAXLOCALLIGHTS];
-	unsigned short		m_StaticPrecalc_NumLocalLights;
+	int		m_StaticPrecalc_NumLocalLights;
 	LightingStateInfo_t m_StaticPrecalc_LightingStateInfo;
 	// the boxcolor is stored in m_StaticLightingState.
 
 
 	// bucket singly linked list.
-	unsigned short	next;	// index into lightcache
-	unsigned short	bucket;	// index into lightbuckets
+	int	next;	// index into lightcache
+	int	bucket;	// index into lightbuckets
 
 	// lru links
-	unsigned short	lru_prev;
-	unsigned short	lru_next;
+    int	lru_prev;
+	int	lru_next;
 
 	int				x,y,z;
 };
@@ -240,7 +240,7 @@ public:
 	int				m_DLightActive; // bit field for which dlights currently affect us.
 									// recomputed by AddDlightsForStaticProps
 	int				m_DLightMarkFrame;	// last frame in which a dlight was marked on this prop (helps detect lights that are marked but have moved away from this prop)
-	CUtlVector<short> m_LightStyleWorldLights;	// This is a list of lights that affect this static prop cache entry.
+	CUtlVector<int> m_LightStyleWorldLights;	// This is a list of lights that affect this static prop cache entry.
 	int				m_SwitchableLightFrame;		// This is the last frame that switchable lights were calculated.
 	Vector			mins; // fixme: make these smaller
 	Vector			maxs; // fixme: make these smaller
@@ -271,7 +271,7 @@ static ConVar r_lightcachecenter	("r_lightcachecenter", "1", FCVAR_CHEAT );
 #define LIGHT_LRU_TAIL_INDEX (MAX_CACHE_ENTRY+1)
 
 static lightcache_t lightcache[MAX_CACHE_ENTRY + 2]; // the extra 2 are the head and tail
-static unsigned short lightbuckets[MAX_CACHE_BUCKETS];
+static int lightbuckets[MAX_CACHE_BUCKETS];
 
 static CClassMemoryPool<PropLightcache_t>	s_PropCache( 256, CClassMemoryPool<lightcache_t>::GROW_SLOW );
  
@@ -290,7 +290,7 @@ static Vector s_Grayscale( 0.299f, 0.587f, 0.114f );
 #define BIT_SET( a, b ) ((a)[(b)>>3] & (1<<((b)&7)))
 
 
-inline unsigned short GetLightCacheIndex( const lightcache_t *pCache )
+inline int GetLightCacheIndex( const lightcache_t *pCache )
 {
 	return pCache - lightcache;
 }
@@ -311,17 +311,17 @@ inline lightcache_t& GetLightLRUTail()
 //-----------------------------------------------------------------------------
 void R_StudioInitLightingCache( void )
 {
-	unsigned short i;
+	int i;
 
 	memset( lightcache, 0, sizeof(lightcache) );
 
 	for ( i=0; i < ARRAYSIZE( lightcache ); i++ )
-		lightcache[i].bucket = 0xFFFF;
+		lightcache[i].bucket = 0xFFFFFFF;
 
 	for ( i=0; i < ARRAYSIZE( lightbuckets ); i++ )
-			lightbuckets[i] = 0xFFFF;
+			lightbuckets[i] = 0xFFFFFFF;
 
-	unsigned short last = LIGHT_LRU_HEAD_INDEX;
+	int last = LIGHT_LRU_HEAD_INDEX;
 	// Link every node into the LRU
 	for ( i = 0; i < MAX_CACHE_ENTRY-1; i++)
 	{
@@ -409,16 +409,16 @@ static void LightcacheMark( lightcache_t *pcache )
 //-----------------------------------------------------------------------------
 static void LightcacheUnlink( lightcache_t *pcache )
 {
-	unsigned short iBucket = pcache->bucket;
+	int iBucket = pcache->bucket;
 	
 	// not used yet?
-	if ( iBucket == 0xFFFF )
+	if ( iBucket == 0xFFFFFFF )
 		return;
 
-	unsigned short iCache = GetLightCacheIndex( pcache );
+	int iCache = GetLightCacheIndex( pcache );
 
 	// unlink it
-	unsigned short plist = lightbuckets[iBucket];
+	int plist = lightbuckets[iBucket];
 
 	if ( plist == iCache )
 	{
@@ -429,7 +429,7 @@ static void LightcacheUnlink( lightcache_t *pcache )
 	{
 		bool found = false;
 		// walk the bucket
-		while ( plist != 0xFFFF )
+		while ( plist != 0xFFFFFFF )
 		{
 			// if next is pcache, unlink pcache
 			if ( lightcache[plist].next == iCache )
@@ -481,8 +481,8 @@ static int LightcacheHashKey( int x, int y, int z, int leaf )
 static lightcache_t* FindInCache( int bucket, int x, int y, int z, int leaf )
 {
 	// loop over the entries in this bucket
-	unsigned short iCache;
-	for ( iCache = lightbuckets[bucket]; iCache != 0xFFFF; iCache = lightcache[iCache].next )
+	int iCache;
+	for ( iCache = lightbuckets[bucket]; iCache != 0xFFFFFFF; iCache = lightcache[iCache].next )
 	{
 		lightcache_t *pCache = &lightcache[iCache];
 
@@ -505,7 +505,7 @@ static inline void LinkToBucket( int bucket, lightcache_t* pcache )
 	lightbuckets[bucket] = GetLightCacheIndex( pcache );
 
 	// point back to the bucket
-	pcache->bucket = (unsigned short)bucket;
+	pcache->bucket = bucket;
 }
 
 
@@ -2101,7 +2101,7 @@ static void BuildStaticLightingCacheLightStyleInfo( PropLightcache_t* pcache, co
 	pcache->m_LightingFlags &= ~( HACKLIGHTCACHEFLAGS_HASSWITCHABLELIGHTSTYLE | HACKLIGHTCACHEFLAGS_HASSWITCHABLELIGHTSTYLE );
 	// clear lightstyles
 	memset( pcache->m_pLightstyles, 0, MAX_LIGHTSTYLE_BYTES );
-	for ( short i = 0; i < host_state.worldbrush->numworldlights; ++i)
+	for ( int i = 0; i < host_state.worldbrush->numworldlights; ++i)
 	{
 		dworldlight_t *wl = &host_state.worldbrush->worldlights[i];
 		if (wl->style == 0)
@@ -2574,7 +2574,7 @@ lightcache_t *FindNearestCache( int x, int y, int z, int leafIndex )
 {
 	int bestDist = INT_MAX;
 	lightcache_t *pBest = NULL;
-	short current = GetLightLRUTail().lru_prev;
+	int current = GetLightLRUTail().lru_prev;
 	int dx, dy, dz;
 	while ( current != LIGHT_LRU_HEAD_INDEX )
 	{
