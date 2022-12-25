@@ -1624,17 +1624,19 @@ void ExportDirectLightsToWorldLights()
 	directlight_t		*dl;
 
 	// In case the level has already been VRADed.
-	*pNumworldlights = 0;
+	*pNumworldlights = 0; 
 
 	for (dl = activelights; dl != NULL; dl = dl->next )
 	{
-		dworldlight_t *wl = new dworldlight_t[(*pNumworldlights)++];
-		memset(wl, 0, sizeof(dworldlight_t*));
+		dworldlight_t* wl = &dworldlights[(*pNumworldlights)++];
 
-		/*if (*pNumworldlights > MAX_MAP_WORLDLIGHTS)
+		//dworldlight_t *wl = new dworldlight_t[(*pNumworldlights)];
+		//memset(wl, 0, sizeof(dworldlight_t*));
+
+		if (*pNumworldlights > MAX_MAP_WORLDLIGHTS)
 		{
 			Error("too many lights %d / %d\n", *pNumworldlights, MAX_MAP_WORLDLIGHTS );
-		}*/
+		}
 
 		wl->cluster	= dl->light.cluster;
 		wl->type	= dl->light.type;
@@ -1652,7 +1654,7 @@ void ExportDirectLightsToWorldLights()
 		wl->quadratic_attn = dl->light.quadratic_attn;
 		wl->flags = 0;
 
-		delete[] wl;
+		//delete[] wl;
 	}
 }
 

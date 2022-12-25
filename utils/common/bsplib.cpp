@@ -822,25 +822,28 @@ dareaportal_t	dareaportals[MAX_MAP_AREAPORTALS];
 
 
 int			numworldlightsLDR;
-dworldlight_t **dworldlightsLDR = NULL; //enderzip: todo: make this infinite
+//dworldlight_t **dworldlightsLDR; //enderzip: todo: make this infinite
+dworldlight_t dworldlightsLDR[MAX_MAP_WORLDLIGHTS]; //enderzip: todo: make this infinite
 
-int		numworldlightsHDR;
-dworldlight_t **dworldlightsHDR = NULL; //enderzip: todo: make this infinite
+int		    numworldlightsHDR;
+//dworldlight_t **dworldlightsHDR; //enderzip: todo: make this infinite
+dworldlight_t dworldlightsHDR[MAX_MAP_WORLDLIGHTS]; //enderzip: todo: make this infinite
 
-int InitWorldLights()
-{
-	dworldlightsLDR = new dworldlight_t*;
-	Q_memset(dworldlightsLDR, 0, sizeof(dworldlight_t*));
-	dworldlightsHDR = new dworldlight_t*;
-	Q_memset(dworldlightsHDR, 0, sizeof(dworldlight_t*));
-
-	return 0;
-}
-
-int worldlit = InitWorldLights();
+//int InitWorldLights()
+//{
+//	dworldlightsLDR = new dworldlight_t*[1];
+//	V_memset(dworldlightsLDR, 0,  sizeof(dworldlight_t*));
+//	dworldlightsHDR = new dworldlight_t*[1];
+//	V_memset(dworldlightsHDR, 0,  sizeof(dworldlight_t*));
+//
+//	return 0;
+//}
+//
+//int worldlit = InitWorldLights();
 
 int			*pNumworldlights = &numworldlightsLDR;
-dworldlight_t* dworldlights = *dworldlightsLDR;
+//dworldlight_t* dworldlights = *dworldlightsLDR;
+dworldlight_t* dworldlights = dworldlightsLDR;
 
 int			numleafwaterdata = 0;
 dleafwaterdata_t dleafwaterdata[MAX_MAP_LEAFWATERDATA]; 
@@ -2506,7 +2509,8 @@ int LoadWorldLights(int lumpnum, dworldlight_t* pWorldlights)
 	}
 	else if (version == 1)
 	{
-		count = CopyVariableLump<byte>(FIELD_CHARACTER, lumpnum, (void**)&pWorldlights);
+		//count = CopyVariableLump<byte>(FIELD_CHARACTER, lumpnum, (void**)&pWorldlights);
+		count = CopyLump(lumpnum, pWorldlights);
 	}
 	else
 	{
@@ -2569,8 +2573,10 @@ void LoadBSPFile( const char *filename )
 	//numworldlightsLDR = CopyLump( LUMP_WORLDLIGHTS, dworldlightsLDR );
 	//numworldlightsHDR = CopyLump( LUMP_WORLDLIGHTS_HDR, dworldlightsHDR );
 
-	numworldlightsLDR = LoadWorldLights(LUMP_WORLDLIGHTS, *dworldlightsLDR);
-	numworldlightsHDR = LoadWorldLights(LUMP_WORLDLIGHTS_HDR, *dworldlightsHDR);
+	//numworldlightsLDR = LoadWorldLights(LUMP_WORLDLIGHTS, *dworldlightsLDR);
+	//numworldlightsHDR = LoadWorldLights(LUMP_WORLDLIGHTS_HDR, *dworldlightsHDR);
+	numworldlightsLDR = LoadWorldLights(LUMP_WORLDLIGHTS, dworldlightsLDR);
+	numworldlightsHDR = LoadWorldLights(LUMP_WORLDLIGHTS_HDR, dworldlightsHDR);
 
 	numleafwaterdata = CopyLump( LUMP_LEAFWATERDATA, dleafwaterdata );
 	g_PhysCollideSize = CopyVariableLump<byte>( FIELD_CHARACTER, LUMP_PHYSCOLLIDE, (void**)&g_pPhysCollide );
@@ -2700,7 +2706,7 @@ void UnloadBSPFile()
 	numworldlightsLDR = 0;
 	numworldlightsHDR = 0;
 
-	if (dworldlightsLDR)
+	/*if (dworldlightsLDR)
 	{
 		free(dworldlightsLDR);
 		dworldlightsLDR = NULL;
@@ -2711,7 +2717,7 @@ void UnloadBSPFile()
 		free(dworldlightsHDR);
 		dworldlightsHDR = NULL;
 	}
-	dworldlightsHDR = 0;
+	dworldlightsHDR = 0;*/
 
 	numleafwaterdata = 0;
 
@@ -2934,7 +2940,14 @@ static void AddLump( int lumpnum, T *pData, int count, int version )
 }
 
 template< class T >
-static void AddLump( int lumpnum, CUtlVector<T> &data, int version )
+static void AddLumpWorldlights( int lumpnum, T &pData, int version )
+{
+	int length = g_pBSPHeader->lumps[lumpnum].filelen;
+	AddLumpInternal( lumpnum, pData, length / sizeof(T), version );
+}
+
+template< class T >
+static void AddLump( int lumpnum, CUtlVector<T>& data, int version )
 {
 	AddLumpInternal( lumpnum, data.Base(), data.Count() * sizeof(T), version );
 }
@@ -3009,6 +3022,8 @@ void WriteBSPFile( const char *filename, char *pUnused )
 	AddLump( LUMP_LIGHTING_HDR, dlightdataHDR, LUMP_LIGHTING_VERSION );
 	AddLump( LUMP_VISIBILITY, dvisdata, visdatasize );
 	AddLump( LUMP_ENTITIES, dentdata );
+	//AddLumpWorldlights( LUMP_WORLDLIGHTS, dworldlightsLDR, 1 );
+	//AddLumpWorldlights( LUMP_WORLDLIGHTS_HDR, dworldlightsHDR, 1 );
 	AddLump( LUMP_WORLDLIGHTS, dworldlightsLDR, numworldlightsLDR );
 	AddLump( LUMP_WORLDLIGHTS_HDR, dworldlightsHDR, numworldlightsHDR );
 	AddLump( LUMP_LEAFWATERDATA, dleafwaterdata, numleafwaterdata );
@@ -3050,8 +3065,8 @@ void WriteBSPFile( const char *filename, char *pUnused )
 	AddLump( LUMP_VERTNORMALINDICES, g_vertnormalindices, g_numvertnormalindices );
 
 	AddLump( LUMP_LEAFMINDISTTOWATER, g_LeafMinDistToWater, numleafs );
-	AddLump(LUMP_WORLDLIGHTS, dworldlightsLDR, numworldlightsLDR, 1);
-	AddLump(LUMP_WORLDLIGHTS_HDR, dworldlightsHDR, numworldlightsHDR, 1);
+	//AddLump(LUMP_WORLDLIGHTS, dworldlightsLDR, numworldlightsLDR, 1);
+	//AddLump(LUMP_WORLDLIGHTS_HDR, dworldlightsHDR, numworldlightsHDR, 1);
 
 	AddGameLumps();
 
@@ -4149,8 +4164,9 @@ void SetHDRMode( bool bHDR )
 		pdlightdata = &dlightdataHDR;		
 		g_pLeafAmbientLighting = &g_LeafAmbientLightingHDR;
 		g_pLeafAmbientIndex = &g_LeafAmbientIndexHDR;
-		pNumworldlights = &numworldlightsHDR;
-		dworldlights = *dworldlightsHDR;
+		pNumworldlights = &numworldlightsLDR;
+		//dworldlights = *dworldlightsHDR;
+		dworldlights = dworldlightsHDR;
 #ifdef VRAD
 		extern void VRadDetailProps_SetHDRMode( bool bHDR );
 		VRadDetailProps_SetHDRMode( bHDR );
@@ -4162,7 +4178,8 @@ void SetHDRMode( bool bHDR )
 		g_pLeafAmbientLighting = &g_LeafAmbientLightingLDR;
 		g_pLeafAmbientIndex = &g_LeafAmbientIndexLDR;
 		pNumworldlights = &numworldlightsLDR;
-		dworldlights = *dworldlightsLDR;
+		//dworldlights = *dworldlightsLDR;
+		dworldlights = dworldlightsLDR;
 #ifdef VRAD
 		extern void VRadDetailProps_SetHDRMode( bool bHDR );
 		VRadDetailProps_SetHDRMode( bHDR );
