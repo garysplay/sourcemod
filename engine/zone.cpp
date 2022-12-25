@@ -134,7 +134,7 @@ const int HUNK_COMMIT_FLOOR = (IsGameConsole() ? 4/*18*/ : 40) * (1024 * 1024);
 void Memory_Init( void )
 {
 	MEM_ALLOC_CREDIT();
-	int nMaxBytes = 256*1024*1024;
+	int nMaxBytes = 2048*1024*1024;
 	const int nMinCommitBytes = 0x8000;
 #ifndef HUNK_USE_16MB_PAGE
 	const int nInitialCommit = MIN(HUNK_COMMIT_FLOOR, nMaxBytes);;
