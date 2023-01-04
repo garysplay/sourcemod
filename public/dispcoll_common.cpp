@@ -724,7 +724,7 @@ int CDispCollTree::AABBTree_BuildTreeTrisInSphere_r( const Vector &center, float
 {
 	int nodeList[MAX_AABB_LIST];
 	nodeList[0] = iNode;
-	int nTriCount = 0;
+	unsigned int nTriCount = 0;
 	int listIndex = 0;
 	int maxIndex = 0;
 	// NOTE: This part is loop invariant - should be hoisted up as far as possible

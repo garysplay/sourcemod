@@ -73,7 +73,7 @@ static bool ModelLess( ModelCollisionLookup_t const& src1, ModelCollisionLookup_
 	return src1.m_Name < src2.m_Name;
 }
 
-static CUtlRBTree<ModelCollisionLookup_t, unsigned short>	s_ModelCollisionCache( 0, 32, ModelLess );
+static CUtlRBTree<ModelCollisionLookup_t, int>	s_ModelCollisionCache( 0, 32, ModelLess );
 static CUtlVector<int>	s_LightingInfo;
 
 
@@ -357,7 +357,7 @@ static bool TestLeafAgainstCollide( int depth, int* pNodeList,
 static void ComputeConvexHullLeaves_R( int node, int depth, int* pNodeList,
 	Vector const& mins, Vector const& maxs,
 	Vector const& origin, QAngle const& angles,	CPhysCollide* pCollide,
-	CUtlVector<unsigned short>& leafList )
+	CUtlVector<int>& leafList )
 {
 	Assert( pNodeList && pCollide );
 	Vector cornermin, cornermax;
@@ -435,7 +435,7 @@ static void ComputeConvexHullLeaves_R( int node, int depth, int* pNodeList,
 //-----------------------------------------------------------------------------
 
 static void ComputeStaticPropLeaves( CPhysCollide* pCollide, Vector const& origin, 
-				QAngle const& angles, CUtlVector<unsigned short>& leafList )
+				QAngle const& angles, CUtlVector<int>& leafList )
 {
 	// Compute an axis-aligned bounding box for the collide
 	Vector mins, maxs;
@@ -481,7 +481,7 @@ static void AddStaticPropToLump( StaticPropBuild_t const& build )
 		return;
 
 	// Compute the leaves the static prop's convex hull hits
-	CUtlVector< unsigned short > leafList;
+	CUtlVector< int > leafList;
 	ComputeStaticPropLeaves( pConvexHull, build.m_Origin, build.m_Angles, leafList );
 
 	if ( !leafList.Count() )
