@@ -1628,10 +1628,12 @@ void ExportDirectLightsToWorldLights()
 
 	for (dl = activelights; dl != NULL; dl = dl->next )
 	{
-		dworldlight_t* wl = &dworldlights[(*pNumworldlights)++];
-
-		//dworldlight_t *wl = new dworldlight_t[(*pNumworldlights)];
-		//memset(wl, 0, sizeof(dworldlight_t*));
+		//dworldlight_t *wl = new dworldlight_t[(*pNumworldlights)++];
+		//V_memset(wl, 0, sizeof(dworldlight_t*));
+		dworldlights.AddToTail();
+		dworldlight_t* wl = &dworldlights.Tail();
+		V_memset(wl, 0, sizeof(*wl));
+		//pNumworldlights++;
 
 		if (*pNumworldlights > MAX_MAP_WORLDLIGHTS)
 		{

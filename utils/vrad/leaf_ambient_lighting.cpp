@@ -99,10 +99,11 @@ void AddEmitSurfaceLights( const Vector &vStart, Vector lightBoxColor[6] )
 	for ( int iLight=0; iLight < *pNumworldlights; iLight++ )
 	{
 		//iLight++;
-		/*dworldlight_t *wl = new dworldlight_t[*(pNumworldlights)];
-		V_memset(wl, 0, sizeof(dworldlight_t));*/
-
-		dworldlight_t* wl = &dworldlights[iLight];
+		dworldlights.AddToTail();
+		dworldlight_t *wl = &dworldlights.Tail();
+		V_memset(wl, 0, sizeof(*wl));
+		pNumworldlights++;
+		//V_memset(wl, 0, sizeof(dworldlight_t));
 
 		// Should this light even go in the ambient cubes?
 		//if (iLight > 0)
@@ -139,8 +140,6 @@ void AddEmitSurfaceLights( const Vector &vStart, Vector lightBoxColor[6] )
 				lightBoxColor[i] += wl->intensity * (t * ratio);
 			}
 		}
-
-		//delete[] wl;
 	}	
 }
 
@@ -633,9 +632,12 @@ void ComputePerLeafAmbientLighting()
 	int nSurfaceLights = 0;
 	for ( int i=0; i < *pNumworldlights; i++ )
 	{
-		//dworldlight_t *wl = new dworldlight_t[*(pNumworldlights++)];
+		//dworldlight_t *wl = new dworldlight_t[*(pNumworldlights)];
 		//V_memset(wl, 0, sizeof(dworldlight_t));
-		dworldlight_t* wl = &dworldlights[i];
+		dworldlights.AddToTail();
+		dworldlight_t* wl = &dworldlights.Tail();
+		V_memset(wl, 0, sizeof(*wl));
+		//pNumworldlights++;
 
 		if ( IsLeafAmbientSurfaceLight( wl ) )
 			wl->flags |= DWL_FLAGS_INAMBIENTCUBE;
