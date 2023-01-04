@@ -30,8 +30,8 @@ class IVP_U_Memory {
 	char *speicherende;
 #endif
     
-        short transaction_in_use:16; //for asserts
-	unsigned short size_of_external_mem:16;  // or 0 if not external mem; used for e.g. PS2 scratchpad
+        int transaction_in_use:32; //for asserts
+	int size_of_external_mem:32;  // or 0 if not external mem; used for e.g. PS2 scratchpad
     
 	void *speicher_callok(unsigned int groesse);
         void free_mem_transaction();

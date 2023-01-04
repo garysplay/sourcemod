@@ -31,7 +31,7 @@ private:
     void rehash(int new_size);
 protected:
     int size_mm;  // size -1, used for masking index
-    unsigned int nelems:24;
+    unsigned int nelems:32;
     IVP_BOOL dont_free:8;        // indicating external memory
   
     IVP_VHash_Elem *elems;
@@ -82,14 +82,14 @@ inline int IVP_VHash::hash_index(const char *key, int key_size){
 	int i;
 	for (i=key_size-1;i>=0;i--){
 	    c = *((unsigned char *)(key++));
-	    index = IVP_Hash_crctab[((int) index ^ c) & 0xff] ^ (index >> 8);
+	    index = IVP_Hash_crctab[((int) index ^ c) & 0xff] ^ (index >> 24);
 	}
 	return index | IVP_VHASH_TOUCH_BIT;	// set touch bit
     };
 
 // basic function for calculating the hash_index of key is a long
 inline int IVP_VHash::fast_hash_index(int key){
-  int index =  ((key * 1001)>>16) + key * 75;
+  int index =  ((key * 1001)>>24) + key * 75;
   return index | IVP_VHASH_TOUCH_BIT;	// set touch bit
 }
 
@@ -171,7 +171,7 @@ inline int IVP_VHash_Store::hash_index_store(const char *key, int key_size){
 	int i;
 	for (i=key_size-1;i>=0;i--){
 	    c = *((unsigned char *)(key++));
-	    index = IVP_Hash_crctab[((int) index ^ c) & 0xff] ^ (index >> 8);
+	    index = IVP_Hash_crctab[((int) index ^ c) & 0xff] ^ (index >> 24);
 	}
 	return index | IVP_VHASH_TOUCH_BIT;	// set touch bit
 };

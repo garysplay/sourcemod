@@ -10,37 +10,37 @@ typedef float IVP_U_MINLIST_FIXED_POINT;
 #define IVP_U_MINLIST_USELONG
 typedef unsigned int IVP_U_MINLIST_INDEX;
 
-#define IVP_U_MINLIST_UNUSED ( (1<<16) -1 )
-#define IVP_U_MINLIST_LONG_UNUSED ( (1<<16) -2 )
-#define IVP_U_MINLIST_MAX_ALLOCATION ( (1<<16) - 4 )
+#define IVP_U_MINLIST_UNUSED ( (1<<32) -1 )
+#define IVP_U_MINLIST_LONG_UNUSED ( (1<<32) -2 )
+#define IVP_U_MINLIST_MAX_ALLOCATION ( (1<<24) - 4 )
 
 
 class IVP_U_Min_List_Element {
 	public:
 #ifdef IVP_U_MINLIST_USELONG
-		unsigned short  long_next;
-		unsigned short  long_prev;
+		int  long_next;
+		int  long_prev;
 #endif
-		unsigned short next;
-		unsigned short prev;
+		int next;
+		int prev;
 		IVP_U_MINLIST_FIXED_POINT value;
 		void *element;
 };
 
 class IVP_U_Min_List {
     friend class IVP_U_Min_List_Enumerator;
-    unsigned short	malloced_size;
-    unsigned short	free_list;
+    int	malloced_size;
+	int	free_list;
     IVP_U_Min_List_Element *elems;
 public:
     IVP_U_MINLIST_FIXED_POINT min_value;
 #ifdef IVP_U_MINLIST_USELONG
-    unsigned short	first_long;
+	int	first_long;
 #endif
-    unsigned short	first_element;
-    unsigned short	counter;
+	int	first_element;
+	int	counter;
     
-    IVP_U_Min_List(int size=4);
+    IVP_U_Min_List(int size=8);
     ~IVP_U_Min_List();
     
     IVP_U_MINLIST_INDEX add(void *elem,IVP_U_MINLIST_FIXED_POINT value); // returns an index
