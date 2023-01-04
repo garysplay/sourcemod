@@ -1460,8 +1460,6 @@ void CStaticPropMgr::UnserializeModels( CUtlBuffer& buf )
 			}
 			case 11: UnserializeLump<StaticPropLumpV11_t>(&lump, buf); break;
 			case 12: UnserializeLump<StaticPropLump_t>(&lump, buf); break;
-
-				break;
 			default:
 				//Error("Unexpected version while deserializing lumps.");
 			         UnserializeLump<StaticPropLump_t>(&lump, buf); break;
