@@ -3235,8 +3235,8 @@ void PrintBSPFileSizes (void)
 	totalmemory += ArrayUsage( "areas",	numareas,	ENTRIES(dareas),	ENTRYSIZE(dareas) );
 	totalmemory += ArrayUsage( "surfedges",		numsurfedges,	ENTRIES(dsurfedges),	ENTRYSIZE(dsurfedges) );
 	totalmemory += ArrayUsage( "edges",			numedges,		ENTRIES(dedges),		ENTRYSIZE(dedges) );
-	totalmemory += ArrayUsage( "LDR worldlights",	dworldlightsLDR.Count(), 0, sizeof(dworldlightsLDR[0]));
-	totalmemory += ArrayUsage( "HDR worldlights",	dworldlightsHDR.Count(), 0, sizeof(dworldlightsHDR[0]));
+	totalmemory += ArrayUsage( "LDR worldlights",	dworldlights.Count(), 0, sizeof(dworldlights[0]));
+	totalmemory += ArrayUsage( "HDR worldlights",	dworldlights.Count(), 0, sizeof(dworldlights[0]));
 
 	totalmemory += ArrayUsage( "leafwaterdata",	numleafwaterdata,ENTRIES(dleafwaterdata),	ENTRYSIZE(dleafwaterdata) );
 	totalmemory += ArrayUsage( "waterstrips",	g_numprimitives,ENTRIES(g_primitives),	ENTRYSIZE(g_primitives) );
