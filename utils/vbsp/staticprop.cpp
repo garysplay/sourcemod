@@ -56,6 +56,7 @@ struct StaticPropBuild_t
 	unsigned short	m_nMaxDXLevel;
 	int		m_LightmapResolutionX;
 	int		m_LightmapResolutionY;
+	float   m_Scale;
 };
  
 
@@ -529,6 +530,7 @@ static void AddStaticPropToLump( StaticPropBuild_t const& build )
 		s_StaticPropLeafLump.AddToTail( insert );
 	}
 
+	propLump.m_Scale = build.m_Scale;
 }
 
 
@@ -662,6 +664,16 @@ void EmitStaticProps()
 			}
 			build.m_nMinDXLevel = (unsigned short)IntForKey( &entities[i], "mindxlevel" );
 			build.m_nMaxDXLevel = (unsigned short)IntForKey( &entities[i], "maxdxlevel" );
+
+			const char* pScale = ValueForKey(&entities[i], "uniformscale");
+			if (pScale && pScale[0])
+			{
+				build.m_Scale = FloatForKey(&entities[i], "uniformscale");
+			}
+			else
+			{
+				build.m_Scale = 1;
+			}
 			AddStaticPropToLump( build );
 
 			// strip this ent from the .bsp file
