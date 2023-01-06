@@ -37,12 +37,12 @@
 
 // This needs to match the value in gl_lightmap.h
 // Need to dynamically allocate the weights and light values in radial_t to make this variable.
-#define MAX_BRUSH_LIGHTMAP_DIM_WITHOUT_BORDER 128
+#define MAX_BRUSH_LIGHTMAP_DIM_WITHOUT_BORDER ( MAX_BRUSH_LIGHTMAP_DIM_INCLUDING_BORDER - 3 )
 // This is one more than what vbsp cuts for to allow for rounding errors
-#define MAX_BRUSH_LIGHTMAP_DIM_INCLUDING_BORDER	140
+#define MAX_BRUSH_LIGHTMAP_DIM_INCLUDING_BORDER	131
 
 // We can have larger lightmaps on displacements
-#define MAX_DISP_LIGHTMAP_DIM_WITHOUT_BORDER	500
+#define MAX_DISP_LIGHTMAP_DIM_WITHOUT_BORDER	(MAX_DISP_LIGHTMAP_DIM_INCLUDING_BORDER - 3)
 #define MAX_DISP_LIGHTMAP_DIM_INCLUDING_BORDER	512
 
 
