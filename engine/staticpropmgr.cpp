@@ -1202,7 +1202,7 @@ void CStaticProp::InsertPropIntoKDTree()
 		vcollide_t *pCollide = CM_VCollideForModel( -1, m_pModel );
 		if ( pCollide && pCollide->solidCount )
 		{
-			if (m_Scale == 1.0f)
+			if (m_Scale = 1.0f)
 			{
 				physcollision->CollideGetAABB(&mins, &maxs, pCollide->solids[0], m_Origin, m_Angles);
 			}
