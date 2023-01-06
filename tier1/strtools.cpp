@@ -1975,6 +1975,87 @@ void V_ComposeFileName( const char *path, const char *filename, char *dest, int 
 	V_FixSlashes( dest );
 }
 
+int V_StringToIntArray(int* pVector, int count, const char* pString)
+{
+	char* pstr, * pfront, tempString[128];
+	int	j;
+
+	V_strncpy(tempString, pString, sizeof(tempString));
+	pstr = pfront = tempString;
+
+	for (j = 0; j < count; j++)			// lifted from pr_edict.c
+	{
+		pVector[j] = atoi(pfront);
+
+		while (*pstr && *pstr != ' ')
+			pstr++;
+		if (!*pstr)
+			break;
+		pstr++;
+		pfront = pstr;
+	}
+
+	int nFound = j + 1;
+
+	for (j++; j < count; j++)
+	{
+		pVector[j] = 0;
+	}
+
+	return nFound;
+}
+
+int V_StringToFloatArray(float* pVector, int count, const char* pString)
+{
+	char* pstr, * pfront, tempString[128];
+	int	j;
+
+	V_strncpy(tempString, pString, sizeof(tempString));
+	pstr = pfront = tempString;
+
+	for (j = 0; j < count; j++)			// lifted from pr_edict.c
+	{
+		pVector[j] = atof(pfront);
+
+		// skip any leading whitespace
+		while (*pstr && *pstr <= ' ')
+			pstr++;
+
+		// skip to next whitespace
+		while (*pstr && *pstr > ' ')
+			pstr++;
+
+		if (!*pstr)
+			break;
+
+		pstr++;
+		pfront = pstr;
+	}
+
+	int nFound = j + 1;
+
+	for (j++; j < count; j++)
+	{
+		pVector[j] = 0;
+	}
+
+	return nFound;
+}
+
+void V_StringToVector(float* pVector, const char* pString)
+{
+	V_StringToFloatArray(pVector, 3, pString);
+}
+
+void V_StringToColor32(color32* color, const char* pString)
+{
+	int tmp[4];
+	int nCount = V_StringToIntArray(tmp, 4, pString);
+	color->r = tmp[0];
+	color->g = tmp[1];
+	color->b = tmp[2];
+	color->a = (nCount == 4) ? tmp[3] : 255;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 

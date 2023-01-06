@@ -57,6 +57,7 @@ struct StaticPropBuild_t
 	int		m_LightmapResolutionX;
 	int		m_LightmapResolutionY;
 	float   m_Scale;
+	color32 m_DiffuseModulation;
 };
  
 
@@ -510,7 +511,8 @@ static void AddStaticPropToLump( StaticPropBuild_t const& build )
 	propLump.m_flForcedFadeScale = build.m_flForcedFadeScale;
 	propLump.m_nMinDXLevel = build.m_nMinDXLevel;
 	propLump.m_nMaxDXLevel = build.m_nMaxDXLevel;
-	
+	propLump.m_DiffuseModulation = build.m_DiffuseModulation;
+
 	if (build.m_pLightingOrigin && *build.m_pLightingOrigin)
 	{
 		if (ComputeLightingOrigin( build, propLump.m_LightingOrigin ))
@@ -673,6 +675,31 @@ void EmitStaticProps()
 			else
 			{
 				build.m_Scale = 1;
+			}
+			const char* pColorKey = ValueForKey(&entities[i], "rendercolor");
+			if (*pColorKey != '\0')
+			{
+				color32 tmp;
+				V_StringToColor32(&tmp, pColorKey);
+				build.m_DiffuseModulation.r = tmp.r;
+				build.m_DiffuseModulation.g = tmp.g;
+				build.m_DiffuseModulation.b = tmp.b;
+				// don't copy alpha, legacy support uses renderamt
+			}
+			else
+			{
+				build.m_DiffuseModulation.r = build.m_DiffuseModulation.g = build.m_DiffuseModulation.b = 255;
+			}
+
+			// Get the per-instance render-alpha for this static prop
+			const char* pAlphaKey = ValueForKey(&entities[i], "renderamt");
+			if (*pAlphaKey != '\0')
+			{
+				build.m_DiffuseModulation.a = Q_atoi(pAlphaKey);
+			}
+			else
+			{
+				build.m_DiffuseModulation.a = 255;
 			}
 			AddStaticPropToLump( build );
 
