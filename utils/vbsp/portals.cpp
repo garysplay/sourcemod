@@ -978,12 +978,15 @@ void FindAreas_r (node_t *node)
 	if (IsAreaportalNode(node))
 		return;
 
-	c_areas++;
+	portal_t* p = NULL;
+	int			s;
+	
 	CUtlVector< FloodAreaParams_t > arrPendingFlood;
-	FloodAreas_r(node, NULL, arrPendingFlood);
+	FloodAreas_r(node, p = node->portals, arrPendingFlood);
 	while (arrPendingFlood.Count())
 	{
-		FloodAreas_r(arrPendingFlood.Head().node, NULL, arrPendingFlood);
+		c_areas++;
+		FloodAreas_r(arrPendingFlood.Head().node, p = node->portals, arrPendingFlood);
 		arrPendingFlood.RemoveMultipleFromHead(1);
 	}
 	//FloodAreas_r (node, NULL);
