@@ -21,6 +21,7 @@ $Configuration
 	{
 		$AdditionalDependencies				"$BASE ws2_32.lib odbc32.lib odbccp32.lib winmm.lib advapi32.lib"
 		$EnableLargeAddresses				"Support Addresses Larger Than 2 Gigabytes (/LARGEADDRESSAWARE)"
+		$StackReserveSize                   "4194304" //enderzip: maybe this would stop stack overflowing
 	}
 
 }

@@ -873,7 +873,8 @@ struct FloodAreaParams_t
 	node_t* node;
 };
 
-void FloodAreas_r (node_t *node, portal_t *pSeeThrough, CUtlVector< FloodAreaParams_t >& arrPendingFlood)
+//void FloodAreas_r (node_t *node, portal_t *pSeeThrough, CUtlVector< FloodAreaParams_t >& arrPendingFlood)
+void FloodAreas_r (node_t *node, portal_t *pSeeThrough)
 {
 	portal_t	*p;
 	int			s;
@@ -926,24 +927,24 @@ void FloodAreas_r (node_t *node, portal_t *pSeeThrough, CUtlVector< FloodAreaPar
 		if (!Portal_EntityFlood (p, s))
 			continue;
 
-#if VBSP_COMPILE_FLOOD_PORTALS_NORECURSE
-		bool bAlreadyPending = false;
-		FOR_EACH_VEC(arrPendingFlood, idxPendingFlood)
-		{
-			if (arrPendingFlood[idxPendingFlood].node == p->nodes[!s])
-			{
-				bAlreadyPending = true;
-				break;
-			}
-		}
-		if (bAlreadyPending)
-			continue;
-
-		FloodAreaParams_t params = {};
-		params.node = p->nodes[!s];
-		arrPendingFlood.AddToTail(params);
-#endif
-		//FloodAreas_r (p->nodes[!s], p, arrPendingFlood);
+//#if VBSP_COMPILE_FLOOD_PORTALS_NORECURSE
+//		bool bAlreadyPending = false;
+//		FOR_EACH_VEC(arrPendingFlood, idxPendingFlood)
+//		{
+//			if (arrPendingFlood[idxPendingFlood].node == p->nodes[!s])
+//			{
+//				bAlreadyPending = true;
+//				break;
+//			}
+//		}
+//		if (bAlreadyPending)
+//			continue;
+//
+//		FloodAreaParams_t params = {};
+//		params.node = p->nodes[!s];
+//		arrPendingFlood.AddToTail(params);
+//#endif
+		FloodAreas_r (p->nodes[!s], p);
 	}
 }
 
@@ -978,17 +979,21 @@ void FindAreas_r (node_t *node)
 	if (IsAreaportalNode(node))
 		return;
 
-	portal_t* p = NULL;	
 	c_areas++;
-
+	/*portal_t* p = node->portals;
+	int s;
 	CUtlVector< FloodAreaParams_t > arrPendingFlood;
-	FloodAreas_r(node, p = node->portals, arrPendingFlood);
+	FloodAreas_r(node, NULL, arrPendingFlood);
 	while (arrPendingFlood.Count())
 	{
-		FloodAreas_r(arrPendingFlood.Head().node, p = node->portals, arrPendingFlood);
+		s = (p->nodes[1] == node);
+
+		p = node->portals;
+		p = p->next[s];
+		FloodAreas_r(arrPendingFlood.Head().node, p, arrPendingFlood);
 		arrPendingFlood.RemoveMultipleFromHead(1);
-	}
-	//FloodAreas_r (node, NULL);
+	}*/
+	FloodAreas_r(node, NULL);
 }
 
 
